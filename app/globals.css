@@ -21,8 +21,25 @@
   --radius-card: 10px;
 }
 
+html.dark {
+  --color-ink: #f3f5f8;
+  --color-paper: #0d1118;
+  --color-card: #151b25;
+  --color-line: #2b3443;
+  --color-muted: #a3adbd;
+  --color-deal-soft: #3a2715;
+  --color-trust-soft: #20224b;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 body {
@@ -37,7 +54,7 @@ body {
   font-family: var(--font-display);
   font-variation-settings: "wdth" 112;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   line-height: 0.98;
 }
 
@@ -97,8 +114,22 @@ body {
   border: 1px solid var(--color-line);
   border-radius: 6px;
   padding: 10px 12px;
-  font-size: 14px;
-  background: #fff;
+  font-size: 16px;
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@media (min-width: 640px) {
+  .input {
+    font-size: 14px;
+  }
 }
 
 /* Nothing may exceed the viewport width. A single wide child on a phone

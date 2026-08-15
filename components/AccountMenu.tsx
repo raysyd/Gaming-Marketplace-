@@ -14,7 +14,7 @@ export function AccountMenu() {
     return (
       <Link
         href="/login"
-        className="rounded bg-white/10 px-3 py-2 font-semibold transition hover:bg-white/20"
+        className="whitespace-nowrap rounded bg-white/10 px-3 py-2 font-semibold transition hover:bg-white/20"
       >
         Sign in
       </Link>
@@ -28,7 +28,7 @@ export function AccountMenu() {
     >
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded px-2 py-1.5 transition hover:bg-chrome-2"
+        className="flex items-center gap-1.5 rounded px-2 py-1.5 transition hover:bg-chrome-2 sm:px-3"
       >
         <span className="grid h-6 w-6 place-items-center rounded-full bg-deal text-[11px] font-bold uppercase text-white">
           {user.email[0]}

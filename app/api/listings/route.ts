@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { slugify } from "@/lib/taxonomy";
 
 export async function POST(req: Request) {
   const limited = rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
       ships_free: payload.shipsFree,
       accepts_offers: payload.acceptsOffers,
       seller_id: user.id,
+      slug: slugify(payload.title),
       status: "active",
       stock: 1,
     })
@@ -51,5 +53,26 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, id: data.id });
+  return NextResponse.json({ ok: true, id: data.id, slug: slugify(payload.title) });
+}
+
+export async function PATCH(req: Request) {
+  const { id, status } = await req.json();
+  if (!id || status !== "inactive")
+    return NextResponse.json({ error: "Invalid listing update." }, { status: 400 });
+
+  const supabase = await createClient();
+  if (!supabase) return NextResponse.json({ ok: true, persisted: false });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in to manage listings." }, { status: 401 });
+
+  const { error } = await supabase
+    .from("listings")
+    .update({ status: "inactive" })
+    .eq("id", id)
+    .eq("seller_id", user.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true });
 }

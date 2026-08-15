@@ -69,7 +69,12 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
 async function getListingUncached(id: string): Promise<Listing | null> {
   const supabase = createPublicClient();
   if (!supabase) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
-  const { data } = await supabase.from("listings").select("*").eq("id", id).single();
+  const { data } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "active")
+    .single();
   if (!data) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
   return rowToListing(data);
 }
@@ -150,7 +155,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function rowToListing(r: any): Listing {
+export function rowToListing(r: any): Listing {
   const sub = r.subcategory_slug ?? "gaming-pcs";
   return {
     id: r.id,
@@ -180,5 +185,6 @@ function rowToListing(r: any): Listing {
     watchers: Number(r.watchers ?? 0),
     stock: Number(r.stock ?? 1),
     createdAt: r.created_at,
+    status: r.status ?? "active",
   };
 }

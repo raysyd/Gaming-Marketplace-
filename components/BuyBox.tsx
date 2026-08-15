@@ -5,15 +5,18 @@ import type { Listing } from "@/lib/types";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { useCart } from "./CartProvider";
+import { useAuth } from "./AuthProvider";
 
 export function BuyBox({ listing }: { listing: Listing }) {
   const { add } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
   const [added, setAdded] = useState(false);
   const [offering, setOffering] = useState(false);
   const [offer, setOffer] = useState(Math.round(listing.price * 0.92).toString());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const ownListing = user?.id === listing.sellerId;
 
   const addToCart = () => {
     add({ id: listing.id, title: listing.title, price: listing.price });
@@ -85,7 +88,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
         >
           Message {listing.sellerName.split(" ")[0]}
         </button>
-        {listing.acceptsOffers && !offering && (
+        {listing.acceptsOffers && !ownListing && !offering && (
           <button
             onClick={() => setOffering(true)}
             className="w-full rounded-md border border-line py-3 text-[13px] font-medium text-muted transition hover:border-ink/40 hover:text-ink"

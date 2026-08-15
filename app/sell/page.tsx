@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { slugify } from "@/lib/taxonomy";
 
 const CATEGORIES = [
   "Prebuilt PCs",
@@ -30,6 +31,7 @@ export default function SellPage() {
   const [specs, setSpecs] = useState([{ label: "", value: "" }]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [listingId, setListingId] = useState("");
 
   const price = Number(form.price) || 0;
   const fee = Math.round((price * BRAND.feePercent) / 100);
@@ -55,7 +57,10 @@ export default function SellPage() {
           images: photos.slice(1),
         }),
       });
-      setState(res.ok ? "done" : "error");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setListingId(data.id ?? "");
+      setState("done");
     } catch {
       setState("error");
     }
@@ -77,6 +82,14 @@ export default function SellPage() {
           >
             View your listings
           </Link>
+          {listingId && (
+            <Link
+              href={`/product/${listingId}/${slugify(form.title)}`}
+              className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
+            >
+              View listing
+            </Link>
+          )}
           <button
             onClick={() => setState("idle")}
             className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"

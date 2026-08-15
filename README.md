@@ -36,6 +36,23 @@ backend exists. Adding keys progressively switches on the real thing.
    add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, and point a webhook at
    `https://yourdomain.com/api/webhooks/stripe`.
 
+### Production magic-link email
+
+Supabase's built-in email service is intentionally rate-limited and is not
+intended for marketplace authentication traffic. Before inviting real users:
+
+1. In Supabase, open **Authentication → SMTP Settings** and connect a
+  transactional email provider using your verified Sidegrade domain.
+2. In **Authentication → URL Configuration**, add your production callback URL:
+  `https://yourdomain.com/auth/callback`.
+3. In **Authentication → Rate Limits**, review the OTP and email limits after
+  SMTP is enabled. Keep the app's resend cooldown in place to prevent abuse.
+4. Configure SPF, DKIM and DMARC for the sending domain so magic links reach
+  inboxes reliably.
+
+The login screen provides resend and change-email actions, but it cannot bypass
+Supabase Auth or SMTP provider limits from the browser.
+
 ## Built to scale
 
 The catalogue is queried, not loaded. Search, filters, sort, pagination and

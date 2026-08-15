@@ -7,6 +7,7 @@ import { TAXONOMY } from "@/lib/taxonomy";
 import { useCart } from "./CartProvider";
 import { useWishlist } from "./WishlistProvider";
 import { AccountMenu } from "./AccountMenu";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -68,7 +69,6 @@ export function SiteHeader() {
                 </span>
               )}
             </Link>
-            <AccountMenu />
             <Link
               href="/cart"
               className="ml-0.5 flex shrink-0 items-center gap-1.5 rounded bg-chrome-2 px-2.5 py-2 sm:ml-1 sm:px-3"
@@ -79,6 +79,10 @@ export function SiteHeader() {
                 {count}
               </span>
             </Link>
+            <ThemeToggle />
+            <div className="ml-1 border-l border-white/15 pl-1 sm:ml-2 sm:pl-2">
+              <AccountMenu />
+            </div>
           </nav>
         </div>
 

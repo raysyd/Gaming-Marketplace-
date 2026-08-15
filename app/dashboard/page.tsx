@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { queryListings } from "@/lib/data";
+import { querySellerListings } from "@/lib/seller-data";
 import { money, timeAgo } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { ProductImage } from "@/components/ProductImage";
+import { ListingActions } from "@/components/ListingActions";
 
 export default async function DashboardPage() {
-  const { items: all } = await queryListings({ perPage: 200 });
-  const mine = all.filter((l) => l.sellerId === "u-marcus").slice(0, 12);
-  const gross = mine.reduce((n, l) => n + l.price, 0);
+  const mine = (await querySellerListings()).slice(0, 50);
+  const active = mine.filter((l) => l.status === "active");
+  const gross = active.reduce((n, l) => n + l.price, 0);
   const fee = Math.round((gross * BRAND.feePercent) / 100);
 
   return (
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          ["Active listings", String(mine.length)],
+          ["Active listings", String(active.length)],
           ["Listed value", money(gross)],
           ["Held in escrow", money(0)],
           ["Next payout", money(gross - fee)],
@@ -64,7 +65,12 @@ export default async function DashboardPage() {
             </div>
             <div className="text-right">
               <p className="display text-[17px]">{money(l.price)}</p>
-              <p className="spec text-good">Active</p>
+              <div className="mt-1 flex items-center justify-end gap-2">
+                <p className={`spec ${l.status === "active" ? "text-good" : "text-muted"}`}>
+                  {l.status === "active" ? "Active" : "Taken down"}
+                </p>
+                <ListingActions id={l.id} active={l.status === "active"} />
+              </div>
             </div>
           </div>
         ))}

@@ -39,6 +39,7 @@ export type Listing = {
   watchers: number;
   stock: number;
   createdAt: string;
+  status?: string;
 };
 
 export type ListingQuery = {

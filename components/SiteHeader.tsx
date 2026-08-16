@@ -87,8 +87,8 @@ export function SiteHeader() {
 
         {/* Two-level category navigation with hover menus */}
         <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-[1240px] items-center px-4">
-            <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto">
+          <div className="mx-auto flex max-w-[1240px] flex-col px-4 md:flex-row md:items-center">
+            <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto md:flex-1">
               {TAXONOMY.map((top) => (
                 <div
                   key={top.slug}
@@ -134,7 +134,7 @@ export function SiteHeader() {
                 Most watched
               </Link>
             </div>
-            <div className="ml-auto shrink-0 border-l border-white/10 bg-chrome pl-2">
+            <div className="flex w-full shrink-0 justify-end border-t border-white/10 bg-chrome py-1 md:ml-auto md:w-auto md:border-l md:border-t-0 md:py-0 md:pl-2">
               <ThemeToggle />
             </div>
           </div>

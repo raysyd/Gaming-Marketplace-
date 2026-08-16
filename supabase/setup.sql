@@ -7,6 +7,7 @@
 -- PART 1  tables, row level security, realtime
 -- PART 2  indexes, full-text search, facet counts, wishlist
 -- PART 3  storage bucket for listing photos
+-- PART 4  password sign-in lockout
 -- =====================================================================
 
 
@@ -293,3 +294,72 @@ drop policy if exists "owners delete their photos" on storage.objects;
 create policy "owners delete their photos" on storage.objects
   for delete to authenticated
   using (bucket_id = 'listing-photos' and owner = auth.uid());
+
+-- =====================================================================
+-- PART 4 - PASSWORD SIGN-IN LOCKOUT
+-- =====================================================================
+
+-- Supabase's own Auth Rate Limits (Dashboard -> Authentication -> Rate
+-- Limits) throttle sign-in attempts by request IP — that's a dashboard
+-- setting, not scriptable here. This adds defense in depth *per account*:
+-- someone spraying password guesses at one seller's email from many
+-- different IPs still gets locked out after 5 failed attempts in 15
+-- minutes. Table is invisible to normal clients; only the three
+-- SECURITY DEFINER functions below can read or write it.
+
+create table if not exists auth_signin_attempts (
+  id bigint generated always as identity primary key,
+  email text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists auth_signin_attempts_email_idx
+  on auth_signin_attempts (email, created_at desc);
+
+alter table auth_signin_attempts enable row level security;
+drop policy if exists "no direct access" on auth_signin_attempts;
+create policy "no direct access" on auth_signin_attempts
+  for all using (false) with check (false);
+
+-- Call before attempting supabase.auth.signInWithPassword().
+create or replace function signin_attempts_blocked(p_email text)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select count(*) >= 5
+  from auth_signin_attempts
+  where email = lower(trim(p_email))
+    and created_at > now() - interval '15 minutes';
+$$;
+
+-- Call after signInWithPassword() returns an "invalid credentials" error.
+create or replace function record_failed_signin(p_email text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into auth_signin_attempts (email) values (lower(trim(p_email)));
+  delete from auth_signin_attempts where created_at < now() - interval '1 day';
+end;
+$$;
+
+-- Call after a successful sign-in to clear that email's slate.
+create or replace function clear_signin_attempts(p_email text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  delete from auth_signin_attempts where email = lower(trim(p_email));
+end;
+$$;
+
+revoke all on table auth_signin_attempts from anon, authenticated;
+grant execute on function signin_attempts_blocked(text) to anon, authenticated;
+grant execute on function record_failed_signin(text) to anon, authenticated;
+grant execute on function clear_signin_attempts(text) to anon, authenticated;

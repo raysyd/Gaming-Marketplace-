@@ -43,9 +43,10 @@ intended for marketplace authentication traffic. Before inviting real users:
 
 1. In Supabase, open **Authentication → SMTP Settings** and connect a
   transactional email provider using your verified Sidegrade domain.
-2. In **Authentication → URL Configuration**, add both production callback URLs:
-  `https://yourdomain.com/auth/complete` and
-  `https://yourdomain.com/auth/callback`.
+2. In **Authentication → URL Configuration**, add all three production callback
+  URLs: `https://yourdomain.com/auth/complete`,
+  `https://yourdomain.com/auth/callback`, and
+  `https://yourdomain.com/auth/reset-password`.
 3. In **Authentication → Rate Limits**, review the OTP and email limits after
   SMTP is enabled. Keep the app's resend cooldown in place to prevent abuse.
 4. Configure SPF, DKIM and DMARC for the sending domain so magic links reach
@@ -53,6 +54,24 @@ intended for marketplace authentication traffic. Before inviting real users:
 
 The login screen provides resend and change-email actions, but it cannot bypass
 Supabase Auth or SMTP provider limits from the browser.
+
+### Password sign-in
+
+`/login` also supports email + password (sign up, sign in, forgot password),
+alongside the magic link and Google options — pick whichever suits your users.
+
+- Client-side password rules live in `lib/password.ts` (8+ characters, a
+  letter, a number, not a common password). Set a matching minimum under
+  **Authentication → Providers → Email → Password Requirements** so the
+  server doesn't reject something the client accepted.
+- Run `supabase/auth-security.sql` once (already folded into `setup.sql` as
+  Part 4 for fresh installs) to add per-account sign-in lockout: 5 failed
+  password attempts on one email locks it for 15 minutes, on top of — not
+  instead of — Supabase's own IP-based **Authentication → Rate Limits**.
+- If email confirmation is on (Supabase's default), new accounts see a
+  "check your inbox" screen before they can sign in; turn it off in
+  **Authentication → Providers → Email** if you'd rather they land straight
+  in.
 
 ## Built to scale
 
@@ -97,7 +116,7 @@ photos will be your bandwidth bill, not HTML.
 | Selling | `/sell` | Listing form with live payout calculation |
 | Cart | `/cart` | Checkout → Stripe session |
 | Seller account | `/dashboard` | Listings, escrow balance, payout connection |
-| Auth | `/login` | Supabase magic link |
+| Auth | `/login` | Email + password, magic link, or Google |
 | Wishlist | `/wishlist` | Saved items, feeds the "most watched" ranking |
 | PC Finder | `/pc-finder` | Three-question quiz routing to matching listings |
 | Trust | `/trust` | Escrow, verified sellers, off-platform payment warning |

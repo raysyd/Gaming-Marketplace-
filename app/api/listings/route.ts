@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify } from "@/lib/taxonomy";
@@ -53,6 +54,10 @@ export async function POST(req: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // The homepage rails are ISR-cached (revalidate = 60) — without this a
+  // brand-new listing wouldn't show up there for up to a minute.
+  revalidatePath("/");
   return NextResponse.json({ ok: true, id: data.id, slug: slugify(payload.title) });
 }
 
@@ -68,11 +73,20 @@ export async function PATCH(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to manage listings." }, { status: 401 });
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("listings")
     .update({ status: "inactive" })
     .eq("id", id)
-    .eq("seller_id", user.id);
+    .eq("seller_id", user.id)
+    .select("slug")
+    .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Same ISR staleness as above, in reverse: the homepage (revalidate = 60)
+  // and this listing's own product page (revalidate = 120) would otherwise
+  // keep serving the cached "active" version — with a real photo, price,
+  // and buy box — for up to two minutes after the seller takes it down.
+  revalidatePath("/");
+  if (data?.slug) revalidatePath(`/product/${id}/${data.slug}`);
   return NextResponse.json({ ok: true });
 }

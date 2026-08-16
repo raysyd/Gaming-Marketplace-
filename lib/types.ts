@@ -53,6 +53,7 @@ export type ListingQuery = {
   verifiedOnly?: boolean;
   dealsOnly?: boolean;
   sort?: "new" | "low" | "high" | "save" | "watched";
+  status?: "active" | "sold";
   page?: number;
   perPage?: number;
 };

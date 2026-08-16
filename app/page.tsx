@@ -13,11 +13,12 @@ import type { Category } from "@/lib/types";
 export const revalidate = 60;
 
 export default async function Home() {
-  const [deals, watched, fresh, prebuilts] = await Promise.all([
+  const [deals, watched, fresh, prebuilts, sold] = await Promise.all([
     queryListings({ dealsOnly: true, sort: "save", perPage: 6 }),
     queryListings({ sort: "watched", perPage: 6 }),
     queryListings({ sort: "new", perPage: 8 }),
     queryListings({ sub: "gaming-pcs", sort: "new", perPage: 1 }),
+    queryListings({ status: "sold", sort: "new", perPage: 8 }),
   ]);
 
   const hero = deals.items[0] ?? fresh.items[0];
@@ -156,6 +157,8 @@ export default async function Home() {
       <Rail title="Most watched" href="/shop?sort=watched" items={watched.items} />
       <Rail title="Price drops" href="/shop?deals=1" items={deals.items.slice(1)} />
 
+      <ThemeRail />
+
       {/* PC Finder */}
       <section className="mx-auto mt-12 max-w-[1240px] px-4">
         <div className="flex flex-col items-start gap-5 rounded-[10px] bg-chrome px-6 py-10 text-white sm:flex-row sm:items-center sm:justify-between sm:px-10">
@@ -208,6 +211,30 @@ export default async function Home() {
       </section>
 
       <Rail title="Just listed" href="/shop" items={fresh.items} cols={4} />
+      <Rail title="Recently sold" href="/shop?status=sold" items={sold.items} cols={4} />
+
+      <section className="mx-auto mt-12 max-w-[1240px] px-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link
+            href="/trust"
+            className="group rounded-[10px] bg-trust p-6 text-white transition hover:brightness-105"
+          >
+            <span className="text-2xl" aria-hidden="true">★</span>
+            <h2 className="display mt-3 text-[26px] text-white">Reviews from the community</h2>
+            <p className="mt-2 text-[14px] text-white/75">See how Sidegrade keeps buying and selling clear.</p>
+            <span className="mt-5 inline-block text-[13px] font-semibold text-white">Trust &amp; safety →</span>
+          </Link>
+          <Link
+            href="/dashboard"
+            className="group rounded-[10px] bg-chrome p-6 text-white transition hover:bg-chrome-2"
+          >
+            <span className="text-2xl" aria-hidden="true">↗</span>
+            <h2 className="display mt-3 text-[26px] text-white">Seller sales</h2>
+            <p className="mt-2 text-[14px] text-white/70">Manage listings, track orders and see what your gear is worth.</p>
+            <span className="mt-5 inline-block text-[13px] font-semibold text-white">Open seller account →</span>
+          </Link>
+        </div>
+      </section>
 
       <section className="mx-auto mt-14 max-w-[1240px] px-4">
         <div className="flex flex-col items-start gap-4 rounded-[10px] border border-line bg-card p-8 sm:flex-row sm:items-center sm:justify-between">
@@ -226,6 +253,32 @@ export default async function Home() {
         </div>
       </section>
     </>
+  );
+}
+
+function ThemeRail() {
+  const themes = [
+    ["Budget builds", "Under $1,000", "/shop?max=1000", "↘"],
+    ["4K gaming", "High-refresh hardware", "/shop?sub=gaming-pcs&min=1800", "◈"],
+    ["Desk upgrades", "Monitors and peripherals", "/shop?category=peripherals", "▦"],
+    ["PC parts", "Build it your way", "/shop?category=pc-parts-and-components", "⚙"],
+  ];
+  return (
+    <section className="mx-auto max-w-[1240px] px-4 pt-10">
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="display text-[26px]">Shop by theme</h2>
+        <Link href="/shop" className="text-[13px] font-semibold text-trust">Browse all →</Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {themes.map(([title, body, href, icon]) => (
+          <Link key={title} href={href} className="group rounded-[10px] border border-line bg-card p-5 transition hover:border-trust">
+            <span className="text-2xl text-trust" aria-hidden="true">{icon}</span>
+            <h3 className="display mt-4 text-[20px]">{title}</h3>
+            <p className="mt-1 text-[13px] text-muted">{body}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

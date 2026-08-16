@@ -35,6 +35,7 @@ export default async function ShopPage({
     freeShipping: sp.free === "1",
     verifiedOnly: sp.verified === "1",
     dealsOnly: sp.deals === "1",
+    status: sp.status === "sold" ? "sold" : undefined,
     sort: (sp.sort as ListingQuery["sort"]) ?? "new",
     page: sp.page ? Number(sp.page) : 1,
     perPage: PER_PAGE,
@@ -49,11 +50,11 @@ export default async function ShopPage({
     ? `Results for “${sp.q}”`
     : findSub(sp.sub ?? "")?.name ??
       findTop(sp.category ?? "")?.name ??
-      (sp.deals === "1" ? "Price drops" : "All listings");
+      (sp.deals === "1" ? "Price drops" : sp.status === "sold" ? "Recently sold" : "All listings");
 
   const activeFilterCount = [
     sp.category, sp.sub, sp.condition, sp.min, sp.max,
-    sp.free, sp.verified, sp.deals,
+    sp.free, sp.verified, sp.deals, sp.status,
   ].filter(Boolean).length;
 
   const hrefWith = (patch: SP) => {

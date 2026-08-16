@@ -59,10 +59,12 @@ export function SiteHeader() {
             </Link>
             <Link
               href="/wishlist"
+              aria-label="Saved items"
+              title="Saved items"
               className="flex shrink-0 items-center gap-1 rounded px-2 py-2 hover:bg-chrome-2 sm:px-2.5"
             >
-              <span className="hidden sm:inline">Saved</span>
-              <span className="sm:hidden" aria-label="Saved items">♥</span>
+              <span className="text-[19px] leading-none" aria-hidden="true">♡</span>
+              <span className="sr-only">Saved</span>
               {saved > 0 && (
                 <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
                   {saved}
@@ -71,10 +73,12 @@ export function SiteHeader() {
             </Link>
             <Link
               href="/cart"
+              aria-label={`Cart, ${count} items`}
+              title="Cart"
               className="ml-0.5 flex shrink-0 items-center gap-1.5 rounded bg-chrome-2 px-2.5 py-2 sm:ml-1 sm:px-3"
             >
-              <span className="hidden sm:inline">Cart</span>
-              <span className="sm:hidden" aria-label="Cart">🛒</span>
+              <span className="text-[17px] leading-none" aria-hidden="true">🛒</span>
+              <span className="sr-only">Cart</span>
               <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
                 {count}
               </span>

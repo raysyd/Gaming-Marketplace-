@@ -27,7 +27,7 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   let sel = supabase
     .from("listings")
     .select("*", { count: "exact" })
-    .eq("status", "active");
+    .eq("status", q.status ?? "active");
 
   if (q.sub) sel = sel.eq("subcategory_slug", q.sub);
   else if (q.category) sel = sel.eq("category_slug", q.category);
@@ -55,7 +55,7 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   const unfiltered =
     !q.q && !q.category && !q.sub && !q.conditions?.length &&
     q.minPrice == null && q.maxPrice == null &&
-    !q.freeShipping && !q.verifiedOnly && !q.dealsOnly;
+    !q.freeShipping && !q.verifiedOnly && !q.dealsOnly && !q.status;
   if (total === 0 && unfiltered) return filterDemo(q, page, perPage);
   return {
     items: data.map(rowToListing),
@@ -124,6 +124,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
     if (q.freeShipping && !l.shipsFree) return false;
     if (q.verifiedOnly && !l.sellerVerified) return false;
     if (q.dealsOnly && !l.compareAt) return false;
+    if (q.status && (l.status ?? "active") !== q.status) return false;
     if (!needle) return true;
     return [l.title, l.brand, l.description, ...l.specs.map((s) => s.value)]
       .join(" ")

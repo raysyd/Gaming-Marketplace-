@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0b0e14;
-  --color-chrome: #12161f;
-  --color-chrome-2: #1b2130;
-  --color-paper: #f4f5f8;
+  --color-ink: #111111;
+  --color-chrome: #080808;
+  --color-chrome-2: #202020;
+  --color-paper: #f6f6f6;
   --color-card: #ffffff;
   --color-line: #e2e6ed;
   --color-muted: #656e7e;
-  --color-deal: #d97400;
-  --color-deal-soft: #fff2e0;
-  --color-trust: #2b27a8;
-  --color-trust-soft: #ecebff;
+  --color-deal: #d86f00;
+  --color-deal-soft: #fff1df;
+  --color-trust: #5a39d6;
+  --color-trust-soft: #eeeaff;
   --color-good: #0d8055;
 
   --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
@@ -22,13 +22,17 @@
 }
 
 html.dark {
-  --color-ink: #f3f5f8;
-  --color-paper: #0d1118;
-  --color-card: #151b25;
-  --color-line: #2b3443;
-  --color-muted: #a3adbd;
-  --color-deal-soft: #3a2715;
-  --color-trust-soft: #20224b;
+  --color-ink: #f5f5f5;
+  --color-chrome: #000000;
+  --color-chrome-2: #242424;
+  --color-paper: #050505;
+  --color-card: #111111;
+  --color-line: #3a3a3a;
+  --color-muted: #a8a8a8;
+  --color-deal: #ff8b18;
+  --color-deal-soft: #302011;
+  --color-trust: #9674ff;
+  --color-trust-soft: #241d3e;
 }
 
 html {
@@ -117,6 +121,16 @@ body {
   font-size: 16px;
   background: var(--color-card);
   color: var(--color-ink);
+}
+
+.search-input {
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+
+.search-input::placeholder {
+  color: var(--color-muted);
 }
 
 button,

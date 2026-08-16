@@ -37,7 +37,7 @@ export function SiteHeader() {
               onKeyDown={(e) => e.key === "Enter" && search()}
               placeholder="Search GPUs, prebuilts, monitors…"
               aria-label="Search listings"
-              className="h-10 w-full rounded-l-md border-0 bg-white px-3 text-[14px] text-ink placeholder:text-muted"
+              className="search-input h-10 w-full rounded-l-md px-3 text-[14px] text-ink"
             />
             <button
               onClick={search}
@@ -79,7 +79,6 @@ export function SiteHeader() {
                 {count}
               </span>
             </Link>
-            <ThemeToggle />
             <div className="ml-1 border-l border-white/15 pl-1 sm:ml-2 sm:pl-2">
               <AccountMenu />
             </div>
@@ -88,51 +87,56 @@ export function SiteHeader() {
 
         {/* Two-level category navigation with hover menus */}
         <div className="border-t border-white/10">
-          <div className="no-scrollbar mx-auto flex max-w-[1240px] gap-1 overflow-x-auto px-4">
-            {TAXONOMY.map((top) => (
-              <div
-                key={top.slug}
-                className="relative"
-                onMouseEnter={() => setOpenMenu(top.slug)}
-                onMouseLeave={() => setOpenMenu(null)}
-              >
-                <Link
-                  href={`/shop?category=${top.slug}`}
-                  className={`block whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
-                    activeCategory === top.slug
-                      ? "border-deal text-deal"
-                      : "border-transparent text-white/80 hover:text-deal"
-                  }`}
+          <div className="mx-auto flex max-w-[1240px] items-center px-4">
+            <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto">
+              {TAXONOMY.map((top) => (
+                <div
+                  key={top.slug}
+                  className="relative"
+                  onMouseEnter={() => setOpenMenu(top.slug)}
+                  onMouseLeave={() => setOpenMenu(null)}
                 >
-                  {top.name}
-                </Link>
-                {openMenu === top.slug && (
-                  <div className="absolute left-0 top-full z-50 hidden min-w-[200px] max-w-[80vw] rounded-b-md border border-line bg-card py-1.5 shadow-lg lg:block">
-                    {top.children.map((sub) => (
-                      <Link
-                        key={sub.slug}
-                        href={`/shop?category=${top.slug}&sub=${sub.slug}`}
-                        className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            <Link
-              href="/shop?deals=1"
-              className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] font-semibold text-deal"
-            >
-              Price drops
-            </Link>
-            <Link
-              href="/shop?sort=watched"
-              className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 hover:text-deal"
-            >
-              Most watched
-            </Link>
+                  <Link
+                    href={`/shop?category=${top.slug}`}
+                    className={`block whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
+                      activeCategory === top.slug
+                        ? "border-deal text-deal"
+                        : "border-transparent text-white/80 hover:text-deal"
+                    }`}
+                  >
+                    {top.name}
+                  </Link>
+                  {openMenu === top.slug && (
+                    <div className="absolute left-0 top-full z-50 hidden min-w-[200px] max-w-[80vw] rounded-b-md border border-line bg-card py-1.5 shadow-lg lg:block">
+                      {top.children.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/shop?category=${top.slug}&sub=${sub.slug}`}
+                          className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+                        >
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Link
+                href="/shop?deals=1"
+                className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] font-semibold text-deal"
+              >
+                Price drops
+              </Link>
+              <Link
+                href="/shop?sort=watched"
+                className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 hover:text-deal"
+              >
+                Most watched
+              </Link>
+            </div>
+            <div className="ml-auto shrink-0 border-l border-white/10 pl-2">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>
@@ -155,7 +159,7 @@ export function SiteHeader() {
             onKeyDown={(e) => e.key === "Enter" && search()}
             placeholder="Search listings"
             aria-label="Search listings"
-            className="h-9 w-full rounded-l-md border border-line px-3 text-[14px]"
+            className="search-input h-9 w-full rounded-l-md px-3 text-[14px]"
           />
           <button
             onClick={search}

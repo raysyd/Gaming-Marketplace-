@@ -4,5 +4,7 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from "./config";
 
 export function createClient() {
   if (!hasSupabase) return null;
-  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { flowType: "implicit" },
+  });
 }

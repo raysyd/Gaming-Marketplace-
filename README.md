@@ -43,7 +43,8 @@ intended for marketplace authentication traffic. Before inviting real users:
 
 1. In Supabase, open **Authentication → SMTP Settings** and connect a
   transactional email provider using your verified Sidegrade domain.
-2. In **Authentication → URL Configuration**, add your production callback URL:
+2. In **Authentication → URL Configuration**, add both production callback URLs:
+  `https://yourdomain.com/auth/complete` and
   `https://yourdomain.com/auth/callback`.
 3. In **Authentication → Rate Limits**, review the OTP and email limits after
   SMTP is enabled. Keep the app's resend cooldown in place to prevent abuse.

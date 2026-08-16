@@ -47,7 +47,7 @@ export function SiteHeader() {
             </button>
           </div>
 
-          <nav className="ml-auto flex min-w-0 items-center gap-0.5 text-[13px] sm:gap-1">
+          <nav className="ml-auto flex min-w-0 shrink-0 items-center gap-0.5 text-[13px] sm:gap-1">
             <Link href="/pc-finder" className="hidden rounded px-2.5 py-2 hover:bg-chrome-2 lg:block">
               PC Finder
             </Link>
@@ -59,7 +59,7 @@ export function SiteHeader() {
             </Link>
             <Link
               href="/wishlist"
-              className="flex items-center gap-1 rounded px-2 py-2 hover:bg-chrome-2 sm:px-2.5"
+              className="flex shrink-0 items-center gap-1 rounded px-2 py-2 hover:bg-chrome-2 sm:px-2.5"
             >
               <span className="hidden sm:inline">Saved</span>
               <span className="sm:hidden" aria-label="Saved items">♥</span>
@@ -92,13 +92,13 @@ export function SiteHeader() {
               {TAXONOMY.map((top) => (
                 <div
                   key={top.slug}
-                  className="relative"
+                    className="relative shrink-0"
                   onMouseEnter={() => setOpenMenu(top.slug)}
                   onMouseLeave={() => setOpenMenu(null)}
                 >
                   <Link
                     href={`/shop?category=${top.slug}`}
-                    className={`block whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
+                    className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
                       activeCategory === top.slug
                         ? "border-deal text-deal"
                         : "border-transparent text-white/80 hover:text-deal"
@@ -123,18 +123,18 @@ export function SiteHeader() {
               ))}
               <Link
                 href="/shop?deals=1"
-                className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] font-semibold text-deal"
+                className="shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] font-semibold text-deal"
               >
                 Price drops
               </Link>
               <Link
                 href="/shop?sort=watched"
-                className="whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 hover:text-deal"
+                className="shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 hover:text-deal"
               >
                 Most watched
               </Link>
             </div>
-            <div className="ml-auto shrink-0 border-l border-white/10 pl-2">
+            <div className="ml-auto shrink-0 border-l border-white/10 bg-chrome pl-2">
               <ThemeToggle />
             </div>
           </div>

@@ -63,7 +63,7 @@ export function LoginForm() {
     <div className="mx-auto w-full max-w-[420px] px-4 py-12 sm:py-24">
       <h1 className="display text-[28px]">Sign in to {BRAND.name}</h1>
       <p className="mt-2 text-[14px] text-muted">
-        We&apos;ll email you a link. No password to remember.
+        We&apos;ll email you a one-time link. Open it on the device you want to sign in.
       </p>
 
       {urlError && (
@@ -78,6 +78,10 @@ export function LoginForm() {
           <p className="text-[14px] font-semibold text-good">Check your inbox</p>
           <p className="mt-1 text-[13.5px] text-muted">
             The link goes to {email.trim().toLowerCase()} and works once.
+          </p>
+          <p className="spec mt-3 text-muted">
+            To sign in on your laptop, open this email on your laptop instead of
+            your phone. One link cannot create two sessions.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button

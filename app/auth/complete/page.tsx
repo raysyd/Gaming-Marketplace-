@@ -40,6 +40,10 @@ function CompleteAuthContent() {
             <p className="eyebrow text-deal">Sign-in link unavailable</p>
             <h1 className="display mt-2 text-[28px]">Request a fresh link</h1>
             <p className="mt-3 text-[14px] text-muted">{error}</p>
+            <p className="spec mt-3 text-muted">
+              Magic links are single-use and sign in the device that opens the
+              link. Request a new link on the device you want to use.
+            </p>
             <a
               href="/login"
               className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"

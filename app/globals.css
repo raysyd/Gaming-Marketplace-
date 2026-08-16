@@ -133,6 +133,49 @@ body {
   color: var(--color-muted);
 }
 
+.bg-ink.text-white {
+  color: var(--color-paper);
+}
+
+.theme-switch {
+  display: grid;
+  height: 32px;
+  width: 58px;
+  place-items: center;
+  border-radius: 999px;
+  background: #3a3a3a;
+  padding: 3px;
+  transition: background 160ms ease;
+}
+
+.theme-switch-track {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.theme-switch-thumb {
+  display: grid;
+  height: 26px;
+  width: 26px;
+  place-items: center;
+  border-radius: 999px;
+  background: #f1f1f1;
+  color: #151515;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+
+html.dark .theme-switch {
+  background: #3a3a3a;
+}
+
+html.dark .theme-switch-track {
+  justify-content: flex-start;
+}
+
 button,
 input,
 select,

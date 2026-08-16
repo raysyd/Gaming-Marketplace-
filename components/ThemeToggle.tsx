@@ -28,9 +28,11 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={`Switch to ${dark ? "light" : "dark"} mode`}
       title={`Switch to ${dark ? "light" : "dark"} mode`}
-      className="grid h-9 w-9 shrink-0 place-items-center rounded text-[16px] transition hover:bg-chrome-2"
+      className="theme-switch"
     >
-      {dark ? "☼" : "☾"}
+      <span className="theme-switch-track" aria-hidden="true">
+        <span className="theme-switch-thumb">{dark ? "☾" : "☼"}</span>
+      </span>
     </button>
   );
 }

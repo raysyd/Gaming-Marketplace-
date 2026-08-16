@@ -31,7 +31,7 @@ export function LoginForm() {
       return;
     }
     if (cooldown > 0) return;
-    const supabase = createClient();
+    const supabase = createClient("implicit");
     if (!supabase) {
       setState("error");
       setMessage(
@@ -60,7 +60,7 @@ export function LoginForm() {
   };
 
   const signInWithGoogle = async () => {
-    const supabase = createClient();
+    const supabase = createClient("pkce");
 
     if (!supabase) {
       setState("error");
@@ -72,7 +72,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 

@@ -8,15 +8,18 @@ export function AccountMenu() {
   const [open, setOpen] = useState(false);
 
   if (loading)
-    return <span className="w-[68px] rounded px-2.5 py-2" aria-hidden="true" />;
+    return <span className="h-9 w-9 rounded px-2.5 py-2" aria-hidden="true" />;
 
   if (!user)
     return (
       <Link
         href="/login"
-        className="whitespace-nowrap rounded bg-white/10 px-3 py-2 font-semibold transition hover:bg-white/20"
+        aria-label="Sign in"
+        title="Sign in"
+        className="grid h-9 w-9 place-items-center rounded bg-white/10 text-[18px] transition hover:bg-white/20"
       >
-        Sign in
+        <UserIcon />
+        <span className="sr-only">Sign in</span>
       </Link>
     );
 
@@ -27,13 +30,13 @@ export function AccountMenu() {
       onMouseLeave={() => setOpen(false)}
     >
       <button
+        type="button"
+        aria-label="Open account menu"
+        title="Account"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded px-2 py-1.5 transition hover:bg-chrome-2 sm:px-3"
+        className="grid h-9 w-9 place-items-center rounded transition hover:bg-chrome-2"
       >
-        <span className="grid h-6 w-6 place-items-center rounded-full bg-deal text-[11px] font-bold uppercase text-white">
-          {user.email[0]}
-        </span>
-        <span className="hidden sm:inline">Account</span>
+        <UserIcon />
       </button>
 
       {open && (
@@ -66,5 +69,18 @@ export function AccountMenu() {
         </div>
       )}
     </div>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-6 w-6 fill-current"
+    >
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M5.5 20c.6-3.3 3-5.2 6.5-5.2s5.9 1.9 6.5 5.2H5.5Z" />
+    </svg>
   );
 }

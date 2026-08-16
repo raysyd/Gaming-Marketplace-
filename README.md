@@ -43,10 +43,11 @@ intended for marketplace authentication traffic. Before inviting real users:
 
 1. In Supabase, open **Authentication → SMTP Settings** and connect a
   transactional email provider using your verified Sidegrade domain.
-2. In **Authentication → URL Configuration**, add all three production callback
+2. In **Authentication → URL Configuration**, add all four production callback
   URLs: `https://yourdomain.com/auth/complete`,
-  `https://yourdomain.com/auth/callback`, and
-  `https://yourdomain.com/auth/reset-password`.
+  `https://yourdomain.com/auth/callback`,
+  `https://yourdomain.com/auth/reset-password`, and
+  `https://yourdomain.com/account/delete/confirm`.
 3. In **Authentication → Rate Limits**, review the OTP and email limits after
   SMTP is enabled. Keep the app's resend cooldown in place to prevent abuse.
 4. Configure SPF, DKIM and DMARC for the sending domain so magic links reach
@@ -71,7 +72,27 @@ alongside the magic link and Google options — pick whichever suits your users.
 - If email confirmation is on (Supabase's default), new accounts see a
   "check your inbox" screen before they can sign in; turn it off in
   **Authentication → Providers → Email** if you'd rather they land straight
-  in.
+  in. The sign-up form already handles both cases — no code change needed
+  either way.
+
+### Account deletion
+
+`/account/delete` lets a signed-in user permanently delete their own
+account — separate from sign-up, this one *does* require email
+verification, on purpose: it emails a fresh link (`emailRedirectTo:
+/account/delete/confirm`) to prove inbox access before the account can go.
+Opening that email link doesn't delete anything by itself — it lands on a
+confirmation page with one explicit "Yes, delete my account" button, so an
+email client or security scanner that auto-opens links can't trigger a
+real deletion.
+
+The actual delete runs through `delete_own_account()`, a SECURITY DEFINER
+Postgres function (`supabase/account-deletion.sql`, folded into `setup.sql`
+as Part 5) — `auth.uid()` keeps it scoped to the caller's own account.
+profiles, listings, conversations, messages, offers and wishlist rows all
+cascade-delete via their existing foreign keys; accounts with order history
+are blocked from self-service deletion (financial/escrow record) and told
+to contact support instead.
 
 ## Built to scale
 
@@ -117,6 +138,7 @@ photos will be your bandwidth bill, not HTML.
 | Cart | `/cart` | Checkout → Stripe session |
 | Seller account | `/dashboard` | Listings, escrow balance, payout connection |
 | Auth | `/login` | Email + password, magic link, or Google |
+| Account deletion | `/account/delete` | Email-verified self-service deletion |
 | Wishlist | `/wishlist` | Saved items, feeds the "most watched" ranking |
 | PC Finder | `/pc-finder` | Three-question quiz routing to matching listings |
 | Trust | `/trust` | Escrow, verified sellers, off-platform payment warning |

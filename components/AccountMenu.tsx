@@ -66,6 +66,12 @@ export function AccountMenu() {
               Sign out
             </button>
           </form>
+          <Link
+            href="/account/delete"
+            className="block px-4 py-2 text-[13px] text-deal transition hover:bg-paper"
+          >
+            Delete account
+          </Link>
         </div>
       )}
     </div>

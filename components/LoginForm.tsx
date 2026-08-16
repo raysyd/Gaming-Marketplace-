@@ -59,6 +59,29 @@ export function LoginForm() {
     setCooldown(60);
   };
 
+  const signInWithGoogle = async () => {
+    const supabase = createClient();
+
+    if (!supabase) {
+      setState("error");
+      setMessage("Sign-in is not configured.");
+      return;
+    }
+
+    setState("sending");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+      },
+    });
+
+    if (error) {
+      setState("error");
+      setMessage(error.message);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-[420px] px-4 py-12 sm:py-24">
       <h1 className="display text-[28px]">Sign in to {BRAND.name}</h1>
@@ -106,6 +129,19 @@ export function LoginForm() {
         </div>
       ) : (
         <div className="mt-6 space-y-3">
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            disabled={state === "sending"}
+            className="w-full rounded-md border border-line bg-card py-3 text-[14px] font-semibold text-ink transition hover:border-trust disabled:opacity-50"
+          >
+            Continue with Google
+          </button>
+          <div className="flex items-center gap-3 py-1" aria-hidden="true">
+            <span className="h-px flex-1 bg-line" />
+            <span className="spec text-muted">or</span>
+            <span className="h-px flex-1 bg-line" />
+          </div>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}

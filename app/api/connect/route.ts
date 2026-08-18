@@ -38,36 +38,49 @@ async function startOnboarding() {
 
   let accountId = profile?.stripe_account_id as string | null | undefined;
 
-  if (!accountId) {
-    const account = await stripe.accounts.create({
-      type: "express",
-      country: "AU",
-      email: user.email ?? undefined,
-      capabilities: { transfers: { requested: true } },
-      business_type: "individual",
+  // Every Stripe call here was previously unguarded — any rejection (bad
+  // key, Connect not enabled on the platform account, an unsupported
+  // capability/country combo, a Stripe-side blip) threw an unhandled
+  // exception out of this function. Next.js then returns a non-JSON error
+  // page for that, which the client's res.json() fails to parse — so the
+  // real Stripe error was never visible, just a generic "couldn't reach
+  // the server" from the client's own catch block. Surfacing it properly
+  // now instead of guessing at it blind.
+  try {
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: "express",
+        country: "AU",
+        email: user.email ?? undefined,
+        capabilities: { transfers: { requested: true } },
+        business_type: "individual",
+      });
+      accountId = account.id;
+
+      // Self-service upsert — RLS ("own profile insert" / "own profile
+      // writable") already scopes this to auth.uid() = id, no elevated
+      // client needed.
+      const { error: upsertError } = await supabase
+        .from("profiles")
+        .upsert({ id: user.id, stripe_account_id: accountId });
+      if (upsertError) return { error: upsertError.message, status: 500 } as const;
+    }
+
+    const link = await stripe.accountLinks.create({
+      account: accountId,
+      // Stripe requires a GET-able refresh_url — the GET handler below
+      // just re-runs this and redirects, so an expired/abandoned link
+      // self-heals into a fresh one.
+      refresh_url: `${site()}/api/connect`,
+      return_url: `${site()}/dashboard?connected=1`,
+      type: "account_onboarding",
     });
-    accountId = account.id;
 
-    // Self-service upsert — RLS ("own profile insert" / "own profile
-    // writable") already scopes this to auth.uid() = id, no elevated
-    // client needed.
-    const { error: upsertError } = await supabase
-      .from("profiles")
-      .upsert({ id: user.id, stripe_account_id: accountId });
-    if (upsertError) return { error: upsertError.message, status: 500 } as const;
+    return { url: link.url } as const;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Stripe rejected the request.";
+    return { error: message, status: 500 } as const;
   }
-
-  const link = await stripe.accountLinks.create({
-    account: accountId,
-    // Stripe requires a GET-able refresh_url — the GET handler below
-    // just re-runs this and redirects, so an expired/abandoned link
-    // self-heals into a fresh one.
-    refresh_url: `${site()}/api/connect`,
-    return_url: `${site()}/dashboard?connected=1`,
-    type: "account_onboarding",
-  });
-
-  return { url: link.url } as const;
 }
 
 export async function POST(req: Request) {

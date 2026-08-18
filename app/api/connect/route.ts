@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -69,14 +70,24 @@ async function startOnboarding() {
   return { url: link.url } as const;
 }
 
-export async function POST() {
+export async function POST(req: Request) {
+  const limited = rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
+  if (!limited.ok)
+    return NextResponse.json(
+      { error: "Too many requests. Slow down a moment." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
+    );
+
   const result = await startOnboarding();
   if ("error" in result)
     return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json(result);
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const limited = rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
+  if (!limited.ok) return NextResponse.redirect(`${site()}/dashboard?connect_error=1`);
+
   const result = await startOnboarding();
   if ("error" in result)
     return NextResponse.redirect(`${site()}/dashboard?connect_error=1`);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -14,19 +15,27 @@ import { BRAND } from "@/lib/brand";
  * so this only accepts a cart that belongs to one seller — the cart page
  * enforces that before this is ever called, but it's re-checked here
  * since this is the boundary that actually moves money.
+ *
+ * The client only ever sends listing IDs + quantities — price and title
+ * are always re-read from the database here, never trusted from the
+ * request body. The cart's own price/title fields exist purely for
+ * display before checkout.
  */
 export async function POST(req: Request) {
+  const limited = rateLimit(`checkout:${clientKey(req)}`, { limit: 10 });
+  if (!limited.ok)
+    return NextResponse.json(
+      { error: "Too many requests. Slow down a moment." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
+    );
+
   const { items } = await req.json();
   if (!Array.isArray(items) || items.length === 0)
     return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
 
-  const sellerIds = [...new Set(items.map((i: { sellerId?: string }) => i.sellerId).filter(Boolean))];
-  if (sellerIds.length !== 1)
-    return NextResponse.json(
-      { error: "A checkout can only contain items from one seller." },
-      { status: 400 }
-    );
-  const sellerId = sellerIds[0] as string;
+  const ids = [...new Set(items.map((i: { id?: string }) => i.id).filter(Boolean))] as string[];
+  if (!ids.length)
+    return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
 
   const supabase = await createClient();
   if (!supabase)
@@ -37,6 +46,29 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Sign in to check out." }, { status: 401 });
+
+  // Trusted source of truth for price, title and seller — the request
+  // body is never used for anything that affects the amount charged.
+  // `active` status is enforced by RLS on this table regardless.
+  const { data: listings, error: listingsError } = await supabase
+    .from("listings")
+    .select("id, title, price, seller_id, status")
+    .in("id", ids);
+  if (listingsError || !listings?.length)
+    return NextResponse.json({ error: "Couldn't load those listings." }, { status: 400 });
+  if (listings.length !== ids.length || listings.some((l) => l.status !== "active"))
+    return NextResponse.json(
+      { error: "One or more items in your cart are no longer available." },
+      { status: 409 }
+    );
+
+  const sellerIds = [...new Set(listings.map((l) => l.seller_id))];
+  if (sellerIds.length !== 1)
+    return NextResponse.json(
+      { error: "A checkout can only contain items from one seller." },
+      { status: 400 }
+    );
+  const sellerId = sellerIds[0] as string;
   if (user.id === sellerId)
     return NextResponse.json({ error: "You can't buy your own listing." }, { status: 400 });
 
@@ -84,22 +116,21 @@ export async function POST(req: Request) {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const currency = BRAND.currency.toLowerCase();
 
-  const total = items.reduce(
-    (n: number, i: { price: number; qty: number }) => n + i.price * i.qty,
-    0
-  );
-  const applicationFeeAmount = Math.round((total * 100 * feeBps) / 10000);
-  const listingIds = items.map((i: { id: string }) => i.id).join(",");
+  // Every listing here has stock 1 — one line item each, quantity 1.
+  // Client-submitted quantity is ignored for the same reason price is.
+  const totalCents = listings.reduce((n, l) => n + Math.round(l.price * 100), 0);
+  const applicationFeeAmount = Math.round((totalCents * feeBps) / 10000);
+  const listingIds = listings.map((l) => l.id).join(",");
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: items.map((i: { title: string; price: number; qty: number }) => ({
-        quantity: i.qty,
+      line_items: listings.map((l) => ({
+        quantity: 1,
         price_data: {
           currency,
-          unit_amount: Math.round(i.price * 100),
-          product_data: { name: i.title },
+          unit_amount: Math.round(l.price * 100),
+          product_data: { name: l.title },
         },
       })),
       payment_intent_data: {

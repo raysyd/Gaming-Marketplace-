@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 /**
  * Buyer confirms delivery -> capture the held PaymentIntent. Because the
@@ -13,6 +14,13 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const limited = rateLimit(`order-release:${clientKey(req)}`, { limit: 10 });
+  if (!limited.ok)
+    return NextResponse.json(
+      { error: "Too many requests. Slow down a moment." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
+    );
+
   const { id } = await params;
 
   const supabase = await createClient();

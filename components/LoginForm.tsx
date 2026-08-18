@@ -7,6 +7,7 @@ import { BRAND } from "@/lib/brand";
 import { createClient } from "@/lib/supabase/client";
 import { passwordIssues } from "@/lib/password";
 import { withTimeout } from "@/lib/timeout";
+import { safeNext } from "@/lib/safe-next";
 
 type Mode = "password" | "link";
 type AuthAction = "signin" | "signup";
@@ -15,7 +16,7 @@ type Status = "idle" | "sending" | "sent" | "error" | "check-email";
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/dashboard";
+  const next = safeNext(params.get("next"));
   const urlError = params.get("error");
 
   const [mode, setMode] = useState<Mode>("password");

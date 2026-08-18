@@ -7,7 +7,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <span className="display text-[20px] text-white">{BRAND.name}</span>
-          <span className="display text-[20px] text-deal">.</span>
+          <span className="rgb-text display text-[20px]">.</span>
           <p className="mt-2 max-w-xs text-[13px]">{BRAND.blurb}</p>
         </div>
         <FooterCol

@@ -109,7 +109,7 @@ export default function CartPage() {
           <button
             onClick={checkout}
             disabled={busy}
-            className="mt-4 w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            className="rgb-ring mt-4 w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
           >
             {busy ? "Opening checkout…" : "Checkout"}
           </button>

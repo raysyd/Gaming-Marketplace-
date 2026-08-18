@@ -280,7 +280,7 @@ export default function SellPage() {
           <button
             onClick={submit}
             disabled={state === "saving"}
-            className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            className="rgb-ring w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
           >
             {state === "saving" ? "Publishing…" : "Publish listing"}
           </button>

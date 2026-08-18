@@ -104,6 +104,114 @@ body {
   animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* ---------------------------------------------------------------------
+   RGB accents. Deliberately restrained: a rainbow sweep used as a hover/
+   focus highlight on primary CTAs and cards, not a background theme.
+   Same gradient in both light and dark — it's a thin decorative accent,
+   not body content, so contrast against the page doesn't matter the way
+   it would for text.
+--------------------------------------------------------------------- */
+:root {
+  --rgb-gradient: linear-gradient(
+    90deg,
+    #ff5f6d,
+    #ffc371,
+    #4ade80,
+    #38bdf8,
+    #a78bfa,
+    #ff5f6d
+  );
+}
+
+@keyframes rgb-cycle {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Animated gradient glow behind an element on hover/focus — for buttons
+   and other elements that don't clip their own overflow. Do not use on
+   anything with overflow-hidden (e.g. ProductCard) — the pseudo-element
+   would get clipped; use .card-hover there instead. */
+.rgb-ring {
+  position: relative;
+  isolation: isolate;
+}
+.rgb-ring::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--rgb-gradient);
+  background-size: 200% 100%;
+  filter: blur(8px);
+  opacity: 0;
+  animation: rgb-cycle 3s linear infinite;
+  transition: opacity 200ms ease;
+}
+.rgb-ring:hover::before,
+.rgb-ring:focus-visible::before {
+  opacity: 0.6;
+}
+
+/* Animated gradient text — small accents only (a brand mark, a headline
+   highlight), never body copy. */
+.rgb-text {
+  background: var(--rgb-gradient);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: rgb-cycle 4s linear infinite;
+}
+
+/* Animated gradient underline sweep, for nav-style links. */
+.rgb-underline {
+  position: relative;
+}
+.rgb-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--rgb-gradient);
+  background-size: 200% 100%;
+  opacity: 0;
+  transform: scaleX(0.6);
+  transform-origin: left;
+  animation: rgb-cycle 3s linear infinite;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.rgb-underline:hover::after,
+.rgb-underline:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* Card lift + tinted glow on hover. Box-shadow (unlike a pseudo-element)
+   isn't clipped by the card's own overflow-hidden, so this is the one
+   that's safe on ProductCard. */
+.card-hover {
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px var(--color-trust),
+    0 14px 28px -16px rgba(90, 57, 214, 0.4),
+    0 4px 14px -6px rgba(216, 111, 0, 0.25);
+}
+html.dark .card-hover:hover {
+  box-shadow:
+    0 0 0 1px var(--color-trust),
+    0 14px 28px -16px rgba(150, 116, 255, 0.5),
+    0 4px 14px -6px rgba(255, 139, 24, 0.3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

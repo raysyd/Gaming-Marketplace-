@@ -42,13 +42,13 @@ export default async function Home() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/shop"
-                className="rounded-md bg-ink px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
+                className="rgb-ring rounded-md bg-ink px-6 py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
               >
                 Shop listings
               </Link>
               <Link
                 href="/pc-finder"
-                className="rounded-md border border-ink/20 px-6 py-3 text-[14px] font-semibold transition hover:border-ink/50"
+                className="rgb-ring rounded-md border border-ink/20 px-6 py-3 text-[14px] font-semibold transition hover:border-ink/50"
               >
                 Take the PC Finder quiz
               </Link>
@@ -70,7 +70,7 @@ export default async function Home() {
           {hero && (
             <Link
               href={`/product/${hero.id}/${hero.slug}`}
-              className="group rounded-[10px] border border-line bg-paper p-3 transition hover:border-ink/25"
+              className="card-hover group rounded-[10px] border border-line bg-paper p-3 transition hover:border-trust/40"
             >
               <div className="overflow-hidden rounded-md bg-ink">
                 <ProductImage
@@ -125,7 +125,7 @@ export default async function Home() {
           {TAXONOMY.map((top) => (
             <div
               key={top.slug}
-              className="rounded-[10px] border border-line bg-card p-3"
+              className="card-hover rounded-[10px] border border-line bg-card p-3"
             >
               <Link href={`/shop?category=${top.slug}`} className="group block">
                 <div className="overflow-hidden rounded bg-ink">
@@ -174,7 +174,7 @@ export default async function Home() {
           </div>
           <Link
             href="/pc-finder"
-            className="shrink-0 rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
+            className="rgb-ring shrink-0 rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
           >
             Take the quiz
           </Link>
@@ -217,7 +217,7 @@ export default async function Home() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Link
             href="/trust"
-            className="group rounded-[10px] bg-trust p-6 text-white transition hover:brightness-105"
+            className="card-hover group rounded-[10px] bg-trust p-6 text-white transition hover:brightness-105"
           >
             <span className="text-2xl" aria-hidden="true">★</span>
             <h2 className="display mt-3 text-[26px] text-white">Reviews from the community</h2>
@@ -226,7 +226,7 @@ export default async function Home() {
           </Link>
           <Link
             href="/dashboard"
-            className="group rounded-[10px] bg-chrome p-6 text-white transition hover:bg-chrome-2"
+            className="card-hover group rounded-[10px] bg-chrome p-6 text-white transition hover:bg-chrome-2"
           >
             <span className="text-2xl" aria-hidden="true">↗</span>
             <h2 className="display mt-3 text-[26px] text-white">Seller sales</h2>
@@ -246,7 +246,7 @@ export default async function Home() {
           </div>
           <Link
             href="/sell"
-            className="rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
+            className="rgb-ring rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
           >
             List an item
           </Link>
@@ -271,7 +271,7 @@ function ThemeRail() {
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {themes.map(([title, body, href, icon]) => (
-          <Link key={title} href={href} className="group rounded-[10px] border border-line bg-card p-5 transition hover:border-trust">
+          <Link key={title} href={href} className="card-hover group rounded-[10px] border border-line bg-card p-5 transition hover:border-trust">
             <span className="text-2xl text-trust" aria-hidden="true">{icon}</span>
             <h3 className="display mt-4 text-[20px]">{title}</h3>
             <p className="mt-1 text-[13px] text-muted">{body}</p>

@@ -27,7 +27,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-[1240px] items-center gap-2 px-4 py-3 sm:gap-3">
           <Link href="/" className="shrink-0">
             <span className="display text-[21px] text-white">{BRAND.name}</span>
-            <span className="display text-[21px] text-deal">.</span>
+            <span className="rgb-text display text-[21px]">.</span>
           </Link>
 
           <div className="ml-2 hidden flex-1 md:flex">
@@ -105,7 +105,7 @@ export function SiteHeader() {
                     className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
                       activeCategory === top.slug
                         ? "border-deal text-deal"
-                        : "border-transparent text-white/80 hover:text-deal"
+                        : "rgb-underline border-transparent text-white/80 hover:text-white"
                     }`}
                   >
                     {top.name}

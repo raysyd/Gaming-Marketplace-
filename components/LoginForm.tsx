@@ -460,7 +460,7 @@ export function LoginForm() {
                 <button
                   onClick={submitPassword}
                   disabled={status === "sending"}
-                  className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                  className="rgb-ring w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
                 >
                   {status === "sending"
                     ? action === "signup"

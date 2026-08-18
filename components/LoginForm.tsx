@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { BRAND } from "@/lib/brand";
 import { createClient } from "@/lib/supabase/client";
 import { passwordIssues } from "@/lib/password";
+import { withTimeout } from "@/lib/timeout";
 
 type Mode = "password" | "link";
 type AuthAction = "signin" | "signup";
@@ -79,26 +80,29 @@ export function LoginForm() {
     // A thrown network/fetch error here (slow connection, cold Supabase
     // project, DNS blip) used to leave the button stuck on "Sending…"
     // forever, since nothing downstream of an unhandled rejection ever
-    // reset the status. Now it always lands back on a retryable error.
+    // reset the status. withTimeout also catches the case where the
+    // request doesn't reject at all — it just never comes back — so the
+    // button is guaranteed to resolve one way or the other.
     try {
       if (action === "signin") {
         // Per-account lockout on top of Supabase's own IP-based auth rate
         // limits (see supabase/auth-security.sql). Fails open — if the
         // migration hasn't been run yet, the RPC errors and sign-in
         // proceeds as normal rather than blocking everyone.
-        const { data: blocked } = await supabase
-          .rpc("signin_attempts_blocked", { p_email: normalizedEmail })
-          .then((res) => res, () => ({ data: false }));
+        const { data: blocked } = await withTimeout(
+          supabase
+            .rpc("signin_attempts_blocked", { p_email: normalizedEmail })
+            .then((res) => res, () => ({ data: false }))
+        );
         if (blocked) {
           setStatus("error");
           setMessage("Too many failed attempts for this account. Try again in 15 minutes, or reset your password.");
           return;
         }
 
-        const { error } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
+        const { error } = await withTimeout(
+          supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+        );
         if (error) {
           supabase.rpc("record_failed_signin", { p_email: normalizedEmail }).then(
             () => {},
@@ -121,13 +125,15 @@ export function LoginForm() {
       }
 
       // action === "signup"
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
-        },
-      });
+      const { data, error } = await withTimeout(
+        supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+          },
+        })
+      );
       if (error) {
         setStatus("error");
         setMessage(
@@ -143,9 +149,13 @@ export function LoginForm() {
         return;
       }
       setStatus("check-email");
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 
@@ -165,12 +175,14 @@ export function LoginForm() {
     }
     setStatus("sending");
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: normalizedEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
-        },
-      });
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOtp({
+          email: normalizedEmail,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+          },
+        })
+      );
       if (error) {
         setStatus("error");
         setMessage(
@@ -182,9 +194,13 @@ export function LoginForm() {
       }
       setStatus("sent");
       setCooldown(60);
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 
@@ -203,9 +219,11 @@ export function LoginForm() {
     }
     setStatus("sending");
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error } = await withTimeout(
+        supabase.auth.resetPasswordForEmail(normalizedEmail, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        })
+      );
       if (error) {
         setStatus("error");
         setMessage(error.message);
@@ -213,9 +231,13 @@ export function LoginForm() {
       }
       setStatus("sent");
       setMessage("reset");
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 
@@ -230,19 +252,25 @@ export function LoginForm() {
 
     setStatus("sending");
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        },
-      });
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+          },
+        })
+      );
       if (error) {
         setStatus("error");
         setMessage(error.message);
       }
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 

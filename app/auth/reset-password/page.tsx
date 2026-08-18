@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
 import { passwordIssues } from "@/lib/password";
+import { withTimeout } from "@/lib/timeout";
 
 function ResetPasswordContent() {
   const router = useRouter();
@@ -54,7 +55,7 @@ function ResetPasswordContent() {
     }
     setStatus("saving");
     try {
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await withTimeout(supabase.auth.updateUser({ password }));
       if (error) {
         setStatus("error");
         setMessage(error.message);
@@ -62,9 +63,13 @@ function ResetPasswordContent() {
       }
       setStatus("done");
       setTimeout(() => router.replace("/dashboard"), 1500);
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 

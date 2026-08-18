@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
+import { withTimeout } from "@/lib/timeout";
 
 function ConfirmDeleteContent() {
   const router = useRouter();
@@ -37,7 +38,7 @@ function ConfirmDeleteContent() {
     }
     setStatus("deleting");
     try {
-      const { error } = await supabase.rpc("delete_own_account");
+      const { error } = await withTimeout(supabase.rpc("delete_own_account"));
       if (error) {
         setStatus("error");
         setMessage(error.message);
@@ -46,9 +47,13 @@ function ConfirmDeleteContent() {
       await supabase.auth.signOut();
       setStatus("done");
       setTimeout(() => router.replace("/"), 2000);
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 

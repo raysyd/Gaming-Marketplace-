@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
+import { withTimeout } from "@/lib/timeout";
 
 export default function DeleteAccountPage() {
   const { user, loading } = useAuth();
@@ -20,21 +21,27 @@ export default function DeleteAccountPage() {
     }
     setStatus("sending");
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: user.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/account/delete/confirm`,
-        },
-      });
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOtp({
+          email: user.email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/account/delete/confirm`,
+          },
+        })
+      );
       if (error) {
         setStatus("error");
         setMessage(error.message);
         return;
       }
       setStatus("sent");
-    } catch {
+    } catch (e) {
       setStatus("error");
-      setMessage("Couldn't reach the server. Check your connection and try again.");
+      setMessage(
+        e instanceof Error && e.message.includes("taking too long")
+          ? e.message
+          : "Couldn't reach the server. Check your connection and try again."
+      );
     }
   };
 

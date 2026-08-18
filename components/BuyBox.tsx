@@ -19,7 +19,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
   const ownListing = user?.id === listing.sellerId;
 
   const addToCart = () => {
-    add({ id: listing.id, title: listing.title, price: listing.price });
+    add({ id: listing.id, title: listing.title, price: listing.price, sellerId: listing.sellerId });
     setAdded(true);
   };
 
@@ -68,13 +68,19 @@ export function BuyBox({ listing }: { listing: Listing }) {
       </p>
 
       <div className="mt-4 space-y-2">
-        <button
-          onClick={addToCart}
-          className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
-        >
-          {added ? "Added to cart" : "Add to cart"}
-        </button>
-        {added && (
+        {ownListing ? (
+          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
+            This is your listing.
+          </p>
+        ) : (
+          <button
+            onClick={addToCart}
+            className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
+          >
+            {added ? "Added to cart" : "Add to cart"}
+          </button>
+        )}
+        {added && !ownListing && (
           <button
             onClick={() => router.push("/cart")}
             className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
@@ -82,12 +88,14 @@ export function BuyBox({ listing }: { listing: Listing }) {
             Go to cart
           </button>
         )}
-        <button
-          onClick={() => router.push(`/messages?listing=${listing.id}`)}
-          className="w-full rounded-md border border-ink/20 py-3 text-[14px] font-semibold transition hover:border-ink/50"
-        >
-          Message {listing.sellerName.split(" ")[0]}
-        </button>
+        {!ownListing && (
+          <button
+            onClick={() => router.push(`/messages?listing=${listing.id}`)}
+            className="w-full rounded-md border border-ink/20 py-3 text-[14px] font-semibold transition hover:border-ink/50"
+          >
+            Message {listing.sellerName.split(" ")[0]}
+          </button>
+        )}
         {listing.acceptsOffers && !ownListing && !offering && (
           <button
             onClick={() => setOffering(true)}

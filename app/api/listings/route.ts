@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify, findTop, findSub } from "@/lib/taxonomy";
@@ -65,9 +65,12 @@ export async function POST(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // The homepage rails are ISR-cached (revalidate = 60) — without this a
-  // brand-new listing wouldn't show up there for up to a minute.
+  // The homepage rails are ISR-cached (revalidate = 60), and /shop's
+  // listing queries are cached at the data layer (see lib/data.ts) —
+  // without both, a brand-new listing wouldn't show up on either for up
+  // to a minute.
   revalidatePath("/");
+  revalidateTag("listings", { expire: 0 });
   return NextResponse.json({ ok: true, id: data.id, slug: slugify(payload.title) });
 }
 
@@ -97,6 +100,7 @@ export async function PATCH(req: Request) {
   // keep serving the cached "active" version — with a real photo, price,
   // and buy box — for up to two minutes after the seller takes it down.
   revalidatePath("/");
+  revalidateTag("listings", { expire: 0 });
   if (data?.slug) revalidatePath(`/product/${id}/${data.slug}`);
   return NextResponse.json({ ok: true });
 }

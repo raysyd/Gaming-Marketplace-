@@ -88,3 +88,19 @@ export type Conversation = {
   updatedAt: string;
   unread: number;
 };
+
+export type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "released" | "refunded";
+
+export type Order = {
+  id: string;
+  listingId: string;
+  listingTitle?: string;
+  buyerId: string;
+  sellerId: string;
+  amount: number;
+  platformFee: number;
+  stripePaymentIntent: string | null;
+  trackingNumber: string | null;
+  status: OrderStatus;
+  createdAt: string;
+};

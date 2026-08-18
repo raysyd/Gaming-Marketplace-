@@ -46,6 +46,7 @@ export function AccountMenu() {
           </p>
           {[
             ["Your shop", "/dashboard"],
+            ["Orders", "/orders"],
             ["Messages", "/messages"],
             ["Saved items", "/wishlist"],
             ["List an item", "/sell"],

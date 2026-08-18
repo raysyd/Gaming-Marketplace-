@@ -13,7 +13,15 @@ export default function CartPage() {
   const shipping = subtotal > 0 ? 0 : 0;
   const total = subtotal + shipping;
 
+  // A single Stripe destination charge can only route to one connected
+  // account, so a cart has to belong to one seller to check out. Mixed
+  // carts aren't blocked from being *built* — that'd mean guessing intent
+  // on "add to cart" — just from paying, with a clear way out.
+  const sellerIds = [...new Set(items.map((i) => i.sellerId))];
+  const mixedSellers = sellerIds.length > 1;
+
   const checkout = async () => {
+    if (mixedSellers) return;
     setBusy(true);
     setNote("");
     try {
@@ -106,9 +114,17 @@ export default function CartPage() {
             </div>
           </div>
 
+          {mixedSellers && (
+            <p className="spec mt-3 rounded border border-deal bg-deal-soft px-3 py-2 text-deal">
+              Items in this cart are from different sellers. Remove all but
+              one seller&apos;s items to check out — each order pays one
+              seller.
+            </p>
+          )}
+
           <button
             onClick={checkout}
-            disabled={busy}
+            disabled={busy || mixedSellers}
             className="rgb-ring mt-4 w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
           >
             {busy ? "Opening checkout…" : "Checkout"}

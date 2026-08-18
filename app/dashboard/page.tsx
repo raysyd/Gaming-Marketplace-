@@ -1,15 +1,25 @@
 import Link from "next/link";
-import { querySellerListings } from "@/lib/seller-data";
+import { querySellerListings, getSellerProfile, querySellerOrders } from "@/lib/seller-data";
 import { money, timeAgo } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { ProductImage } from "@/components/ProductImage";
 import { ListingActions } from "@/components/ListingActions";
+import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
+import { SellerOrderActions } from "@/components/SellerOrderActions";
 
 export default async function DashboardPage() {
-  const mine = (await querySellerListings()).slice(0, 50);
+  const [mine, profile, orders] = await Promise.all([
+    querySellerListings().then((l) => l.slice(0, 50)),
+    getSellerProfile(),
+    querySellerOrders(),
+  ]);
   const active = mine.filter((l) => l.status === "active");
   const gross = active.reduce((n, l) => n + l.price, 0);
   const fee = Math.round((gross * BRAND.feePercent) / 100);
+
+  const held = orders.filter((o) => o.status === "paid" || o.status === "shipped" || o.status === "delivered");
+  const heldTotal = held.reduce((n, o) => n + (o.amount - o.platformFee), 0);
+  const connected = Boolean(profile?.stripeAccountId);
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
@@ -20,7 +30,7 @@ export default async function DashboardPage() {
         {[
           ["Active listings", String(active.length)],
           ["Listed value", money(gross)],
-          ["Held in escrow", money(0)],
+          ["Held in escrow", money(heldTotal)],
           ["Next payout", money(gross - fee)],
         ].map(([label, value]) => (
           <div key={label} className="rounded-[10px] border border-line bg-card p-4">
@@ -29,6 +39,32 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {held.length > 0 && (
+        <>
+          <div className="mt-8 flex items-baseline justify-between">
+            <h2 className="display text-[22px]">Orders awaiting delivery</h2>
+          </div>
+          <div className="mt-3 overflow-hidden rounded-[10px] border border-line bg-card">
+            {held.map((o) => (
+              <div
+                key={o.id}
+                className="flex items-center justify-between gap-4 border-b border-line p-3 last:border-0"
+              >
+                <div className="min-w-0">
+                  <p className="line-clamp-1 text-[14px] font-semibold">
+                    {o.listingTitle ?? "Listing"}
+                  </p>
+                  <p className="spec text-muted">
+                    {money(o.amount - o.platformFee)} to you · {o.status} · {timeAgo(o.createdAt)}
+                  </p>
+                </div>
+                <SellerOrderActions id={o.id} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="mt-8 flex items-baseline justify-between">
         <h2 className="display text-[22px]">Listings</h2>
@@ -79,12 +115,11 @@ export default async function DashboardPage() {
       <div className="mt-8 rounded-[10px] border border-line bg-card p-5">
         <h2 className="eyebrow">Payouts</h2>
         <p className="mt-2 max-w-lg text-[14px] text-muted">
-          Connect a payout account to receive money when your sales are delivered.
-          Until then, sales stay held in escrow.
+          {connected
+            ? "Payout account connected. Money released from escrow lands here automatically."
+            : "Connect a payout account to receive money when your sales are delivered. Until then, sales stay held in escrow."}
         </p>
-        <button className="mt-3 rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white">
-          Connect payout account
-        </button>
+        <ConnectPayoutButton connected={connected} />
       </div>
     </div>
   );

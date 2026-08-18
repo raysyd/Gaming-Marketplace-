@@ -1,6 +1,7 @@
 import { DEMO_LISTINGS } from "./demo";
 import type { Listing, ListingPage, ListingQuery } from "./types";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
 import { artKindFor, slugify } from "./taxonomy";
 
@@ -80,11 +81,32 @@ async function getListingUncached(id: string): Promise<Listing | null> {
 }
 
 /**
- * React `cache` dedupes identical calls within a single render pass, so the
- * homepage's four rails and the header don't each re-run the same query.
+ * /shop reads searchParams, which forces the whole route dynamic in Next —
+ * its own `revalidate` export is a no-op there, so every sort/filter click
+ * used to hit Supabase live with zero caching. unstable_cache works at the
+ * data layer instead, keyed automatically by the arguments each call is
+ * made with (so "sort=low" and "sort=watched" cache independently), and
+ * gets invalidated explicitly by revalidateTag("listings") in
+ * app/api/listings/route.ts whenever a listing is created or taken down —
+ * so this is a strict speed win, not a staleness trade-off.
+ *
+ * React `cache` on top dedupes identical calls within a single render pass,
+ * so the homepage's four rails and the header don't each re-run the same
+ * query.
  */
-export const queryListings = cache(queryListingsUncached);
-export const getListing = cache(getListingUncached);
+const queryListingsCachedByArgs = unstable_cache(
+  queryListingsUncached,
+  ["listings-query"],
+  { revalidate: 45, tags: ["listings"] }
+);
+const getListingCachedByArgs = unstable_cache(
+  getListingUncached,
+  ["listing-by-id"],
+  { revalidate: 45, tags: ["listings"] }
+);
+
+export const queryListings = cache(queryListingsCachedByArgs);
+export const getListing = cache(getListingCachedByArgs);
 
 export async function getRelated(listing: Listing, limit = 4): Promise<Listing[]> {
   const { items } = await queryListings({
@@ -94,8 +116,7 @@ export async function getRelated(listing: Listing, limit = 4): Promise<Listing[]
   return items.filter((l) => l.id !== listing.id).slice(0, limit);
 }
 
-/** Facet counts for the filter rail, computed without pulling rows. */
-export async function countBySub(): Promise<Record<string, number>> {
+async function countBySubUncached(): Promise<Record<string, number>> {
   const supabase = createPublicClient();
   if (!supabase) {
     const out: Record<string, number> = {};
@@ -110,6 +131,14 @@ export async function countBySub(): Promise<Record<string, number>> {
     out[row.subcategory_slug] = Number(row.n);
   return out;
 }
+
+/** Facet counts for the filter rail, computed without pulling rows. */
+export const countBySub = cache(
+  unstable_cache(countBySubUncached, ["listing-facet-counts"], {
+    revalidate: 45,
+    tags: ["listings"],
+  })
+);
 
 /* ------------------------------------------------------------------ */
 

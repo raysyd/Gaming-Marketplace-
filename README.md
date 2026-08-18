@@ -32,9 +32,13 @@ backend exists. Adding keys progressively switches on the real thing.
    Then Settings → API, and copy the URL, the anon key and the service role key.
 4. In Vercel → Settings → Environment Variables, add everything from
    `.env.example`, then redeploy.
-5. **Stripe** (when you're ready to take money) → enable Connect →
-   add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, and point a webhook at
-   `https://yourdomain.com/api/webhooks/stripe`.
+5. **Stripe** (when you're ready to take money) → enable Connect (Settings →
+   Connect → get started, Express accounts) → add `STRIPE_SECRET_KEY` and
+   `STRIPE_WEBHOOK_SECRET`, and point a webhook at
+   `https://yourdomain.com/api/webhooks/stripe` listening for
+   `checkout.session.completed` and `charge.refunded`. No new SQL — the
+   `profiles.stripe_account_id` and `orders.*` columns this uses were
+   already in `schema.sql`, just unwired until now.
 
 ### Production magic-link email
 
@@ -136,7 +140,8 @@ photos will be your bandwidth bill, not HTML.
 | Messaging | `/messages` | Threaded buyer↔seller chat, offer cards, live updates |
 | Selling | `/sell` | Listing form with live payout calculation |
 | Cart | `/cart` | Checkout → Stripe session |
-| Seller account | `/dashboard` | Listings, escrow balance, payout connection |
+| Orders | `/orders` | Buyer order history, release payment on delivery |
+| Seller account | `/dashboard` | Listings, escrow balance, payout connection, incoming orders |
 | Auth | `/login` | Email + password, magic link, or Google |
 | Account deletion | `/account/delete` | Email-verified self-service deletion |
 | Wishlist | `/wishlist` | Saved items, feeds the "most watched" ranking |
@@ -161,12 +166,34 @@ Deep links work: "Message seller" on a listing opens `/messages?listing=<id>` an
 creates the thread if it doesn't exist. "Make an offer" adds `&offer=<amount>`
 and posts an offer card the seller can accept or counter.
 
-### Escrow
+### Escrow — Stripe Connect
 
-`/api/checkout` creates a Stripe Checkout session with `capture_method: "manual"`,
-so the buyer's card is authorised but not charged. The order moves
-`pending → paid → shipped → delivered → released`, and capture happens on
-delivery confirmation. `PLATFORM_FEE_BPS` sets your cut (800 = 8%).
+Sellers connect a Stripe Express account from `/dashboard` → **Connect payout
+account** (`/api/connect`), which creates the account and sends them through
+Stripe's hosted onboarding. Nothing else on the seller's side needs a
+Stripe key — only `transfers` capability is requested, since the platform
+takes the card payment, not the seller.
+
+`/api/checkout` creates a Stripe Checkout session with `capture_method:
+"manual"` and `transfer_data.destination` set to the seller's connected
+account, so the buyer's card is authorised but not charged, and the money
+is already routed to the right seller once it is captured. A cart can only
+hold one seller's items at a time — a single PaymentIntent can only carry
+one destination. `/api/webhooks/stripe` creates the `orders` row (status
+`paid`) once Stripe confirms the hold.
+
+The buyer releases payment from `/orders` — **Confirm delivery & release**
+calls `/api/orders/[id]/release`, which captures the PaymentIntent (Stripe
+auto-transfers the seller's cut at that point, since the destination was
+already set) and flips the order to `released`. The seller can refund from
+`/dashboard` at any point before or after release — `/api/orders/[id]/refund`
+cancels the authorization if it's still held, or issues a real refund with
+`reverse_transfer: true` (clawing the money back from the connected
+account) if it already paid out. `PLATFORM_FEE_BPS` sets your cut (800 = 8%).
+
+Shipping/delivery tracking and disputes aren't built — `released` currently
+only means "the buyer clicked confirm," not that a carrier confirmed
+delivery.
 
 ## Renaming and re-regioning
 

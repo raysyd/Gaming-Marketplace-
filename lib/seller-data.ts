@@ -1,14 +1,10 @@
 import { rowToListing } from "./data";
 import type { Listing, Order } from "./types";
-import { createClient } from "./supabase/server";
+import { getAuthedUser } from "./supabase/server";
 
 export async function querySellerListings(): Promise<Listing[]> {
-  const supabase = await createClient();
-  if (!supabase) return [];
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return [];
   const { data, error } = await supabase
     .from("listings")
     .select("*")
@@ -21,12 +17,8 @@ export async function querySellerListings(): Promise<Listing[]> {
 export type SellerProfile = { userId: string; stripeAccountId: string | null };
 
 export async function getSellerProfile(): Promise<SellerProfile | null> {
-  const supabase = await createClient();
-  if (!supabase) return null;
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return null;
   const { data } = await supabase
     .from("profiles")
     .select("stripe_account_id")
@@ -53,12 +45,8 @@ function rowToOrder(r: any): Order {
 }
 
 export async function querySellerOrders(): Promise<Order[]> {
-  const supabase = await createClient();
-  if (!supabase) return [];
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return [];
   const { data, error } = await supabase
     .from("orders")
     .select("*, listings(title)")
@@ -69,12 +57,8 @@ export async function querySellerOrders(): Promise<Order[]> {
 }
 
 export async function queryBuyerOrders(): Promise<Order[]> {
-  const supabase = await createClient();
-  if (!supabase) return [];
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return [];
   const { data, error } = await supabase
     .from("orders")
     .select("*, listings(title)")

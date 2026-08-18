@@ -6,11 +6,23 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 /**
- * Creates (or reuses) a Stripe Connect Express account for the signed-in
- * seller and returns a fresh onboarding link. Only requests the `transfers`
- * capability — the seller never takes card payments directly, the platform
- * does that and transfers their cut via the destination charge in
- * /api/checkout, so `card_payments` isn't needed on the connected account.
+ * Creates (or reuses) a Stripe Connect account for the signed-in seller and
+ * returns a fresh onboarding link — via Accounts v2, not the legacy v1
+ * `type: "express"` API. v2 replaces the old fixed account "types" with
+ * three independent dimensions instead (see Stripe's connect-recommend
+ * skill, account-types.md): `dashboard: "express"` (lightweight
+ * earnings/payout view, not full Stripe control) plus
+ * `defaults.responsibilities.fees_collector/losses_collector: "application"`
+ * — the platform, not Stripe, owns fees and dispute/negative-balance risk.
+ * That combination is required for an Express-style dashboard, and is also
+ * what "separate charges and transfers" (see /api/checkout) needs — a
+ * destination charge is NOT valid for a hold-and-release marketplace like
+ * this one, only for immediate payout on purchase.
+ *
+ * `configuration.recipient` (not `merchant`) — the seller never takes card
+ * payments directly, the platform does that and transfers their cut via
+ * /api/orders/[id]/release, so only the `stripe_transfers` capability is
+ * needed on the connected account, not `card_payments`.
  */
 async function startOnboarding() {
   const supabase = await createClient();
@@ -48,12 +60,19 @@ async function startOnboarding() {
   // now instead of guessing at it blind.
   try {
     if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: "AU",
-        email: user.email ?? undefined,
-        capabilities: { transfers: { requested: true } },
-        business_type: "individual",
+      const account = await stripe.v2.core.accounts.create({
+        contact_email: user.email ?? undefined,
+        dashboard: "express",
+        identity: { country: "au", entity_type: "individual" },
+        configuration: {
+          recipient: {
+            capabilities: { stripe_balance: { stripe_transfers: { requested: true } } },
+          },
+        },
+        defaults: {
+          currency: "aud",
+          responsibilities: { fees_collector: "application", losses_collector: "application" },
+        },
       });
       accountId = account.id;
 
@@ -66,14 +85,21 @@ async function startOnboarding() {
       if (upsertError) return { error: upsertError.message, status: 500 } as const;
     }
 
-    const link = await stripe.accountLinks.create({
+    // Account Links are also namespaced under v2 for a v2-created account —
+    // the v1 stripe.accountLinks.create() rejects a v2 account id.
+    const link = await stripe.v2.core.accountLinks.create({
       account: accountId,
-      // Stripe requires a GET-able refresh_url — the GET handler below
-      // just re-runs this and redirects, so an expired/abandoned link
-      // self-heals into a fresh one.
-      refresh_url: `${site()}/api/connect`,
-      return_url: `${site()}/dashboard?connected=1`,
-      type: "account_onboarding",
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          // Stripe requires a GET-able refresh_url — the GET handler below
+          // just re-runs this and redirects, so an expired/abandoned link
+          // self-heals into a fresh one.
+          refresh_url: `${site()}/api/connect`,
+          return_url: `${site()}/dashboard?connected=1`,
+        },
+      },
     });
 
     return { url: link.url } as const;

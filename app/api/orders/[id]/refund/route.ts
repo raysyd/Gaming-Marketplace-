@@ -5,13 +5,16 @@ import { getStripe } from "@/lib/stripe";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 /**
- * Seller-initiated refund. Two different Stripe calls depending on
- * whether the money ever actually left the platform:
- *  - status "paid"/"shipped"/"delivered" (authorised, never captured) ->
- *    cancel the PaymentIntent. Releases the hold, nothing to reverse.
- *  - status "released" (captured + already auto-transferred to the
- *    seller) -> a real refund with reverse_transfer so it's clawed back
- *    from the connected account, not just the platform's balance.
+ * Seller-initiated refund. Since /api/checkout charges the platform
+ * directly and captures immediately (separate charges and transfers —
+ * see the comment there), the money is always actually sitting
+ * somewhere real, never just an uncaptured authorization:
+ *  - status "paid"/"shipped"/"delivered" (charged, still in the
+ *    platform's own balance, never transferred) -> refund the charge.
+ *  - status "released" (already transferred to the seller's connected
+ *    account by /api/orders/[id]/release) -> reverse that specific
+ *    transfer first to claw the money back from the connected account,
+ *    then refund the original charge.
  */
 export async function POST(
   req: Request,
@@ -36,7 +39,7 @@ export async function POST(
 
   const { data: order, error } = await supabase
     .from("orders")
-    .select("id, seller_id, status, stripe_payment_intent")
+    .select("id, seller_id, status, stripe_payment_intent, stripe_transfer_id")
     .eq("id", id)
     .single();
   if (error || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
@@ -55,13 +58,15 @@ export async function POST(
 
   try {
     if (order.status === "released") {
-      await stripe.refunds.create({
-        payment_intent: order.stripe_payment_intent,
-        reverse_transfer: true,
-      });
-    } else {
-      await stripe.paymentIntents.cancel(order.stripe_payment_intent);
+      if (!order.stripe_transfer_id)
+        throw new Error("Order is marked released but has no transfer on file to reverse.");
+      // Order matters: claw back from the connected account first, then
+      // refund the buyer — reversing the transfer that's no longer
+      // backed by an active refund would be the wrong failure mode to
+      // risk if the second call fails.
+      await stripe.transfers.createReversal(order.stripe_transfer_id);
     }
+    await stripe.refunds.create({ payment_intent: order.stripe_payment_intent });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Refund failed." },

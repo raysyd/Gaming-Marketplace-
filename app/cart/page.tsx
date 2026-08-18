@@ -13,10 +13,11 @@ export default function CartPage() {
   const shipping = subtotal > 0 ? 0 : 0;
   const total = subtotal + shipping;
 
-  // A single Stripe destination charge can only route to one connected
-  // account, so a cart has to belong to one seller to check out. Mixed
-  // carts aren't blocked from being *built* — that'd mean guessing intent
-  // on "add to cart" — just from paying, with a clear way out.
+  // /api/checkout creates one order row with one seller/fee/transfer
+  // relationship per checkout, so a cart has to belong to one seller to
+  // pay. Mixed carts aren't blocked from being *built* — that'd mean
+  // guessing intent on "add to cart" — just from paying, with a clear way
+  // out.
   const sellerIds = [...new Set(items.map((i) => i.sellerId))];
   const mixedSellers = sellerIds.length > 1;
 

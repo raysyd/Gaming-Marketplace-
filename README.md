@@ -168,28 +168,42 @@ and posts an offer card the seller can accept or counter.
 
 ### Escrow — Stripe Connect
 
-Sellers connect a Stripe Express account from `/dashboard` → **Connect payout
-account** (`/api/connect`), which creates the account and sends them through
-Stripe's hosted onboarding. Nothing else on the seller's side needs a
-Stripe key — only `transfers` capability is requested, since the platform
-takes the card payment, not the seller.
+Sellers connect a Stripe account from `/dashboard` → **Connect payout
+account** (`/api/connect`), which creates it and sends them through Stripe's
+hosted onboarding. Built on **Accounts v2**, not the legacy v1 `type:
+"express"` API — `dashboard: "express"` (a lightweight earnings/payout view)
+plus `defaults.responsibilities.fees_collector`/`losses_collector:
+"application"` (the platform, not Stripe, owns fees and dispute risk), with
+`configuration.recipient` requesting only the `stripe_transfers` capability,
+since the platform takes the card payment, not the seller.
 
-`/api/checkout` creates a Stripe Checkout session with `capture_method:
-"manual"` and `transfer_data.destination` set to the seller's connected
-account, so the buyer's card is authorised but not charged, and the money
-is already routed to the right seller once it is captured. A cart can only
-hold one seller's items at a time — a single PaymentIntent can only carry
-one destination. `/api/webhooks/stripe` creates the `orders` row (status
-`paid`) once Stripe confirms the hold.
+The charge pattern is **separate charges and transfers**, not a destination
+charge. `/api/checkout` charges the platform's own Stripe balance directly —
+no `transfer_data`, captured immediately, nothing auto-transfers to the
+seller yet. This is deliberate: Stripe explicitly advises against
+destination charges for hold-and-release escrow, since a destination
+charge transfers to the connected account the instant payment succeeds —
+the opposite of "hold until delivery is confirmed" — and relying on
+`capture_method: "manual"`'s ~7-day authorization window as the hold would
+silently break on any order that takes longer than that to deliver.
+`/api/webhooks/stripe` creates the `orders` row (status `paid`) once Stripe
+confirms the charge. A cart can only hold one seller's items at a time —
+one order row means one seller/fee/transfer relationship per checkout.
 
 The buyer releases payment from `/orders` — **Confirm delivery & release**
-calls `/api/orders/[id]/release`, which captures the PaymentIntent (Stripe
-auto-transfers the seller's cut at that point, since the destination was
-already set) and flips the order to `released`. The seller can refund from
-`/dashboard` at any point before or after release — `/api/orders/[id]/refund`
-cancels the authorization if it's still held, or issues a real refund with
-`reverse_transfer: true` (clawing the money back from the connected
-account) if it already paid out. `PLATFORM_FEE_BPS` sets your cut (800 = 8%).
+calls `/api/orders/[id]/release`, which creates an explicit
+`stripe.transfers.create()` (the seller's cut, minus the platform fee) out
+of the platform's balance into the seller's connected account, and flips
+the order to `released`. The seller can refund from `/dashboard` at any
+point before or after release — `/api/orders/[id]/refund` refunds the
+charge directly if the money never left the platform, or reverses that
+specific transfer first (`stripe.transfers.createReversal`) before
+refunding if it already paid out. `PLATFORM_FEE_BPS` sets your cut
+(800 = 8%).
+
+Run `supabase/stripe-v2-migration.sql` (folded into `setup.sql` as Part 6)
+if you set up escrow before this — it adds the `orders.stripe_transfer_id`
+column the reversal-on-refund path needs.
 
 Shipping/delivery tracking and disputes aren't built — `released` currently
 only means "the buyer clicked confirm," not that a carrier confirmed

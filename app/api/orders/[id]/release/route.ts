@@ -5,10 +5,12 @@ import { getStripe } from "@/lib/stripe";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 /**
- * Buyer confirms delivery -> capture the held PaymentIntent. Because the
- * PaymentIntent already carries transfer_data.destination (set at
- * checkout), Stripe auto-transfers the seller's cut to their connected
- * account the moment capture succeeds — no separate Transfer call needed.
+ * Buyer confirms delivery -> transfer the seller's cut out of the
+ * platform's own Stripe balance. /api/checkout charges the platform
+ * directly (separate charges and transfers, not a destination charge —
+ * see the comment there for why), so nothing was auto-transferred at
+ * payment time; this is the one explicit stripe.transfers.create() call
+ * that actually pays the seller.
  */
 export async function POST(
   req: Request,
@@ -35,7 +37,7 @@ export async function POST(
   // policy is what actually proves this user is allowed to see this row.
   const { data: order, error } = await supabase
     .from("orders")
-    .select("id, buyer_id, status, stripe_payment_intent")
+    .select("id, buyer_id, seller_id, status, amount, platform_fee, stripe_payment_intent")
     .eq("id", id)
     .single();
   if (error || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
@@ -49,14 +51,42 @@ export async function POST(
   if (!order.stripe_payment_intent)
     return NextResponse.json({ error: "Order has no payment on file." }, { status: 400 });
 
+  const { data: sellerProfile } = await supabase
+    .from("profiles")
+    .select("stripe_account_id")
+    .eq("id", order.seller_id)
+    .maybeSingle();
+  const destination = sellerProfile?.stripe_account_id as string | undefined;
+  if (!destination)
+    return NextResponse.json({ error: "Seller has no payout account on file." }, { status: 400 });
+
   const stripe = await getStripe();
   if (!stripe) return NextResponse.json({ error: "Payments aren't connected." }, { status: 500 });
 
+  let transferId: string;
   try {
-    await stripe.paymentIntents.capture(order.stripe_payment_intent);
+    // source_transaction ties the transfer to the original charge, which
+    // is what lets Stripe correctly attribute it if that charge is later
+    // disputed. The PaymentIntent has to be retrieved to get the charge
+    // id — a Checkout Session's payment_intent field is just the id, not
+    // the expanded object with latest_charge on it.
+    const pi = await stripe.paymentIntents.retrieve(order.stripe_payment_intent);
+    const chargeId =
+      typeof pi.latest_charge === "string" ? pi.latest_charge : pi.latest_charge?.id;
+    if (!chargeId) throw new Error("This payment has no completed charge to transfer from.");
+
+    const transferAmount = Math.round((Number(order.amount) - Number(order.platform_fee)) * 100);
+    const transfer = await stripe.transfers.create({
+      amount: transferAmount,
+      currency: "aud",
+      destination,
+      source_transaction: chargeId,
+      metadata: { orderId: id },
+    });
+    transferId = transfer.id;
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Capture failed." },
+      { error: e instanceof Error ? e.message : "Transfer failed." },
       { status: 500 }
     );
   }
@@ -70,7 +100,7 @@ export async function POST(
 
   const { error: updateError } = await admin
     .from("orders")
-    .update({ status: "released" })
+    .update({ status: "released", stripe_transfer_id: transferId })
     .eq("id", id);
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 

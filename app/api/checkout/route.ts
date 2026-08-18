@@ -5,16 +5,26 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { BRAND } from "@/lib/brand";
 
 /**
- * Stripe Connect destination charge with a manual capture window. The
- * buyer's card is authorised now, not charged. /api/webhooks/stripe
- * creates the order once Stripe confirms the hold, and /api/orders/[id]/
- * release captures + auto-transfers to the seller's connected account
- * once the buyer confirms delivery.
+ * Separate charges and transfers, not a destination charge — a plain
+ * PaymentIntent captured immediately on the platform's own account, with
+ * no `transfer_data` at all. This is deliberate: Stripe explicitly
+ * recommends against destination charges for hold-and-release escrow —
+ * a destination charge transfers to the connected account the moment
+ * payment succeeds, which is exactly wrong for "buyer pays now, seller
+ * gets paid once delivery is confirmed". It also would have meant relying
+ * on `capture_method: "manual"`'s ~7-day authorization window as the
+ * escrow hold, which silently breaks for any order that takes longer
+ * than that to deliver. Here, the charge is real and immediate — the
+ * money sits in the platform's own Stripe balance — and the actual
+ * transfer to the seller only happens later, in
+ * /api/orders/[id]/release, as its own explicit stripe.transfers.create()
+ * call. The escrow hold is a business-logic hold (orders.status), not a
+ * Stripe-level one.
  *
- * A single PaymentIntent can only carry one `transfer_data.destination`,
- * so this only accepts a cart that belongs to one seller — the cart page
- * enforces that before this is ever called, but it's re-checked here
- * since this is the boundary that actually moves money.
+ * A cart can only belong to one seller (there's one order row's worth of
+ * fee accounting per checkout) — the cart page enforces that before this
+ * is ever called, but it's re-checked here since this is the boundary
+ * that actually moves money.
  *
  * The client only ever sends listing IDs + quantities — price and title
  * are always re-read from the database here, never trusted from the
@@ -94,12 +104,17 @@ export async function POST(req: Request) {
     );
 
   // A connected account can exist (has an ID) without onboarding actually
-  // being finished — verify it can receive a transfer before taking the
-  // buyer's money, rather than authorising a charge that can never be
-  // released.
+  // being finished — verify it can actually receive a transfer before
+  // taking the buyer's money, rather than collecting a payment that can
+  // never be released. Accounts v2's equivalent of v1's
+  // charges_enabled/payouts_enabled is this capability's own status.
   try {
-    const account = await stripe.accounts.retrieve(accountId);
-    if (!account.charges_enabled && !account.payouts_enabled) {
+    const account = await stripe.v2.core.accounts.retrieve(accountId, {
+      include: ["configuration.recipient"],
+    });
+    const transferStatus =
+      account.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status;
+    if (transferStatus !== "active") {
       return NextResponse.json(
         { error: "This seller's payout account isn't finished setting up yet." },
         { status: 409 }
@@ -112,20 +127,16 @@ export async function POST(req: Request) {
     );
   }
 
-  const feeBps = Number(process.env.PLATFORM_FEE_BPS ?? 800);
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const currency = BRAND.currency.toLowerCase();
-
-  // Every listing here has stock 1 — one line item each, quantity 1.
-  // Client-submitted quantity is ignored for the same reason price is.
-  const totalCents = listings.reduce((n, l) => n + Math.round(l.price * 100), 0);
-  const applicationFeeAmount = Math.round((totalCents * feeBps) / 10000);
   const listingIds = listings.map((l) => l.id).join(",");
 
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: listings.map((l) => ({
+        // Every listing here has stock 1 — one line item each, quantity 1.
+        // Client-submitted quantity is ignored for the same reason price is.
         quantity: 1,
         price_data: {
           currency,
@@ -133,11 +144,12 @@ export async function POST(req: Request) {
           product_data: { name: l.title },
         },
       })),
+      // No transfer_data, no capture_method: "manual", no
+      // application_fee_amount — this is a plain charge to the platform's
+      // own balance, captured immediately. The platform fee is computed
+      // and stored on the order row by the webhook below, then actually
+      // applied as the transfer amount in /api/orders/[id]/release.
       payment_intent_data: {
-        // Funds are authorised now and captured on delivery confirmation.
-        capture_method: "manual",
-        application_fee_amount: applicationFeeAmount,
-        transfer_data: { destination: accountId },
         metadata: { buyerId: user.id, sellerId, listingIds },
       },
       metadata: { buyerId: user.id, sellerId, listingIds },

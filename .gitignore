@@ -5,3 +5,8 @@ node_modules
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Reference docs from `npx skills add`, not app source — regenerable, not
+# shipped, and symlinks that wouldn't resolve on another machine anyway.
+.agents/
+.claude/skills/

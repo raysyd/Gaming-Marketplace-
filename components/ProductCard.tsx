@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import type { Listing } from "@/lib/types";
 import { money } from "@/lib/format";
@@ -10,6 +12,11 @@ export function ProductCard({ listing }: { listing: Listing }) {
   const pct = listing.compareAt
     ? Math.round((save / listing.compareAt) * 100)
     : 0;
+  // Seeded from `!listing.image` so the very first paint guesses right in
+  // the common case, then corrected by ProductImage once it knows the
+  // real outcome — a src that's set but 404s (a demo listing with no seed
+  // photo, a broken storage URL) falls back too, just asynchronously.
+  const [isStockPhoto, setIsStockPhoto] = useState(!listing.image);
 
   return (
     <Link
@@ -23,6 +30,8 @@ export function ProductCard({ listing }: { listing: Listing }) {
           category={listing.category}
           seed={listing.id}
           className="h-full w-full transition duration-500 group-hover:scale-[1.04]"
+          showStockBadge={false}
+          onFallback={setIsStockPhoto}
         />
         {pct > 0 && (
           <span className="spec absolute left-2 top-2 rounded bg-deal px-1.5 py-1 font-semibold text-white">
@@ -30,10 +39,14 @@ export function ProductCard({ listing }: { listing: Listing }) {
           </span>
         )}
         <WishlistButton id={listing.id} className="absolute right-2 top-2" />
-        <span className="spec absolute bottom-2 left-2 rounded bg-white/92 px-1.5 py-1 font-medium text-ink">
+        {/* Background is a fixed white regardless of theme, so the text
+            has to be fixed dark too — text-ink flips light in dark mode
+            and would land as near-invisible light-on-white. */}
+        <span className="spec absolute bottom-2 left-2 rounded bg-white/92 px-1.5 py-1 font-medium text-[#111111]">
           {listing.condition}
+          {isStockPhoto && " · Stock photo"}
         </span>
-        {listing.watchers > 120 && (
+        {listing.watchers > 120 && !isStockPhoto && (
           <span className="spec absolute bottom-2 right-2 rounded bg-ink/85 px-1.5 py-1 font-medium text-white">
             {listing.watchers} watching
           </span>

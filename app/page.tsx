@@ -7,18 +7,18 @@ import { TAXONOMY } from "@/lib/taxonomy";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductImage } from "@/components/ProductImage";
 import { SpecStrip, FpsBar } from "@/components/SpecStrip";
+import { CATEGORY_PHOTOS } from "@/lib/category-photos";
+import type { Category } from "@/lib/types";
 
-// Real, licensed photos (Unsplash License — free for commercial use) for
-// the four top-level category tiles on the homepage. These are purely
-// navigational, not tied to any specific listing, so a real photo here
-// can't misrepresent a specific used item's condition the way it would
-// on a product card — see components/ProductArt.tsx for why listings
-// without a seller photo still get the abstract generated art instead.
-const CATEGORY_PHOTOS: Record<string, string> = {
-  "full-systems": "/category/full-systems.jpg",
-  "pc-parts-and-components": "/category/pc-parts.jpg",
-  peripherals: "/category/peripherals.jpg",
-  consoles: "/category/consoles.jpg",
+// artKindFor(top.children[0].slug) would pick whichever subcategory
+// happens to be first in taxonomy.ts (e.g. "Monitors" for Peripherals,
+// since that's its first child) — fine for generic per-listing fallback
+// art, but the wrong photo for this specific tile. Pick deliberately here.
+const TILE_CATEGORY: Record<string, Category> = {
+  "full-systems": "Prebuilt PCs",
+  "pc-parts-and-components": "Graphics Cards",
+  peripherals: "Peripherals",
+  consoles: "Consoles",
 };
 
 export const revalidate = 60;
@@ -141,7 +141,7 @@ export default async function Home() {
               <Link href={`/shop?category=${top.slug}`} className="group block">
                 <div className="relative aspect-[16/9] w-full overflow-hidden rounded bg-ink">
                   <Image
-                    src={CATEGORY_PHOTOS[top.slug]}
+                    src={CATEGORY_PHOTOS[TILE_CATEGORY[top.slug]]}
                     alt={top.name}
                     fill
                     sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"

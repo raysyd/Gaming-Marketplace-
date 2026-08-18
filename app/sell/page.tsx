@@ -4,23 +4,18 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
 import { PhotoUploader } from "@/components/PhotoUploader";
-import { slugify } from "@/lib/taxonomy";
+import { TAXONOMY, findTop, findSub, slugify } from "@/lib/taxonomy";
+import { SUGGESTED_SPECS } from "@/lib/specs";
 
-const CATEGORIES = [
-  "Prebuilt PCs",
-  "Graphics Cards",
-  "Processors",
-  "Laptops",
-  "Monitors",
-  "Peripherals",
-  "Consoles",
-];
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
+const DEFAULT_TOP = "pc-parts-and-components";
+const DEFAULT_SUB = "graphics-cards";
 
 export default function SellPage() {
   const [form, setForm] = useState({
     title: "",
-    category: "Graphics Cards",
+    categorySlug: DEFAULT_TOP,
+    subcategorySlug: DEFAULT_SUB,
     condition: "Used",
     price: "",
     location: "",
@@ -35,9 +30,32 @@ export default function SellPage() {
 
   const price = Number(form.price) || 0;
   const fee = Math.round((price * BRAND.feePercent) / 100);
+  const subOptions = findTop(form.categorySlug)?.children ?? [];
 
   const set = (k: string, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }));
+
+  const changeTopCategory = (topSlug: string) => {
+    const top = findTop(topSlug);
+    setForm((f) => ({
+      ...f,
+      categorySlug: topSlug,
+      subcategorySlug: top?.children[0]?.slug ?? f.subcategorySlug,
+    }));
+  };
+
+  // Non-destructive: only adds suggested labels that aren't already on the
+  // form, never touches specs the seller has already filled in.
+  const suggestSpecs = () => {
+    const suggested = SUGGESTED_SPECS[form.subcategorySlug] ?? [];
+    const existingLabels = new Set(specs.map((s) => s.label.toLowerCase()));
+    const toAdd = suggested.filter((label) => !existingLabels.has(label.toLowerCase()));
+    if (!toAdd.length) return;
+    setSpecs((p) => {
+      const base = p.filter((s) => s.label || s.value);
+      return [...base, ...toAdd.map((label) => ({ label, value: "" }))];
+    });
+  };
 
   const submit = async () => {
     if (!form.title.trim() || !price) {
@@ -51,6 +69,7 @@ export default function SellPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          category: findSub(form.subcategorySlug)?.name ?? "",
           price,
           specs: specs.filter((s) => s.label && s.value),
           image: photos[0] ?? "",
@@ -123,27 +142,39 @@ export default function SellPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Category">
               <select
-                value={form.category}
-                onChange={(e) => set("category", e.target.value)}
+                value={form.categorySlug}
+                onChange={(e) => changeTopCategory(e.target.value)}
                 className="input"
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c}>{c}</option>
+                {TAXONOMY.map((t) => (
+                  <option key={t.slug} value={t.slug}>{t.name}</option>
                 ))}
               </select>
             </Field>
-            <Field label="Condition">
+            <Field label="Subcategory">
               <select
-                value={form.condition}
-                onChange={(e) => set("condition", e.target.value)}
+                value={form.subcategorySlug}
+                onChange={(e) => set("subcategorySlug", e.target.value)}
                 className="input"
               >
-                {CONDITIONS.map((c) => (
-                  <option key={c}>{c}</option>
+                {subOptions.map((s) => (
+                  <option key={s.slug} value={s.slug}>{s.name}</option>
                 ))}
               </select>
             </Field>
           </div>
+
+          <Field label="Condition">
+            <select
+              value={form.condition}
+              onChange={(e) => set("condition", e.target.value)}
+              className="input max-w-[220px]"
+            >
+              {CONDITIONS.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label={`Asking price (${BRAND.currency})`}>
@@ -195,12 +226,23 @@ export default function SellPage() {
                   />
                 </div>
               ))}
-              <button
-                onClick={() => setSpecs((p) => [...p, { label: "", value: "" }])}
-                className="spec rounded border border-line px-2.5 py-1.5 font-medium"
-              >
-                + Add spec
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSpecs((p) => [...p, { label: "", value: "" }])}
+                  className="spec rounded border border-line px-2.5 py-1.5 font-medium"
+                >
+                  + Add spec
+                </button>
+                {SUGGESTED_SPECS[form.subcategorySlug] && (
+                  <button
+                    type="button"
+                    onClick={suggestSpecs}
+                    className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust"
+                  >
+                    + Suggest fields for {findSub(form.subcategorySlug)?.name}
+                  </button>
+                )}
+              </div>
             </div>
           </Field>
 
@@ -214,14 +256,16 @@ export default function SellPage() {
             />
           </Field>
 
-          <div className="flex flex-wrap gap-5">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Toggle
               label="Free shipping"
+              hint="Buyers filter for this first — it's one of the biggest reasons a listing gets picked over another."
               on={form.shipsFree}
               onChange={() => set("shipsFree", !form.shipsFree)}
             />
             <Toggle
               label="Accept offers"
+              hint="Lets buyers negotiate instead of scrolling past. Most sales here start with an offer."
               on={form.acceptsOffers}
               onChange={() => set("acceptsOffers", !form.acceptsOffers)}
             />
@@ -286,22 +330,31 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Toggle({
   label,
+  hint,
   on,
   onChange,
 }: {
   label: string;
+  hint: string;
   on: boolean;
   onChange: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-[13.5px]">
+    <label
+      className={`flex cursor-pointer items-start gap-3 rounded-[10px] border p-3.5 transition ${
+        on ? "border-trust bg-trust/5" : "border-line"
+      }`}
+    >
       <input
         type="checkbox"
         checked={on}
         onChange={onChange}
-        className="h-4 w-4 accent-[var(--color-trust)]"
+        className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-trust)]"
       />
-      {label}
+      <span>
+        <span className="block text-[13.5px] font-semibold">{label}</span>
+        <span className="spec mt-0.5 block text-muted">{hint}</span>
+      </span>
     </label>
   );
 }

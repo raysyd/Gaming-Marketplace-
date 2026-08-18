@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
-import { slugify } from "@/lib/taxonomy";
+import { slugify, findTop, findSub } from "@/lib/taxonomy";
 
 export async function POST(req: Request) {
   const limited = rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
@@ -31,11 +31,21 @@ export async function POST(req: Request) {
       { status: 401 }
     );
 
+  // Validate against the real taxonomy rather than trusting the client —
+  // falls back to a sane default instead of writing an orphaned slug that
+  // would never match a category filter.
+  const sub = findSub(payload.subcategorySlug);
+  const subcategorySlug = sub?.slug ?? "graphics-cards";
+  const categorySlug =
+    findTop(payload.categorySlug)?.slug ?? sub?.parent ?? "pc-parts-and-components";
+
   const { data, error } = await supabase
     .from("listings")
     .insert({
       title: payload.title,
-      category: payload.category,
+      category: payload.category || findSub(subcategorySlug)?.name,
+      category_slug: categorySlug,
+      subcategory_slug: subcategorySlug,
       condition: payload.condition,
       price: payload.price,
       location: payload.location,

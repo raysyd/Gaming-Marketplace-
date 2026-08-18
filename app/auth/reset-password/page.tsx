@@ -53,14 +53,19 @@ function ResetPasswordContent() {
       return;
     }
     setStatus("saving");
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        setStatus("error");
+        setMessage(error.message);
+        return;
+      }
+      setStatus("done");
+      setTimeout(() => router.replace("/dashboard"), 1500);
+    } catch {
       setStatus("error");
-      setMessage(error.message);
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    setStatus("done");
-    setTimeout(() => router.replace("/dashboard"), 1500);
   };
 
   return (

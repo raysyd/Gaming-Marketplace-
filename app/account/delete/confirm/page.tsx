@@ -36,15 +36,20 @@ function ConfirmDeleteContent() {
       return;
     }
     setStatus("deleting");
-    const { error } = await supabase.rpc("delete_own_account");
-    if (error) {
+    try {
+      const { error } = await supabase.rpc("delete_own_account");
+      if (error) {
+        setStatus("error");
+        setMessage(error.message);
+        return;
+      }
+      await supabase.auth.signOut();
+      setStatus("done");
+      setTimeout(() => router.replace("/"), 2000);
+    } catch {
       setStatus("error");
-      setMessage(error.message);
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    await supabase.auth.signOut();
-    setStatus("done");
-    setTimeout(() => router.replace("/"), 2000);
   };
 
   return (

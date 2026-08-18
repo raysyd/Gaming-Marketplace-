@@ -76,68 +76,77 @@ export function LoginForm() {
 
     setStatus("sending");
 
-    if (action === "signin") {
-      // Per-account lockout on top of Supabase's own IP-based auth rate
-      // limits (see supabase/auth-security.sql). Fails open — if the
-      // migration hasn't been run yet, the RPC errors and sign-in proceeds
-      // as normal rather than blocking everyone.
-      const { data: blocked } = await supabase
-        .rpc("signin_attempts_blocked", { p_email: normalizedEmail })
-        .then((res) => res, () => ({ data: false }));
-      if (blocked) {
-        setStatus("error");
-        setMessage("Too many failed attempts for this account. Try again in 15 minutes, or reset your password.");
-        return;
-      }
+    // A thrown network/fetch error here (slow connection, cold Supabase
+    // project, DNS blip) used to leave the button stuck on "Sending…"
+    // forever, since nothing downstream of an unhandled rejection ever
+    // reset the status. Now it always lands back on a retryable error.
+    try {
+      if (action === "signin") {
+        // Per-account lockout on top of Supabase's own IP-based auth rate
+        // limits (see supabase/auth-security.sql). Fails open — if the
+        // migration hasn't been run yet, the RPC errors and sign-in
+        // proceeds as normal rather than blocking everyone.
+        const { data: blocked } = await supabase
+          .rpc("signin_attempts_blocked", { p_email: normalizedEmail })
+          .then((res) => res, () => ({ data: false }));
+        if (blocked) {
+          setStatus("error");
+          setMessage("Too many failed attempts for this account. Try again in 15 minutes, or reset your password.");
+          return;
+        }
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-      if (error) {
-        supabase.rpc("record_failed_signin", { p_email: normalizedEmail }).then(
+        const { error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        if (error) {
+          supabase.rpc("record_failed_signin", { p_email: normalizedEmail }).then(
+            () => {},
+            () => {}
+          );
+          setStatus("error");
+          setMessage(
+            /invalid login credentials/i.test(error.message)
+              ? "Wrong email or password."
+              : error.message
+          );
+          return;
+        }
+        supabase.rpc("clear_signin_attempts", { p_email: normalizedEmail }).then(
           () => {},
           () => {}
         );
+        router.replace(next);
+        return;
+      }
+
+      // action === "signup"
+      const { data, error } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+        },
+      });
+      if (error) {
         setStatus("error");
         setMessage(
-          /invalid login credentials/i.test(error.message)
-            ? "Wrong email or password."
+          /already registered|already exists/i.test(error.message)
+            ? "An account already exists for that email. Try signing in instead."
             : error.message
         );
         return;
       }
-      supabase.rpc("clear_signin_attempts", { p_email: normalizedEmail }).then(
-        () => {},
-        () => {}
-      );
-      router.replace(next);
-      return;
-    }
-
-    // action === "signup"
-    const { data, error } = await supabase.auth.signUp({
-      email: normalizedEmail,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
-      },
-    });
-    if (error) {
+      if (data.session) {
+        // Email confirmation is off for this project — the account is live already.
+        router.replace(next);
+        return;
+      }
+      setStatus("check-email");
+    } catch {
       setStatus("error");
-      setMessage(
-        /already registered|already exists/i.test(error.message)
-          ? "An account already exists for that email. Try signing in instead."
-          : error.message
-      );
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    if (data.session) {
-      // Email confirmation is off for this project — the account is live already.
-      router.replace(next);
-      return;
-    }
-    setStatus("check-email");
   };
 
   const sendMagicLink = async () => {
@@ -155,23 +164,28 @@ export function LoginForm() {
       return;
     }
     setStatus("sending");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: normalizedEmail,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
-      },
-    });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/complete?next=${encodeURIComponent(next)}`,
+        },
+      });
+      if (error) {
+        setStatus("error");
+        setMessage(
+          /rate limit|too many|email/i.test(error.message)
+            ? "Email delivery is temporarily limited. Wait a minute, then try again. If this continues, the site needs a custom SMTP provider."
+            : error.message
+        );
+        return;
+      }
+      setStatus("sent");
+      setCooldown(60);
+    } catch {
       setStatus("error");
-      setMessage(
-        /rate limit|too many|email/i.test(error.message)
-          ? "Email delivery is temporarily limited. Wait a minute, then try again. If this continues, the site needs a custom SMTP provider."
-          : error.message
-      );
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    setStatus("sent");
-    setCooldown(60);
   };
 
   const forgotPassword = async () => {
@@ -188,16 +202,21 @@ export function LoginForm() {
       return;
     }
     setStatus("sending");
-    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      if (error) {
+        setStatus("error");
+        setMessage(error.message);
+        return;
+      }
+      setStatus("sent");
+      setMessage("reset");
+    } catch {
       setStatus("error");
-      setMessage(error.message);
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    setStatus("sent");
-    setMessage("reset");
   };
 
   const signInWithGoogle = async () => {
@@ -210,16 +229,20 @@ export function LoginForm() {
     }
 
     setStatus("sending");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    });
-
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
+      });
+      if (error) {
+        setStatus("error");
+        setMessage(error.message);
+      }
+    } catch {
       setStatus("error");
-      setMessage(error.message);
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
   };
 

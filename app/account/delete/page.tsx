@@ -19,18 +19,23 @@ export default function DeleteAccountPage() {
       return;
     }
     setStatus("sending");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: user.email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/account/delete/confirm`,
-      },
-    });
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: user.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/account/delete/confirm`,
+        },
+      });
+      if (error) {
+        setStatus("error");
+        setMessage(error.message);
+        return;
+      }
+      setStatus("sent");
+    } catch {
       setStatus("error");
-      setMessage(error.message);
-      return;
+      setMessage("Couldn't reach the server. Check your connection and try again.");
     }
-    setStatus("sent");
   };
 
   if (loading) return <main className="min-h-[55vh]" aria-busy="true" />;

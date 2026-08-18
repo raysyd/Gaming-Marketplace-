@@ -22,6 +22,8 @@ export const TAXONOMY: TopCategory[] = [
       { slug: "storage", name: "Storage" },
       { slug: "motherboards", name: "Motherboards" },
       { slug: "power-supplies", name: "Power Supplies" },
+      { slug: "cases", name: "Cases" },
+      { slug: "cooling", name: "Fans & Cooling" },
     ],
   },
   {
@@ -58,7 +60,7 @@ export function artKindFor(sub: string): string {
   if (["gaming-pcs", "workstations"].includes(sub)) return "Prebuilt PCs";
   if (sub === "gaming-laptops") return "Laptops";
   if (sub === "graphics-cards") return "Graphics Cards";
-  if (["processors", "memory", "storage", "motherboards", "power-supplies"].includes(sub))
+  if (["processors", "memory", "storage", "motherboards", "power-supplies", "cases", "cooling"].includes(sub))
     return "Processors";
   if (sub === "monitors") return "Monitors";
   if (["keyboards", "mice", "headsets"].includes(sub)) return "Peripherals";

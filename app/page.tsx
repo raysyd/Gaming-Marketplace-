@@ -1,14 +1,25 @@
 import Link from "next/link";
+import Image from "next/image";
 import { queryListings } from "@/lib/data";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { TAXONOMY } from "@/lib/taxonomy";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductArt } from "@/components/ProductArt";
 import { ProductImage } from "@/components/ProductImage";
 import { SpecStrip, FpsBar } from "@/components/SpecStrip";
-import { artKindFor } from "@/lib/taxonomy";
-import type { Category } from "@/lib/types";
+
+// Real, licensed photos (Unsplash License — free for commercial use) for
+// the four top-level category tiles on the homepage. These are purely
+// navigational, not tied to any specific listing, so a real photo here
+// can't misrepresent a specific used item's condition the way it would
+// on a product card — see components/ProductArt.tsx for why listings
+// without a seller photo still get the abstract generated art instead.
+const CATEGORY_PHOTOS: Record<string, string> = {
+  "full-systems": "/category/full-systems.jpg",
+  "pc-parts-and-components": "/category/pc-parts.jpg",
+  peripherals: "/category/peripherals.jpg",
+  consoles: "/category/consoles.jpg",
+};
 
 export const revalidate = 60;
 
@@ -128,11 +139,13 @@ export default async function Home() {
               className="card-hover rounded-[10px] border border-line bg-card p-3"
             >
               <Link href={`/shop?category=${top.slug}`} className="group block">
-                <div className="overflow-hidden rounded bg-ink">
-                  <ProductArt
-                    category={artKindFor(top.children[0].slug) as Category}
-                    seed={top.slug}
-                    className="aspect-[16/9] w-full transition duration-500 group-hover:scale-[1.04]"
+                <div className="relative aspect-[16/9] w-full overflow-hidden rounded bg-ink">
+                  <Image
+                    src={CATEGORY_PHOTOS[top.slug]}
+                    alt={top.name}
+                    fill
+                    sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
                   />
                 </div>
                 <h3 className="mt-2.5 text-[14px] font-semibold">{top.name}</h3>

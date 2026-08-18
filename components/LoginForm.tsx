@@ -28,6 +28,10 @@ export function LoginForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  // True right after signup succeeds. Deliberately doesn't drive the user
+  // straight into /dashboard's own render/redirect — see the note by
+  // router.replace(next) in the signup branch below for why.
+  const [justCreated, setJustCreated] = useState(false);
 
   useEffect(() => {
     if (!cooldown) return;
@@ -48,6 +52,7 @@ export function LoginForm() {
     setStatus("idle");
     setMessage("");
     setConfirmPassword("");
+    setJustCreated(false);
   }
 
   const submitPassword = async () => {
@@ -145,8 +150,19 @@ export function LoginForm() {
         return;
       }
       if (data.session) {
-        // Email confirmation is off for this project — the account is live already.
-        router.replace(next);
+        // Email confirmation is off for this project, so the account is
+        // live already — but deliberately not chaining straight into
+        // router.replace(next) here. That hands off to /dashboard's own
+        // server render, and "create account" would then stay stuck on
+        // screen for however long that takes, reading as a broken signup
+        // even though the account was created fine. Land on a purely
+        // client-side confirmation instead; signing in is its own
+        // separate action with its own redirect.
+        setStatus("idle");
+        setPassword("");
+        setConfirmPassword("");
+        setAction("signin");
+        setJustCreated(true);
         return;
       }
       setStatus("check-email");
@@ -292,6 +308,12 @@ export function LoginForm() {
         <p className="spec mt-4 rounded border border-deal bg-deal-soft px-3 py-2 text-deal">
           Sign-in didn&apos;t complete: {urlError.replace(/_/g, " ")}. Try
           requesting a fresh link — they expire after an hour and only work once.
+        </p>
+      )}
+
+      {justCreated && (
+        <p className="spec mt-4 rounded border border-good/40 bg-good/10 px-3 py-2 text-good">
+          Account created. Enter your password below to sign in.
         </p>
       )}
 

@@ -2,13 +2,12 @@
 
 import { Suspense } from "react";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
 import { safeNext } from "@/lib/safe-next";
 
 function CompleteAuthContent() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
   const [error, setError] = useState("");
@@ -25,9 +24,12 @@ function CompleteAuthContent() {
         setError(sessionError?.message ?? "This sign-in link is invalid or has expired.");
         return;
       }
-      router.replace(next);
+      // Hard navigation, not router.replace() — see the note in
+      // LoginForm.tsx for why a soft client-side transition can miss the
+      // session cookie that was just written.
+      window.location.href = next;
     });
-  }, [next, router]);
+  }, [next]);
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[520px] items-center px-4 py-16">

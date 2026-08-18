@@ -2,14 +2,12 @@
 
 import { Suspense } from "react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
 import { passwordIssues } from "@/lib/password";
 import { withTimeout } from "@/lib/timeout";
 
 function ResetPasswordContent() {
-  const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [linkError, setLinkError] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +60,11 @@ function ResetPasswordContent() {
         return;
       }
       setStatus("done");
-      setTimeout(() => router.replace("/dashboard"), 1500);
+      // Hard navigation, not router.replace() — see the note in
+      // LoginForm.tsx for why.
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
     } catch (e) {
       setStatus("error");
       setMessage(

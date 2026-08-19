@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
-
-const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { siteUrlFrom } from "@/lib/site-url";
 
 /**
  * Creates (or reuses) a Stripe Connect account for the signed-in seller and
@@ -24,7 +23,8 @@ const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
  * /api/orders/[id]/release, so only the `stripe_transfers` capability is
  * needed on the connected account, not `card_payments`.
  */
-async function startOnboarding() {
+async function startOnboarding(req: Request) {
+  const site = siteUrlFrom(req);
   const supabase = await createClient();
   if (!supabase)
     return { error: "Sign-in is not configured.", status: 500 } as const;
@@ -96,8 +96,8 @@ async function startOnboarding() {
           // Stripe requires a GET-able refresh_url — the GET handler below
           // just re-runs this and redirects, so an expired/abandoned link
           // self-heals into a fresh one.
-          refresh_url: `${site()}/api/connect`,
-          return_url: `${site()}/dashboard?connected=1`,
+          refresh_url: `${site}/api/connect`,
+          return_url: `${site}/dashboard?connected=1`,
         },
       },
     });
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
 
-  const result = await startOnboarding();
+  const result = await startOnboarding(req);
   if ("error" in result)
     return NextResponse.json({ error: result.error }, { status: result.status });
   return NextResponse.json(result);
@@ -125,10 +125,11 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const limited = rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
-  if (!limited.ok) return NextResponse.redirect(`${site()}/dashboard?connect_error=1`);
+  if (!limited.ok)
+    return NextResponse.redirect(`${siteUrlFrom(req)}/dashboard?connect_error=1`);
 
-  const result = await startOnboarding();
+  const result = await startOnboarding(req);
   if ("error" in result)
-    return NextResponse.redirect(`${site()}/dashboard?connect_error=1`);
+    return NextResponse.redirect(`${siteUrlFrom(req)}/dashboard?connect_error=1`);
   return NextResponse.redirect(result.url);
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { siteUrlFrom } from "@/lib/site-url";
 import { BRAND } from "@/lib/brand";
 
 /**
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const site = siteUrlFrom(req);
   const currency = BRAND.currency.toLowerCase();
   const listingIds = listings.map((l) => l.id).join(",");
 

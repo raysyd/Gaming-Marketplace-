@@ -1,7 +1,11 @@
 "use client";
 import { useState } from "react";
 
-export function ConnectPayoutButton({ connected }: { connected: boolean }) {
+export function ConnectPayoutButton({
+  status,
+}: {
+  status: "none" | "pending" | "active" | "unknown";
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,6 +26,9 @@ export function ConnectPayoutButton({ connected }: { connected: boolean }) {
     setBusy(false);
   };
 
+  if (status === "active")
+    return <p className="spec mt-3 font-semibold text-good">✓ Payouts active</p>;
+
   return (
     <div>
       <button
@@ -29,7 +36,7 @@ export function ConnectPayoutButton({ connected }: { connected: boolean }) {
         disabled={busy}
         className="rgb-ring mt-3 rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
       >
-        {busy ? "Connecting…" : connected ? "Finish payout setup" : "Connect payout account"}
+        {busy ? "Connecting…" : status === "pending" ? "Finish payout setup" : "Connect payout account"}
       </button>
       {error && <p className="spec mt-2 text-deal">{error}</p>}
     </div>

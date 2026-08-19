@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { querySellerListings, getSellerProfile, querySellerOrders } from "@/lib/seller-data";
+import { getConnectAccountStatus } from "@/lib/stripe";
 import { money, timeAgo } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { ProductImage } from "@/components/ProductImage";
@@ -19,7 +20,12 @@ export default async function DashboardPage() {
 
   const held = orders.filter((o) => o.status === "paid" || o.status === "shipped" || o.status === "delivered");
   const heldTotal = held.reduce((n, o) => n + (o.amount - o.platformFee), 0);
-  const connected = Boolean(profile?.stripeAccountId);
+
+  // profiles.stripe_account_id being set only means onboarding was
+  // *started* — check Stripe itself for whether it's actually finished.
+  const payoutStatus = profile?.stripeAccountId
+    ? await getConnectAccountStatus(profile.stripeAccountId)
+    : "none";
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
@@ -115,11 +121,13 @@ export default async function DashboardPage() {
       <div className="mt-8 rounded-[10px] border border-line bg-card p-5">
         <h2 className="eyebrow">Payouts</h2>
         <p className="mt-2 max-w-lg text-[14px] text-muted">
-          {connected
+          {payoutStatus === "active"
             ? "Payout account connected. Money released from escrow lands here automatically."
-            : "Connect a payout account to receive money when your sales are delivered. Until then, sales stay held in escrow."}
+            : payoutStatus === "pending"
+              ? "Almost there — Stripe still needs a bit more information before this account can receive payouts."
+              : "Connect a payout account to receive money when your sales are delivered. Until then, sales stay held in escrow."}
         </p>
-        <ConnectPayoutButton connected={connected} />
+        <ConnectPayoutButton status={payoutStatus} />
       </div>
     </div>
   );

@@ -238,7 +238,7 @@ export default async function Home() {
             <span className="mt-5 inline-block text-[13px] font-semibold text-white">Trust &amp; safety →</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/selling"
             className="card-hover group rounded-[10px] bg-chrome p-6 text-white transition hover:bg-chrome-2"
           >
             <span className="text-2xl" aria-hidden="true">↗</span>

@@ -38,6 +38,8 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   if (q.freeShipping) sel = sel.eq("ships_free", true);
   if (q.verifiedOnly) sel = sel.eq("seller_verified", true);
   if (q.dealsOnly) sel = sel.not("compare_at", "is", null);
+  for (const [label, value] of Object.entries(q.attrs ?? {}))
+    sel = sel.contains("specs", [{ label, value }]);
   if (q.q?.trim()) sel = sel.textSearch("search_vector", q.q.trim(), { type: "websearch" });
 
   if (q.sort === "low") sel = sel.order("price", { ascending: true });
@@ -56,7 +58,8 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   const unfiltered =
     !q.q && !q.category && !q.sub && !q.conditions?.length &&
     q.minPrice == null && q.maxPrice == null &&
-    !q.freeShipping && !q.verifiedOnly && !q.dealsOnly && !q.status;
+    !q.freeShipping && !q.verifiedOnly && !q.dealsOnly && !q.status &&
+    !Object.keys(q.attrs ?? {}).length;
   if (total === 0 && unfiltered) return filterDemo(q, page, perPage);
   return {
     items: data.map(rowToListing),
@@ -70,11 +73,15 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
 async function getListingUncached(id: string): Promise<Listing | null> {
   const supabase = createPublicClient();
   if (!supabase) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
+  // Not filtered to status = "active": a sold (or mid-checkout "reserved")
+  // listing must still resolve so order history and direct links don't
+  // 404 — the buy box is what shows it as unavailable. Only a seller
+  // taking a listing down ("inactive") should actually 404 it.
   const { data } = await supabase
     .from("listings")
     .select("*")
     .eq("id", id)
-    .eq("status", "active")
+    .neq("status", "inactive")
     .single();
   if (!data) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
   return rowToListing(data);
@@ -154,6 +161,8 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
     if (q.verifiedOnly && !l.sellerVerified) return false;
     if (q.dealsOnly && !l.compareAt) return false;
     if (q.status && (l.status ?? "active") !== q.status) return false;
+    for (const [label, value] of Object.entries(q.attrs ?? {}))
+      if (!l.specs.some((s) => s.label === label && s.value === value)) return false;
     if (!needle) return true;
     return [l.title, l.brand, l.description, ...l.specs.map((s) => s.value)]
       .join(" ")

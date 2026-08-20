@@ -11,5 +11,5 @@
  * that's rejected too.
  */
 export function safeNext(value: string | null | undefined): string {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/buying";
 }

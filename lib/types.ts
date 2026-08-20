@@ -52,6 +52,8 @@ export type ListingQuery = {
   freeShipping?: boolean;
   verifiedOnly?: boolean;
   dealsOnly?: boolean;
+  /** `{ "Type": "NVMe SSD" }` — matched against `specs` via JSONB containment. */
+  attrs?: Record<string, string>;
   sort?: "new" | "low" | "high" | "save" | "watched";
   status?: "active" | "sold";
   page?: number;
@@ -89,18 +91,39 @@ export type Conversation = {
   unread: number;
 };
 
-export type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "released" | "refunded";
+/**
+ * "paid" doubles as the brief's "awaiting_postage" — payment confirmation
+ * is the exact moment the seller's 48-hour posting window starts, so
+ * there's no separate real-world event that would move an order from one
+ * to the other. Shown to sellers as "Awaiting postage" and to buyers as
+ * "Payment held", same underlying status. See lib/brand.ts orderWindowHours.
+ */
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "shipped"
+  | "awaiting_confirmation"
+  | "released"
+  | "disputed"
+  | "refunded";
 
 export type Order = {
   id: string;
   listingId: string;
   listingTitle?: string;
+  listingSlug?: string;
+  listingImage?: string;
   buyerId: string;
   sellerId: string;
+  sellerName?: string;
   amount: number;
   platformFee: number;
+  shippingFee?: number;
   stripePaymentIntent: string | null;
   trackingNumber: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  disputeReason: string | null;
   status: OrderStatus;
   createdAt: string;
 };

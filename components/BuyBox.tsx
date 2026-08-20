@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Listing } from "@/lib/types";
@@ -17,9 +18,17 @@ export function BuyBox({ listing }: { listing: Listing }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const ownListing = user?.id === listing.sellerId;
+  const unavailable = listing.status && listing.status !== "active" && !ownListing;
 
   const addToCart = () => {
-    add({ id: listing.id, title: listing.title, price: listing.price, sellerId: listing.sellerId });
+    add({
+      id: listing.id,
+      slug: listing.slug,
+      title: listing.title,
+      price: listing.price,
+      sellerId: listing.sellerId,
+      shipsFree: listing.shipsFree,
+    });
     setAdded(true);
   };
 
@@ -63,7 +72,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
       </div>
 
       <p className="spec mt-1 text-muted">
-        {listing.shipsFree ? "Free shipping" : "Shipping calculated at checkout"} ·{" "}
+        {listing.shipsFree ? "Free shipping" : `+ ${money(BRAND.shippingFlatRate)} shipping`} ·{" "}
         {listing.location}
       </p>
 
@@ -71,6 +80,14 @@ export function BuyBox({ listing }: { listing: Listing }) {
         {ownListing ? (
           <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
             This is your listing.
+          </p>
+        ) : listing.status === "sold" ? (
+          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
+            Sold
+          </p>
+        ) : listing.status === "reserved" ? (
+          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
+            In someone&apos;s cart right now — check back shortly.
           </p>
         ) : (
           <button
@@ -80,7 +97,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
             {added ? "Added to cart" : "Add to cart"}
           </button>
         )}
-        {added && !ownListing && (
+        {added && !unavailable && !ownListing && (
           <button
             onClick={() => router.push("/cart")}
             className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
@@ -96,7 +113,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
             Message {listing.sellerName.split(" ")[0]}
           </button>
         )}
-        {listing.acceptsOffers && !ownListing && !offering && (
+        {listing.acceptsOffers && !unavailable && !ownListing && !offering && (
           <button
             onClick={() => setOffering(true)}
             className="w-full rounded-md border border-line py-3 text-[13px] font-medium text-muted transition hover:border-ink/40 hover:text-ink"
@@ -134,23 +151,18 @@ export function BuyBox({ listing }: { listing: Listing }) {
         </div>
       )}
 
-      <div className="mt-5 space-y-2 border-t border-line pt-4">
-        {[
-          [
-            "Payment held until delivery",
-            `${BRAND.name} keeps the money until you confirm the item arrived.`,
-          ],
-          [
-            "Not as described? Send it back",
-            "Report within 3 days of delivery for a full refund.",
-          ],
-        ].map(([t, b]) => (
-          <div key={t}>
-            <p className="text-[13px] font-semibold text-trust">{t}</p>
-            <p className="spec text-muted">{b}</p>
-          </div>
-        ))}
-      </div>
+      {/*
+        The full escrow explanation lives on the checkout page, /trust and
+        the homepage — repeating it here too was pure wallpaper on every
+        single listing. One line, doing just enough to reassure without
+        reciting the whole policy again.
+      */}
+      <p className="spec mt-5 border-t border-line pt-4 text-muted">
+        Payment is held until delivery is confirmed.{" "}
+        <Link href="/trust" className="font-semibold text-trust hover:underline">
+          How buyer protection works →
+        </Link>
+      </p>
     </div>
   );
 }

@@ -1,7 +1,16 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
+import { BRAND } from "@/lib/brand";
 
-export type CartItem = { id: string; title: string; price: number; qty: number; sellerId: string };
+export type CartItem = {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  qty: number;
+  sellerId: string;
+  shipsFree: boolean;
+};
 
 type Ctx = {
   items: CartItem[];
@@ -10,6 +19,15 @@ type Ctx = {
   clear: () => void;
   count: number;
   subtotal: number;
+  /**
+   * One flat fee if anything in the cart didn't opt into free shipping,
+   * never per item — it all ships together in one parcel from one seller
+   * (a cart can only hold one seller's items — see /api/checkout). Mirrors
+   * the exact same rule the server applies at checkout time
+   * (app/api/checkout/route.ts), so what's shown here is never able to
+   * drift from what's actually charged.
+   */
+  shipping: number;
 };
 
 const CartCtx = createContext<Ctx | null>(null);
@@ -45,6 +63,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     clear: () => setItems([]),
     count: items.reduce((n, i) => n + i.qty, 0),
     subtotal: items.reduce((n, i) => n + i.price * i.qty, 0),
+    shipping: items.some((i) => !i.shipsFree) ? BRAND.shippingFlatRate : 0,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

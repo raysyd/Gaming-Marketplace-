@@ -44,21 +44,46 @@ export function AccountMenu() {
           <p className="spec truncate border-b border-line px-4 pb-2 text-muted">
             {user.email}
           </p>
+
+          <p className="eyebrow px-4 pb-1 pt-2.5 text-muted">Buying</p>
           {[
-            ["Your shop", "/dashboard"],
-            ["Orders", "/orders"],
-            ["Messages", "/messages"],
+            ["Orders", "/buying"],
             ["Saved items", "/wishlist"],
-            ["List an item", "/sell"],
+            ["Messages", "/messages"],
+            ["Offers made", "/messages"],
           ].map(([label, href]) => (
             <Link
-              key={href}
+              key={label}
               href={href}
               className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
             >
               {label}
             </Link>
           ))}
+
+          <p className="eyebrow border-t border-line px-4 pb-1 pt-2.5 text-muted">Selling</p>
+          {[
+            ["Listings", "/selling"],
+            ["Sales", "/selling?tab=to-post"],
+            ["Payouts", "/selling#payouts"],
+            ["Offers received", "/messages"],
+          ].map(([label, href]) => (
+            <Link
+              key={label}
+              href={href}
+              className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+            >
+              {label}
+            </Link>
+          ))}
+
+          <Link
+            href="/sell"
+            className="block border-t border-line px-4 py-2 text-[13px] font-semibold text-trust transition hover:bg-paper"
+          >
+            List an item
+          </Link>
+
           <form action="/auth/signout" method="post" className="border-t border-line">
             <button
               type="submit"

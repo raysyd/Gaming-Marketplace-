@@ -63,7 +63,7 @@ function ResetPasswordContent() {
       // Hard navigation, not router.replace() — see the note in
       // LoginForm.tsx for why.
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        window.location.href = "/buying";
       }, 1500);
     } catch (e) {
       setStatus("error");

@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { FilterRail } from "@/components/FilterRail";
 import { Pagination } from "@/components/Pagination";
 import { MobileFilters } from "@/components/MobileFilters";
+import { DemoBanner } from "@/components/DemoBanner";
 import type { ListingQuery } from "@/lib/types";
 import { attrsFromSearchParams } from "@/lib/attributes";
 
@@ -43,7 +44,7 @@ export default async function ShopPage({
     perPage: PER_PAGE,
   };
 
-  const [{ items, total, page, pages }, counts] = await Promise.all([
+  const [{ items, total, page, pages, isDemo }, counts] = await Promise.all([
     queryListings(query),
     countBySub(),
   ]);
@@ -70,6 +71,7 @@ export default async function ShopPage({
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-8">
+      {isDemo && <DemoBanner />}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <nav className="spec text-muted">

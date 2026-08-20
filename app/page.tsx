@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductImage } from "@/components/ProductImage";
 import { SpecStrip, FpsBar } from "@/components/SpecStrip";
 import { CATEGORY_PHOTOS } from "@/lib/category-photos";
+import { DemoBanner } from "@/components/DemoBanner";
 import type { Category } from "@/lib/types";
 
 // artKindFor(top.children[0].slug) would pick whichever subcategory
@@ -36,6 +37,11 @@ export default async function Home() {
 
   return (
     <>
+      {fresh.isDemo && (
+        <div className="mx-auto max-w-[1240px] px-4 pt-4">
+          <DemoBanner />
+        </div>
+      )}
       <section className="border-b border-line bg-card">
         <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-4 py-12 lg:grid-cols-[1.05fr_1fr] lg:py-16">
           <div className="rise">

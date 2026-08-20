@@ -73,6 +73,7 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
     page,
     perPage,
     pages: Math.max(1, Math.ceil(total / perPage)),
+    isDemo: false,
   };
 }
 
@@ -198,6 +199,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
     page,
     perPage,
     pages: Math.max(1, Math.ceil(total / perPage)),
+    isDemo: true,
   };
 }
 

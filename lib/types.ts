@@ -70,6 +70,8 @@ export type ListingPage = {
   page: number;
   perPage: number;
   pages: number;
+  /** True when these are the generated sample listings, not real inventory — drives the "Preview" banner. */
+  isDemo: boolean;
 };
 
 export type Message = {

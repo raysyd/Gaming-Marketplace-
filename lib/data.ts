@@ -4,6 +4,7 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
 import { artKindFor, slugify } from "./taxonomy";
+import { getSellerStats, type SellerStats } from "./reviews-data";
 
 export const PER_PAGE = 24;
 
@@ -32,6 +33,7 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
 
   if (q.sub) sel = sel.eq("subcategory_slug", q.sub);
   else if (q.category) sel = sel.eq("category_slug", q.category);
+  if (q.sellerId) sel = sel.eq("seller_id", q.sellerId);
   if (q.conditions?.length) sel = sel.in("condition", q.conditions);
   if (q.minPrice != null) sel = sel.gte("price", q.minPrice);
   if (q.maxPrice != null) sel = sel.lte("price", q.maxPrice);
@@ -56,13 +58,17 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   // empty shop. Only when nothing is filtered — a filter that legitimately
   // matches nothing must still show "no results".
   const unfiltered =
-    !q.q && !q.category && !q.sub && !q.conditions?.length &&
+    !q.q && !q.category && !q.sub && !q.sellerId && !q.conditions?.length &&
     q.minPrice == null && q.maxPrice == null &&
     !q.freeShipping && !q.verifiedOnly && !q.dealsOnly && !q.status &&
     !Object.keys(q.attrs ?? {}).length;
   if (total === 0 && unfiltered) return filterDemo(q, page, perPage);
+
+  // One extra round trip for the whole page's sellers' real review/sales
+  // stats, not one per card — see lib/reviews-data.ts.
+  const stats = await getSellerStats(data.map((r) => r.seller_id));
   return {
-    items: data.map(rowToListing),
+    items: data.map((r) => rowToListing(r, stats[r.seller_id])),
     total,
     page,
     perPage,
@@ -84,7 +90,8 @@ async function getListingUncached(id: string): Promise<Listing | null> {
     .neq("status", "inactive")
     .single();
   if (!data) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
-  return rowToListing(data);
+  const stats = await getSellerStats([data.seller_id]);
+  return rowToListing(data, stats[data.seller_id]);
 }
 
 /**
@@ -154,6 +161,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
   let out = DEMO_LISTINGS.filter((l) => {
     if (q.sub && l.subcategorySlug !== q.sub) return false;
     if (!q.sub && q.category && l.categorySlug !== q.category) return false;
+    if (q.sellerId && l.sellerId !== q.sellerId) return false;
     if (q.conditions?.length && !q.conditions.includes(l.condition)) return false;
     if (q.minPrice != null && l.price < q.minPrice) return false;
     if (q.maxPrice != null && l.price > q.maxPrice) return false;
@@ -194,7 +202,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function rowToListing(r: any): Listing {
+export function rowToListing(r: any, stats?: SellerStats): Listing {
   const sub = r.subcategory_slug ?? "gaming-pcs";
   return {
     id: r.id,
@@ -214,8 +222,12 @@ export function rowToListing(r: any): Listing {
     description: r.description ?? "",
     sellerId: r.seller_id,
     sellerName: r.seller_name ?? "Seller",
-    sellerRating: Number(r.seller_rating ?? 5),
-    sellerSales: Number(r.seller_sales ?? 0),
+    // Real reviews/sales only — listings.seller_rating (fabricated,
+    // defaulted every row to 5 stars) and .seller_sales are no longer
+    // read here. No reviews yet shows as 0/0, not a fake "5.0".
+    sellerRating: stats?.avgRating ?? 0,
+    sellerReviewCount: stats?.reviewCount ?? 0,
+    sellerSales: stats?.salesCount ?? 0,
     sellerVerified: Boolean(r.seller_verified),
     location: r.location ?? "",
     state: r.state ?? "",

@@ -119,8 +119,14 @@ export default async function Home() {
                   </div>
                   <div className="text-right">
                     <div className="spec text-muted">{hero.sellerName}</div>
-                    <div className="spec font-medium text-good">
-                      ★ {hero.sellerRating.toFixed(1)} · {hero.sellerSales} sales
+                    <div className="spec font-medium text-muted">
+                      {hero.sellerReviewCount > 0 ? (
+                        <span className="text-good">
+                          ★ {hero.sellerRating.toFixed(1)} ({hero.sellerReviewCount})
+                        </span>
+                      ) : (
+                        "No reviews yet"
+                      )}
                     </div>
                   </div>
                 </div>

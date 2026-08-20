@@ -11,7 +11,7 @@ export async function querySellerListings(): Promise<Listing[]> {
     .eq("seller_id", user.id)
     .order("created_at", { ascending: false });
   if (error || !data) return [];
-  return data.map(rowToListing);
+  return data.map((r) => rowToListing(r));
 }
 
 export type SellerProfile = { userId: string; stripeAccountId: string | null };

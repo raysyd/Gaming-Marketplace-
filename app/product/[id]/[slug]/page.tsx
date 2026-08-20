@@ -153,12 +153,12 @@ export default async function ProductPage({
 
           <div className="order-5 rounded-[10px] border border-line bg-card p-5">
             <h2 className="eyebrow">Seller</h2>
-            <div className="mt-3 flex items-center gap-3">
+            <Link href={`/seller/${listing.sellerId}`} className="mt-3 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-[15px] font-semibold text-white">
                 {listing.sellerName[0]}
               </div>
               <div>
-                <p className="flex items-center gap-1.5 text-[14px] font-semibold">
+                <p className="flex items-center gap-1.5 text-[14px] font-semibold hover:text-trust">
                   {listing.sellerName}
                   {listing.sellerVerified && (
                     <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
@@ -167,11 +167,13 @@ export default async function ProductPage({
                   )}
                 </p>
                 <p className="spec text-muted">
-                  ★ {listing.sellerRating.toFixed(1)} · {listing.sellerSales} sales ·{" "}
-                  {listing.location}
+                  {listing.sellerReviewCount > 0
+                    ? `★ ${listing.sellerRating.toFixed(1)} (${listing.sellerReviewCount} reviews)`
+                    : "No reviews yet"}{" "}
+                  · {listing.sellerSales} sales · {listing.location}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { nameFromEmail } from "@/lib/profile-name";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,6 +28,19 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Sign in to send messages." }, { status: 401 });
+
+  // Same backfill as POST /api/listings — a message thread reads the
+  // other side's name from profiles.display_name (see
+  // lib/messages-data.ts), which nothing ever wrote before now.
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!existingProfile?.display_name) {
+    const derived = nameFromEmail(user.email);
+    if (derived) await supabase.from("profiles").upsert({ id: user.id, display_name: derived });
+  }
 
   // "Message seller" on a listing with no thread yet only ever has a
   // client-fabricated id (see components/Messenger.tsx) — a real one is a

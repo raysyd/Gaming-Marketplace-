@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify, findTop, findSub } from "@/lib/taxonomy";
 import { getConnectAccountStatus } from "@/lib/stripe";
+import { nameFromEmail } from "@/lib/profile-name";
 
 const MIN_PHOTOS = 5;
 const MAX_PHOTOS = 10;
@@ -44,15 +45,16 @@ export async function POST(req: Request) {
       { status: 401 }
     );
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_account_id, display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   // The real payout-setup gate — app/sell/page.tsx checks this too so the
   // seller sees the prompt before filling out the form, but that's UX, not
   // enforcement. Skipped entirely when Stripe isn't configured (demo mode).
   if (process.env.STRIPE_SECRET_KEY) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("stripe_account_id")
-      .eq("id", user.id)
-      .maybeSingle();
     const status = profile?.stripe_account_id
       ? await getConnectAccountStatus(profile.stripe_account_id)
       : "none";
@@ -62,6 +64,15 @@ export async function POST(req: Request) {
         { status: 403 }
       );
   }
+
+  // Neither profiles.display_name nor listings.seller_name were ever
+  // actually written anywhere — every real listing's seller showed up as
+  // a bare "Seller" everywhere (cards, messages, reviews). Backfill from
+  // the account's own email the first time, never overwriting a name set
+  // some other way later.
+  const sellerName = profile?.display_name || nameFromEmail(user.email) || "Seller";
+  if (!profile?.display_name)
+    await supabase.from("profiles").upsert({ id: user.id, display_name: sellerName });
 
   // Validate against the real taxonomy rather than trusting the client —
   // falls back to a sane default instead of writing an orphaned slug that
@@ -88,6 +99,7 @@ export async function POST(req: Request) {
       ships_free: payload.shipsFree,
       accepts_offers: payload.acceptsOffers,
       seller_id: user.id,
+      seller_name: sellerName,
       slug: slugify(payload.title),
       status: "active",
       stock: 1,

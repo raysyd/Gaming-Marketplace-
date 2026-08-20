@@ -58,7 +58,7 @@ const nextId = () => `l-${String(++n).padStart(3, "0")}`;
 function make(
   partial: Omit<
     Listing,
-    | "id" | "slug" | "sellerId" | "sellerName" | "sellerRating" | "sellerSales"
+    | "id" | "slug" | "sellerId" | "sellerName" | "sellerRating" | "sellerReviewCount" | "sellerSales"
     | "sellerVerified" | "location" | "state" | "createdAt" | "watchers"
     | "image" | "images" | "stock" | "category"
   > & { category?: Category }
@@ -75,6 +75,10 @@ function make(
     sellerId: s.id,
     sellerName: s.name,
     sellerRating: s.rating,
+    // Roughly half of sales get a review — plausible, not every sale, and
+    // still clearly labelled sample data by the "Preview" banner rather
+    // than presented as real trust signals.
+    sellerReviewCount: Math.round(s.sales * 0.5),
     sellerSales: s.sales,
     sellerVerified: s.verified,
     location: `${s.city}, ${s.state}`,

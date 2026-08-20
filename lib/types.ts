@@ -29,7 +29,10 @@ export type Listing = {
   description: string;
   sellerId: string;
   sellerName: string;
+  /** Average of real reviews (see lib/reviews-data.ts) — undefined/0 with sellerReviewCount 0 means "No reviews yet", never a fabricated default. */
   sellerRating: number;
+  sellerReviewCount: number;
+  /** Real count of released (completed) orders — not a fabricated column. */
   sellerSales: number;
   sellerVerified: boolean;
   location: string;
@@ -46,6 +49,7 @@ export type ListingQuery = {
   q?: string;
   category?: string;
   sub?: string;
+  sellerId?: string;
   conditions?: string[];
   minPrice?: number;
   maxPrice?: number;
@@ -106,6 +110,17 @@ export type OrderStatus =
   | "released"
   | "disputed"
   | "refunded";
+
+export type Review = {
+  id: string;
+  orderId: string;
+  reviewerId: string;
+  reviewerName: string;
+  sellerId: string;
+  rating: number;
+  body: string | null;
+  createdAt: string;
+};
 
 export type Order = {
   id: string;

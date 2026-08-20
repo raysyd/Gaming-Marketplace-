@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { queryBuyerOrders } from "@/lib/seller-data";
+import { getReviewableOrderIds } from "@/lib/reviews-data";
 import { money, timeAgo, deadlineLabel } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { ProductImage } from "@/components/ProductImage";
 import { BuyerOrderActions } from "@/components/BuyerOrderActions";
+import { ReviewForm } from "@/components/ReviewForm";
 import type { Order } from "@/lib/types";
 
 const TABS = [
@@ -26,7 +28,7 @@ type SP = { tab?: string };
 
 export default async function BuyingPage({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
-  const orders = await queryBuyerOrders();
+  const [orders, reviewableIds] = await Promise.all([queryBuyerOrders(), getReviewableOrderIds()]);
   const activeTab = TABS.find((t) => t.key === sp.tab) ?? TABS[1];
   const items = orders.filter(activeTab.match);
 
@@ -110,6 +112,9 @@ export default async function BuyingPage({ searchParams }: { searchParams: Promi
               </div>
               {(o.status === "shipped" || o.status === "awaiting_confirmation") && (
                 <BuyerOrderActions id={o.id} />
+              )}
+              {o.status === "released" && reviewableIds.has(o.id) && (
+                <ReviewForm orderId={o.id} listingTitle={o.listingTitle ?? "this item"} />
               )}
             </li>
           ))}

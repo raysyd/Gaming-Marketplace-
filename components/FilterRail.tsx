@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TAXONOMY } from "@/lib/taxonomy";
 import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
+import { attributesFor, attrParam } from "@/lib/attributes";
 
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const PRICE_BANDS: [string, number | undefined, number | undefined][] = [
@@ -42,16 +43,30 @@ export function FilterRail({
     return href({ condition: next.join(",") || undefined });
   };
 
+  // Any attribute filter (attr_type, attr_capacity, …) is only meaningful
+  // for the subcategory it was set under — carrying it across a category
+  // change would silently filter the new subcategory against a value that
+  // was never one of its options, producing an empty result with no
+  // visible reason. Clear all of it whenever category/sub changes.
+  const clearedAttrs = Object.fromEntries(
+    Object.keys(sp)
+      .filter((k) => k.startsWith("attr_"))
+      .map((k) => [k, undefined])
+  );
+  const navHref = (patch: SP) => href({ ...clearedAttrs, ...patch });
+
+  const attrDefs = sp.sub ? attributesFor(sp.sub).filter((a) => a.filterable) : [];
+
   return (
     <aside className="h-fit rounded-[10px] border border-line bg-card p-4">
       <Block title="Category">
-        <Row href={href({ category: undefined, sub: undefined })} on={!sp.category && !sp.sub}>
+        <Row href={navHref({ category: undefined, sub: undefined })} on={!sp.category && !sp.sub}>
           All listings
         </Row>
         {TAXONOMY.map((top) => (
           <div key={top.slug} className="mt-2">
             <Row
-              href={href({ category: top.slug, sub: undefined })}
+              href={navHref({ category: top.slug, sub: undefined })}
               on={sp.category === top.slug && !sp.sub}
               bold
             >
@@ -61,7 +76,7 @@ export function FilterRail({
               {top.children.map((sub) => (
                 <Row
                   key={sub.slug}
-                  href={href({ category: top.slug, sub: sub.slug })}
+                  href={navHref({ category: top.slug, sub: sub.slug })}
                   on={sp.sub === sub.slug}
                 >
                   <span className="flex justify-between gap-2">
@@ -76,6 +91,20 @@ export function FilterRail({
           </div>
         ))}
       </Block>
+
+      {attrDefs.map((def) => (
+        <Block key={def.key} title={def.label}>
+          {def.options?.map((opt) => {
+            const param = attrParam(def.key);
+            const on = sp[param] === opt;
+            return (
+              <Row key={opt} href={href({ [param]: on ? undefined : opt })} on={on}>
+                {opt}
+              </Row>
+            );
+          })}
+        </Block>
+      ))}
 
       <Block title="Price">
         {PRICE_BANDS.map(([label, min, max]) => {

@@ -10,6 +10,7 @@ export const TAXONOMY: TopCategory[] = [
       { slug: "gaming-pcs", name: "Gaming PCs" },
       { slug: "gaming-laptops", name: "Gaming Laptops" },
       { slug: "workstations", name: "Workstations" },
+      { slug: "mini-pcs", name: "Mini PCs" },
     ],
   },
   {
@@ -24,6 +25,7 @@ export const TAXONOMY: TopCategory[] = [
       { slug: "power-supplies", name: "Power Supplies" },
       { slug: "cases", name: "Cases" },
       { slug: "cooling", name: "Fans & Cooling" },
+      { slug: "cables-extensions", name: "Cables & Extensions" },
     ],
   },
   {
@@ -46,6 +48,15 @@ export const TAXONOMY: TopCategory[] = [
       { slug: "handhelds", name: "Handhelds" },
     ],
   },
+  {
+    slug: "collectibles-and-parts",
+    name: "Collectibles & For Parts",
+    children: [
+      { slug: "collectibles", name: "Collectibles" },
+      { slug: "for-parts", name: "For Parts / Not Working" },
+      { slug: "retro-hardware", name: "Retro Hardware" },
+    ],
+  },
 ];
 
 export const ALL_SUBS = TAXONOMY.flatMap((t) =>
@@ -57,10 +68,15 @@ export const findTop = (slug: string) => TAXONOMY.find((t) => t.slug === slug);
 
 /** Which art to draw for a subcategory. */
 export function artKindFor(sub: string): string {
-  if (["gaming-pcs", "workstations"].includes(sub)) return "Prebuilt PCs";
+  if (["gaming-pcs", "workstations", "mini-pcs"].includes(sub)) return "Prebuilt PCs";
   if (sub === "gaming-laptops") return "Laptops";
   if (sub === "graphics-cards") return "Graphics Cards";
-  if (["processors", "memory", "storage", "motherboards", "power-supplies", "cases", "cooling"].includes(sub))
+  if (
+    [
+      "processors", "memory", "storage", "motherboards", "power-supplies", "cases", "cooling",
+      "cables-extensions", "collectibles", "for-parts", "retro-hardware",
+    ].includes(sub)
+  )
     return "Processors";
   if (sub === "monitors") return "Monitors";
   if (["keyboards", "mice", "headsets"].includes(sub)) return "Peripherals";

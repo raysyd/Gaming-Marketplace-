@@ -7,8 +7,10 @@ import { clockTime, money, timeAgo } from "@/lib/format";
 import { ProductImage } from "./ProductImage";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
+import { useAuth } from "./AuthProvider";
 
-const ME = "u-you";
+/** Demo-mode buyer id — matches lib/demo.ts's DEMO_USER, unused once signed in. */
+const DEMO_ME = "u-you";
 
 export function Messenger({
   initialConversations,
@@ -19,6 +21,14 @@ export function Messenger({
   initialMessages: Record<string, Message[]>;
   listings: Listing[];
 }) {
+  const { user } = useAuth();
+  // Real conversations/messages carry the signed-in user's actual id as
+  // sender_id/buyer_id/seller_id — comparing against a hardcoded demo id
+  // here meant every one of a real user's own messages rendered as if
+  // they were the other person's. This is the one thing every "mine?"
+  // check in this file has to agree on.
+  const ME = user?.id ?? DEMO_ME;
+
   const params = useSearchParams();
   const deepListing = params.get("listing");
   const deepOffer = params.get("offer");
@@ -134,6 +144,22 @@ export function Messenger({
     };
   }, [activeId]);
 
+  /*
+   * Opening a thread only ever cleared the unread count in local state
+   * (see the conversation-list onClick below) — read_at in Supabase was
+   * never touched, so the badge came back on the next load. This is what
+   * actually persists it; PATCH /api/messages no-ops harmlessly for a
+   * locally-fabricated (non-uuid) id, so this is safe to fire unconditionally.
+   */
+  useEffect(() => {
+    if (!hasSupabase || !activeId) return;
+    fetch("/api/messages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversationId: activeId }),
+    }).catch(() => {});
+  }, [activeId]);
+
   const thread = activeId ? messages[activeId] ?? [] : [];
   const active = useMemo(
     () => conversations.find((c) => c.id === activeId) ?? null,
@@ -169,15 +195,31 @@ export function Messenger({
     );
     setDraft("");
     try {
-      await fetch("/api/messages", {
+      const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversationId: activeId,
-          body,
           listingId: active?.listingId,
+          body,
         }),
       });
+      const data = await res.json();
+      // A brand-new thread (opened via "Message seller") only ever has a
+      // locally-fabricated id up to this point — /api/messages creates
+      // the real conversation row server-side and hands back its actual
+      // id. Re-key local state onto that id so the next message in this
+      // session (and the realtime subscription below, which listens on
+      // activeId) both point at the row that's actually in Postgres.
+      if (res.ok && data.conversationId && data.conversationId !== activeId) {
+        const realId = data.conversationId as string;
+        setMessages((p) => {
+          const { [activeId]: thread, ...rest } = p;
+          return { ...rest, [realId]: thread ?? [] };
+        });
+        setConversations((p) => p.map((c) => (c.id === activeId ? { ...c, id: realId } : c)));
+        setActiveId(realId);
+      }
     } catch {
       // Message stays in the thread; the send is retried on the next action.
     }

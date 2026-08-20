@@ -15,15 +15,16 @@ export function SiteFooter() {
           links={[
             ["Browse everything", "/shop"],
             ["Price drops", "/shop?deals=1"],
-            ["Prebuilt PCs", "/shop?category=Prebuilt%20PCs"],
-            ["Graphics cards", "/shop?category=Graphics%20Cards"],
+            ["Prebuilt PCs", "/shop?category=full-systems&sub=gaming-pcs"],
+            ["Graphics cards", "/shop?category=pc-parts-and-components&sub=graphics-cards"],
+            ["Your orders", "/buying"],
           ]}
         />
         <FooterCol
           title="Sell"
           links={[
             ["List an item", "/sell"],
-            ["Your listings", "/dashboard"],
+            ["Your listings", "/selling"],
             ["Messages", "/messages"],
           ]}
         />

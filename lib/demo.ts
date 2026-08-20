@@ -42,7 +42,17 @@ const CPUS = [
   { name: "Core i5-12400F", price: 189, brand: "Intel", cores: "6C / 12T" },
 ];
 
-const CONDITIONS: Condition[] = ["New", "Like new", "Used", "Used", "For parts"];
+/**
+ * Condition used to be picked uniformly at random regardless of price —
+ * a $3,480 build had the same odds of showing up "For parts" as a $50
+ * cable. Weighted by price band instead: "For parts" only shows up on
+ * genuinely cheap items, and expensive gear skews toward New/Like new.
+ */
+function conditionForPrice(price: number): Condition {
+  if (price >= 1200) return pick<Condition>(["New", "New", "Like new", "Like new", "Used"]);
+  if (price >= 400) return pick<Condition>(["New", "Like new", "Used", "Used", "Used"]);
+  return pick<Condition>(["Used", "Used", "Used", "For parts", "For parts"]);
+}
 
 let seed = 20260815;
 const rand = () => {
@@ -58,7 +68,7 @@ const nextId = () => `l-${String(++n).padStart(3, "0")}`;
 function make(
   partial: Omit<
     Listing,
-    | "id" | "slug" | "sellerId" | "sellerName" | "sellerRating" | "sellerSales"
+    | "id" | "slug" | "sellerId" | "sellerName" | "sellerRating" | "sellerReviewCount" | "sellerSales"
     | "sellerVerified" | "location" | "state" | "createdAt" | "watchers"
     | "image" | "images" | "stock" | "category"
   > & { category?: Category }
@@ -75,11 +85,21 @@ function make(
     sellerId: s.id,
     sellerName: s.name,
     sellerRating: s.rating,
+    // Roughly half of sales get a review — plausible, not every sale, and
+    // still clearly labelled sample data by the "Preview" banner rather
+    // than presented as real trust signals.
+    sellerReviewCount: Math.round(s.sales * 0.5),
     sellerSales: s.sales,
     sellerVerified: s.verified,
     location: `${s.city}, ${s.state}`,
     state: s.state,
-    watchers: Math.floor(rand() * 220),
+    // A single small-range roll produced enough near-identical values in
+    // practice to look like every listing had "207 watchers". A wider
+    // range makes that coincidence far less likely, and most listings
+    // should have modest counts anyway — only a genuine long tail gets
+    // the high numbers, via an occasional second roll instead of a flat
+    // distribution that piles up in the middle of its range.
+    watchers: Math.floor(rand() * 60) + (rand() > 0.85 ? Math.floor(rand() * 260) : 0),
     stock: 1,
     createdAt: iso(age),
     ...partial,
@@ -100,7 +120,7 @@ function buildPCs(): Listing[] {
         subcategorySlug: "gaming-pcs",
         price,
         compareAt: discounted ? Math.round((price * 1.22) / 10) * 10 : undefined,
-        condition: pick(CONDITIONS),
+        condition: conditionForPrice(price),
         brand: "Custom",
         fps1080p: gpu.fps,
         specs: [
@@ -129,7 +149,7 @@ function buildGPUs(): Listing[] {
       subcategorySlug: "graphics-cards",
       price,
       compareAt: discounted ? Math.round((price * 1.18) / 10) * 10 : undefined,
-      condition: pick(CONDITIONS),
+      condition: conditionForPrice(price),
       brand: gpu.brand,
       fps1080p: gpu.fps,
       specs: [
@@ -153,7 +173,7 @@ function buildCPUs(): Listing[] {
       categorySlug: "pc-parts-and-components",
       subcategorySlug: "processors",
       price: cpu.price,
-      condition: pick(CONDITIONS),
+      condition: conditionForPrice(cpu.price),
       brand: cpu.brand,
       specs: [
         { label: "Cores", value: cpu.cores },
@@ -204,7 +224,7 @@ function buildMisc(): Listing[] {
       subcategorySlug: sub,
       price,
       compareAt: discounted ? Math.round((price * 1.2) / 10) * 10 : undefined,
-      condition: pick(CONDITIONS),
+      condition: conditionForPrice(price),
       brand,
       specs: [
         { label: "Brand", value: brand },

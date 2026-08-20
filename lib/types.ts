@@ -29,7 +29,10 @@ export type Listing = {
   description: string;
   sellerId: string;
   sellerName: string;
+  /** Average of real reviews (see lib/reviews-data.ts) — undefined/0 with sellerReviewCount 0 means "No reviews yet", never a fabricated default. */
   sellerRating: number;
+  sellerReviewCount: number;
+  /** Real count of released (completed) orders — not a fabricated column. */
   sellerSales: number;
   sellerVerified: boolean;
   location: string;
@@ -46,12 +49,15 @@ export type ListingQuery = {
   q?: string;
   category?: string;
   sub?: string;
+  sellerId?: string;
   conditions?: string[];
   minPrice?: number;
   maxPrice?: number;
   freeShipping?: boolean;
   verifiedOnly?: boolean;
   dealsOnly?: boolean;
+  /** `{ "Type": "NVMe SSD" }` — matched against `specs` via JSONB containment. */
+  attrs?: Record<string, string>;
   sort?: "new" | "low" | "high" | "save" | "watched";
   status?: "active" | "sold";
   page?: number;
@@ -64,6 +70,8 @@ export type ListingPage = {
   page: number;
   perPage: number;
   pages: number;
+  /** True when these are the generated sample listings, not real inventory — drives the "Preview" banner. */
+  isDemo: boolean;
 };
 
 export type Message = {
@@ -89,18 +97,50 @@ export type Conversation = {
   unread: number;
 };
 
-export type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "released" | "refunded";
+/**
+ * "paid" doubles as the brief's "awaiting_postage" — payment confirmation
+ * is the exact moment the seller's 48-hour posting window starts, so
+ * there's no separate real-world event that would move an order from one
+ * to the other. Shown to sellers as "Awaiting postage" and to buyers as
+ * "Payment held", same underlying status. See lib/brand.ts orderWindowHours.
+ */
+export type OrderStatus =
+  | "pending"
+  | "paid"
+  | "shipped"
+  | "awaiting_confirmation"
+  | "released"
+  | "disputed"
+  | "refunded";
+
+export type Review = {
+  id: string;
+  orderId: string;
+  reviewerId: string;
+  reviewerName: string;
+  sellerId: string;
+  rating: number;
+  body: string | null;
+  createdAt: string;
+};
 
 export type Order = {
   id: string;
   listingId: string;
   listingTitle?: string;
+  listingSlug?: string;
+  listingImage?: string;
   buyerId: string;
   sellerId: string;
+  sellerName?: string;
   amount: number;
   platformFee: number;
+  shippingFee?: number;
   stripePaymentIntent: string | null;
   trackingNumber: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  disputeReason: string | null;
   status: OrderStatus;
   createdAt: string;
 };

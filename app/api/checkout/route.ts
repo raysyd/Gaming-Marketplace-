@@ -5,6 +5,9 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { siteUrlFrom } from "@/lib/site-url";
 import { BRAND } from "@/lib/brand";
 
+/** Checkout Session hold — how long a reservation survives an abandoned checkout. */
+const RESERVATION_MINUTES = 30;
+
 /**
  * Separate charges and transfers, not a destination charge — a plain
  * PaymentIntent captured immediately on the platform's own account, with
@@ -63,7 +66,7 @@ export async function POST(req: Request) {
   // `active` status is enforced by RLS on this table regardless.
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
-    .select("id, title, price, seller_id, status")
+    .select("id, title, price, seller_id, status, ships_free")
     .in("id", ids);
   if (listingsError || !listings?.length)
     return NextResponse.json({ error: "Couldn't load those listings." }, { status: 400 });
@@ -128,37 +131,97 @@ export async function POST(req: Request) {
     );
   }
 
+  // Reserve every listing atomically — active -> reserved, conditioned on
+  // still being active — before Stripe ever sees this checkout. Postgres's
+  // row lock during the UPDATE is what makes this safe against two buyers
+  // clicking checkout on the same listing in the same second: whichever
+  // request's UPDATE commits first wins the row, and the second gets 0
+  // rows back instead of a false "it worked". This is the first line of
+  // defense; the partial unique index on orders (see
+  // supabase/02-order-lifecycle.sql) is the one that holds even if this
+  // one has a bug.
+  const { data: reserved, error: reserveError } = await supabase
+    .from("listings")
+    .update({ status: "reserved" })
+    .in("id", ids)
+    .eq("status", "active")
+    .select("id");
+  if (reserveError)
+    return NextResponse.json({ error: "Couldn't start checkout. Try again." }, { status: 500 });
+  if (!reserved || reserved.length !== ids.length) {
+    // Partial reservation — someone else got the rest a moment before us.
+    // Put back only what we actually took, not the whole cart.
+    if (reserved?.length)
+      await supabase
+        .from("listings")
+        .update({ status: "active" })
+        .in("id", reserved.map((r) => r.id));
+    return NextResponse.json(
+      { error: "Someone just bought one or more of these items. Refresh your cart and try again." },
+      { status: 409 }
+    );
+  }
+
   const site = siteUrlFrom(req);
   const currency = BRAND.currency.toLowerCase();
   const listingIds = listings.map((l) => l.id).join(",");
 
+  // Shipping ships as one parcel per seller, so it's charged once per
+  // checkout, never per item — a mixed cart of free- and paid-shipping
+  // items from the same seller still only pays the flat rate once. Read
+  // fresh from lib/brand.ts rather than trusting anything the client sent;
+  // this is the one number that ends up charged, shown, and stored (see
+  // the webhook, which is the only place that writes it to `orders`).
+  const shippingFee = listings.some((l) => !l.ships_free) ? BRAND.shippingFlatRate : 0;
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: listings.map((l) => ({
-        // Every listing here has stock 1 — one line item each, quantity 1.
-        // Client-submitted quantity is ignored for the same reason price is.
-        quantity: 1,
-        price_data: {
-          currency,
-          unit_amount: Math.round(l.price * 100),
-          product_data: { name: l.title },
-        },
-      })),
+      line_items: [
+        ...listings.map((l) => ({
+          // Every listing here has stock 1 — one line item each, quantity 1.
+          // Client-submitted quantity is ignored for the same reason price is.
+          quantity: 1,
+          price_data: {
+            currency,
+            unit_amount: Math.round(l.price * 100),
+            product_data: { name: l.title },
+          },
+        })),
+        ...(shippingFee > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency,
+                  unit_amount: Math.round(shippingFee * 100),
+                  product_data: { name: "Shipping" },
+                },
+              },
+            ]
+          : []),
+      ],
       // No transfer_data, no capture_method: "manual", no
       // application_fee_amount — this is a plain charge to the platform's
       // own balance, captured immediately. The platform fee is computed
       // and stored on the order row by the webhook below, then actually
       // applied as the transfer amount in /api/orders/[id]/release.
       payment_intent_data: {
-        metadata: { buyerId: user.id, sellerId, listingIds },
+        metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
       },
-      metadata: { buyerId: user.id, sellerId, listingIds },
-      success_url: `${site}/dashboard?paid=1`,
+      metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
+      // Bounds how long a reservation can hold a listing hostage if the
+      // buyer just closes the tab — checkout.session.expired (see the
+      // webhook) puts reserved listings back to active when this passes.
+      expires_at: Math.floor(Date.now() / 1000) + RESERVATION_MINUTES * 60,
+      success_url: `${site}/buying/confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${site}/cart`,
     });
     return NextResponse.json({ url: session.url });
   } catch (e) {
+    // The reservation already happened — a Stripe-side failure here must
+    // not leave listings stuck reserved with no checkout ever created.
+    await supabase.from("listings").update({ status: "active" }).in("id", ids).eq("status", "reserved");
     const message = e instanceof Error ? e.message : "Checkout failed.";
     return NextResponse.json({ url: null, message }, { status: 500 });
   }

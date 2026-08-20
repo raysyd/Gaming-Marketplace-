@@ -45,7 +45,7 @@ export async function POST(
   if (error || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   if (order.seller_id !== user.id)
     return NextResponse.json({ error: "Only the seller can refund this order." }, { status: 403 });
-  if (!["paid", "shipped", "delivered", "released"].includes(order.status))
+  if (!["paid", "shipped", "awaiting_confirmation", "disputed", "released"].includes(order.status))
     return NextResponse.json(
       { error: `Can't refund an order in "${order.status}" status.` },
       { status: 400 }
@@ -64,9 +64,14 @@ export async function POST(
       // refund the buyer — reversing the transfer that's no longer
       // backed by an active refund would be the wrong failure mode to
       // risk if the second call fails.
-      await stripe.transfers.createReversal(order.stripe_transfer_id);
+      await stripe.transfers.createReversal(order.stripe_transfer_id, undefined, {
+        idempotencyKey: `refund-reversal:${id}`,
+      });
     }
-    await stripe.refunds.create({ payment_intent: order.stripe_payment_intent });
+    await stripe.refunds.create(
+      { payment_intent: order.stripe_payment_intent },
+      { idempotencyKey: `refund:${id}` }
+    );
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Refund failed." },

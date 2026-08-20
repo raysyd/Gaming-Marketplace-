@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductImage } from "@/components/ProductImage";
 import { SpecStrip, FpsBar } from "@/components/SpecStrip";
 import { CATEGORY_PHOTOS } from "@/lib/category-photos";
+import { DemoBanner } from "@/components/DemoBanner";
 import type { Category } from "@/lib/types";
 
 // artKindFor(top.children[0].slug) would pick whichever subcategory
@@ -36,6 +37,11 @@ export default async function Home() {
 
   return (
     <>
+      {fresh.isDemo && (
+        <div className="mx-auto max-w-[1240px] px-4 pt-4">
+          <DemoBanner />
+        </div>
+      )}
       <section className="border-b border-line bg-card">
         <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-4 py-12 lg:grid-cols-[1.05fr_1fr] lg:py-16">
           <div className="rise">
@@ -119,8 +125,14 @@ export default async function Home() {
                   </div>
                   <div className="text-right">
                     <div className="spec text-muted">{hero.sellerName}</div>
-                    <div className="spec font-medium text-good">
-                      ★ {hero.sellerRating.toFixed(1)} · {hero.sellerSales} sales
+                    <div className="spec font-medium text-muted">
+                      {hero.sellerReviewCount > 0 ? (
+                        <span className="text-good">
+                          ★ {hero.sellerRating.toFixed(1)} ({hero.sellerReviewCount})
+                        </span>
+                      ) : (
+                        "No reviews yet"
+                      )}
                     </div>
                   </div>
                 </div>
@@ -238,7 +250,7 @@ export default async function Home() {
             <span className="mt-5 inline-block text-[13px] font-semibold text-white">Trust &amp; safety →</span>
           </Link>
           <Link
-            href="/dashboard"
+            href="/selling"
             className="card-hover group rounded-[10px] bg-chrome p-6 text-white transition hover:bg-chrome-2"
           >
             <span className="text-2xl" aria-hidden="true">↗</span>

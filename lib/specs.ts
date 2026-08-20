@@ -25,4 +25,9 @@ export const SUGGESTED_SPECS: Record<string, string[]> = {
   xbox: ["Storage", "Included controllers", "Bundle"],
   nintendo: ["Storage", "Included controllers", "Bundle"],
   handhelds: ["Storage", "Battery life", "Included accessories"],
+  "mini-pcs": ["GPU", "CPU", "RAM", "Storage", "Form factor"],
+  "cables-extensions": ["Type", "Length", "Connector"],
+  collectibles: ["Era", "Included items", "Condition notes"],
+  "for-parts": ["Fault description", "What works", "What doesn't"],
+  "retro-hardware": ["Era", "Tested", "Condition notes"],
 };

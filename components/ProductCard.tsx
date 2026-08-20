@@ -76,8 +76,14 @@ export function ProductCard({ listing }: { listing: Listing }) {
               )}
               {listing.sellerName}
             </div>
-            <div className="spec font-medium text-good">
-              ★ {listing.sellerRating.toFixed(1)} · {listing.sellerSales}
+            <div className="spec font-medium text-muted">
+              {listing.sellerReviewCount > 0 ? (
+                <span className="text-good">
+                  ★ {listing.sellerRating.toFixed(1)} ({listing.sellerReviewCount})
+                </span>
+              ) : (
+                "No reviews yet"
+              )}
             </div>
           </div>
         </div>

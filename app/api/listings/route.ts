@@ -3,6 +3,11 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify, findTop, findSub } from "@/lib/taxonomy";
+import { getConnectAccountStatus } from "@/lib/stripe";
+import { nameFromEmail } from "@/lib/profile-name";
+
+const MIN_PHOTOS = 5;
+const MAX_PHOTOS = 10;
 
 export async function POST(req: Request) {
   const limited = rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
@@ -19,6 +24,15 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
+  // The uploader and the publish button both block outside 5–10, but this
+  // is the boundary a client that skips the form can't get past.
+  const photoCount = (payload.image ? 1 : 0) + (payload.images?.length ?? 0);
+  if (photoCount < MIN_PHOTOS || photoCount > MAX_PHOTOS)
+    return NextResponse.json(
+      { error: `Listings need between ${MIN_PHOTOS} and ${MAX_PHOTOS} photos.` },
+      { status: 400 }
+    );
+
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ ok: true, persisted: false });
 
@@ -30,6 +44,35 @@ export async function POST(req: Request) {
       { error: "Sign in to publish a listing." },
       { status: 401 }
     );
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_account_id, display_name")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  // The real payout-setup gate — app/sell/page.tsx checks this too so the
+  // seller sees the prompt before filling out the form, but that's UX, not
+  // enforcement. Skipped entirely when Stripe isn't configured (demo mode).
+  if (process.env.STRIPE_SECRET_KEY) {
+    const status = profile?.stripe_account_id
+      ? await getConnectAccountStatus(profile.stripe_account_id)
+      : "none";
+    if (status !== "active")
+      return NextResponse.json(
+        { error: "Finish payout setup before publishing — connect a Stripe payout account from your dashboard." },
+        { status: 403 }
+      );
+  }
+
+  // Neither profiles.display_name nor listings.seller_name were ever
+  // actually written anywhere — every real listing's seller showed up as
+  // a bare "Seller" everywhere (cards, messages, reviews). Backfill from
+  // the account's own email the first time, never overwriting a name set
+  // some other way later.
+  const sellerName = profile?.display_name || nameFromEmail(user.email) || "Seller";
+  if (!profile?.display_name)
+    await supabase.from("profiles").upsert({ id: user.id, display_name: sellerName });
 
   // Validate against the real taxonomy rather than trusting the client —
   // falls back to a sane default instead of writing an orphaned slug that
@@ -56,6 +99,7 @@ export async function POST(req: Request) {
       ships_free: payload.shipsFree,
       accepts_offers: payload.acceptsOffers,
       seller_id: user.id,
+      seller_name: sellerName,
       slug: slugify(payload.title),
       status: "active",
       stock: 1,

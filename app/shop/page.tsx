@@ -5,7 +5,9 @@ import { ProductCard } from "@/components/ProductCard";
 import { FilterRail } from "@/components/FilterRail";
 import { Pagination } from "@/components/Pagination";
 import { MobileFilters } from "@/components/MobileFilters";
+import { DemoBanner } from "@/components/DemoBanner";
 import type { ListingQuery } from "@/lib/types";
+import { attrsFromSearchParams } from "@/lib/attributes";
 
 export const revalidate = 60;
 
@@ -36,12 +38,13 @@ export default async function ShopPage({
     verifiedOnly: sp.verified === "1",
     dealsOnly: sp.deals === "1",
     status: sp.status === "sold" ? "sold" : undefined,
+    attrs: attrsFromSearchParams(sp.sub, sp),
     sort: (sp.sort as ListingQuery["sort"]) ?? "new",
     page: sp.page ? Number(sp.page) : 1,
     perPage: PER_PAGE,
   };
 
-  const [{ items, total, page, pages }, counts] = await Promise.all([
+  const [{ items, total, page, pages, isDemo }, counts] = await Promise.all([
     queryListings(query),
     countBySub(),
   ]);
@@ -52,10 +55,12 @@ export default async function ShopPage({
       findTop(sp.category ?? "")?.name ??
       (sp.deals === "1" ? "Price drops" : sp.status === "sold" ? "Recently sold" : "All listings");
 
-  const activeFilterCount = [
-    sp.category, sp.sub, sp.condition, sp.min, sp.max,
-    sp.free, sp.verified, sp.deals, sp.status,
-  ].filter(Boolean).length;
+  const activeFilterCount =
+    [
+      sp.category, sp.sub, sp.condition, sp.min, sp.max,
+      sp.free, sp.verified, sp.deals, sp.status,
+    ].filter(Boolean).length +
+    Object.keys(sp).filter((k) => k.startsWith("attr_") && sp[k]).length;
 
   const hrefWith = (patch: SP) => {
     const next = new URLSearchParams();
@@ -66,6 +71,7 @@ export default async function ShopPage({
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-8">
+      {isDemo && <DemoBanner />}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <nav className="spec text-muted">

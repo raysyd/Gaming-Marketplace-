@@ -9,8 +9,8 @@ const SECTIONS: [string, string][] = [
     `When you pay, the funds sit with ${BRAND.name}. The seller can see the payment is waiting, which is what motivates them to ship quickly, but they can't touch it until delivery is confirmed.`,
   ],
   [
-    "Three days to check the item",
-    "Once it arrives you have 72 hours to report a problem. If the item isn't what was listed, the payment is refunded rather than released.",
+    `${BRAND.orderWindowHours} hours to check the item`,
+    `Once it arrives you have ${BRAND.orderWindowHours} hours to report a problem — or confirm sooner and release payment right away. If the item isn't what was listed, the payment is refunded rather than released. If you don't respond, it auto-releases after ${BRAND.orderWindowHours} hours so a seller who shipped a good item isn't held hostage.`,
   ],
   [
     "Verified sellers",
@@ -47,11 +47,11 @@ export default function TrustPage() {
         <h2 className="display text-[20px]">Something gone wrong?</h2>
         <p className="mt-2 text-[14px] text-muted">
           Report it from the order in your account, or email {BRAND.supportEmail}.
-          Do it inside 72 hours of delivery and the payment stays held while we
-          look at it.
+          Do it inside {BRAND.orderWindowHours} hours of delivery and the payment
+          stays held while we look at it.
         </p>
         <Link
-          href="/dashboard"
+          href="/buying"
           className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
         >
           Go to your orders

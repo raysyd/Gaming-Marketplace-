@@ -6,11 +6,10 @@ import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 
 export default function CartPage() {
-  const { items, remove, subtotal, clear } = useCart();
+  const { items, remove, subtotal, shipping, clear } = useCart();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
-  const shipping = subtotal > 0 ? 0 : 0;
   const total = subtotal + shipping;
 
   // /api/checkout creates one order row with one seller/fee/transfer
@@ -75,12 +74,14 @@ export default function CartPage() {
             >
               <div className="min-w-0">
                 <Link
-                  href={`/product/${i.id}/x`}
+                  href={`/product/${i.id}/${i.slug}`}
                   className="line-clamp-2 text-[14px] font-semibold hover:text-trust"
                 >
                   {i.title}
                 </Link>
-                <p className="spec mt-1 text-muted">Qty {i.qty}</p>
+                <p className="spec mt-1 text-muted">
+                  Qty {i.qty} · {i.shipsFree ? "Free shipping" : "Paid shipping"}
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-4">
                 <span className="display text-[18px]">{money(i.price * i.qty)}</span>
@@ -107,7 +108,9 @@ export default function CartPage() {
             </div>
             <div className="flex justify-between text-muted">
               <span>Shipping</span>
-              <span className="text-good">Free</span>
+              <span className={shipping === 0 ? "text-good" : "text-ink"}>
+                {shipping === 0 ? "Free" : money(shipping)}
+              </span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-semibold">
               <span>Total</span>

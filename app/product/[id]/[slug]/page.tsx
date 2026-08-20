@@ -77,11 +77,23 @@ export default async function ProductPage({
         )}
       </nav>
 
+      {/*
+        Two "columns" below, but each is `contents` on phones — that
+        unwraps it from the box tree so its children become direct grid
+        items alongside the other column's, letting `order-N` interleave
+        title/gallery/buy-actions/specs/description into the phone reading
+        order the brief specifies. At `lg:` each wrapper turns back into a
+        real block and reclaims its own internal spacing (`lg:space-y-4` /
+        `lg:mt-8`), which is what reproduces the desktop layout exactly as
+        it was — one set of markup, no duplicated JSX per breakpoint.
+      */}
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <ProductGallery listing={listing} />
+        <div className="contents lg:block">
+          <div className="order-2">
+            <ProductGallery listing={listing} />
+          </div>
 
-          <section className="mt-8">
+          <section className="order-6 lg:mt-8">
             <h2 className="eyebrow">Full specification</h2>
             <dl className="mt-3 overflow-hidden rounded-[10px] border border-line bg-card">
               {listing.specs.map((s, i) => (
@@ -104,7 +116,7 @@ export default async function ProductPage({
             </dl>
           </section>
 
-          <section className="mt-8">
+          <section className="order-7 lg:mt-8">
             <h2 className="eyebrow">From the seller</h2>
             <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed">
               {listing.description}
@@ -112,8 +124,8 @@ export default async function ProductPage({
           </section>
         </div>
 
-        <div className="space-y-4">
-          <div>
+        <div className="contents lg:block lg:space-y-4">
+          <div className="order-1">
             <div className="flex items-start justify-between gap-3">
               <p className="eyebrow">
                 {listing.brand} · listed {timeAgo(listing.createdAt)}
@@ -127,7 +139,7 @@ export default async function ProductPage({
           </div>
 
           {listing.fps1080p && (
-            <div className="rounded-[10px] border border-line bg-card p-4">
+            <div className="order-3 rounded-[10px] border border-line bg-card p-4">
               <FpsBar fps={listing.fps1080p} />
               <p className="spec mt-2 text-muted">
                 Estimated from the GPU and CPU pairing across common titles.
@@ -135,16 +147,18 @@ export default async function ProductPage({
             </div>
           )}
 
-          <BuyBox listing={listing} />
+          <div className="order-4">
+            <BuyBox listing={listing} />
+          </div>
 
-          <div className="rounded-[10px] border border-line bg-card p-5">
+          <div className="order-5 rounded-[10px] border border-line bg-card p-5">
             <h2 className="eyebrow">Seller</h2>
-            <div className="mt-3 flex items-center gap-3">
+            <Link href={`/seller/${listing.sellerId}`} className="mt-3 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-[15px] font-semibold text-white">
                 {listing.sellerName[0]}
               </div>
               <div>
-                <p className="flex items-center gap-1.5 text-[14px] font-semibold">
+                <p className="flex items-center gap-1.5 text-[14px] font-semibold hover:text-trust">
                   {listing.sellerName}
                   {listing.sellerVerified && (
                     <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
@@ -153,11 +167,13 @@ export default async function ProductPage({
                   )}
                 </p>
                 <p className="spec text-muted">
-                  ★ {listing.sellerRating.toFixed(1)} · {listing.sellerSales} sales ·{" "}
-                  {listing.location}
+                  {listing.sellerReviewCount > 0
+                    ? `★ ${listing.sellerRating.toFixed(1)} (${listing.sellerReviewCount} reviews)`
+                    : "No reviews yet"}{" "}
+                  · {listing.sellerSales} sales · {listing.location}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

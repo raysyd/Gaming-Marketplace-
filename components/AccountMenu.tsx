@@ -84,6 +84,13 @@ export function AccountMenu() {
             List an item
           </Link>
 
+          <Link
+            href="/account/security"
+            className="block border-t border-line px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+          >
+            Security (2FA)
+          </Link>
+
           <form action="/auth/signout" method="post" className="border-t border-line">
             <button
               type="submit"

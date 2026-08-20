@@ -34,6 +34,17 @@ async function startOnboarding(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in first.", status: 401 } as const;
 
+  // Required before a seller can connect a payout account — see
+  // app/account/security. Checked here (not just hidden in the UI) since
+  // this is the boundary that actually starts moving real money to them.
+  const { data: factorsData } = await supabase.auth.mfa.listFactors();
+  const hasVerifiedMfa = (factorsData?.totp ?? []).some((f) => f.status === "verified");
+  if (!hasVerifiedMfa)
+    return {
+      error: "Turn on two-factor authentication before connecting a payout account.",
+      status: 403,
+    } as const;
+
   const stripe = await getStripe();
   if (!stripe)
     return {
@@ -97,7 +108,7 @@ async function startOnboarding(req: Request) {
           // just re-runs this and redirects, so an expired/abandoned link
           // self-heals into a fresh one.
           refresh_url: `${site}/api/connect`,
-          return_url: `${site}/dashboard?connected=1`,
+          return_url: `${site}/selling?connected=1`,
         },
       },
     });

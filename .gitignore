@@ -10,3 +10,5 @@ next-env.d.ts
 # shipped, and symlinks that wouldn't resolve on another machine anyway.
 .agents/
 .claude/skills/
+.vercel
+.env*

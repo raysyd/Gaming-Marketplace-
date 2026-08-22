@@ -147,7 +147,8 @@ export default async function SellingPage({ searchParams }: { searchParams: Prom
             <div className="min-w-0 flex-1">
               <p className="line-clamp-1 text-[14px] font-semibold">{o.listingTitle ?? "Listing"}</p>
               <p className="spec mt-1 text-muted">
-                {money(o.amount - o.platformFee + (o.shippingFee ?? 0))} to you (of {money(o.amount + (o.shippingFee ?? 0))} held) ·{" "}
+                {money(o.amount - o.platformFee + (o.shippingFee ?? 0))} to you (of {money(o.amount + (o.shippingFee ?? 0))} held)
+                {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""} ·{" "}
                 {timeAgo(o.createdAt)}
               </p>
               {activeTab.key === "to-post" && (

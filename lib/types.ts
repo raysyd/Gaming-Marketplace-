@@ -136,6 +136,8 @@ export type Order = {
   amount: number;
   platformFee: number;
   shippingFee?: number;
+  /** Units of this listing this order line covers — see supabase/09-cart-quantity.sql. */
+  quantity: number;
   stripePaymentIntent: string | null;
   trackingNumber: string | null;
   shippedAt: string | null;

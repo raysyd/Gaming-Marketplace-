@@ -49,6 +49,7 @@ function rowToOrder(r: any): Order {
     amount: Number(r.amount),
     platformFee: Number(r.platform_fee),
     shippingFee: Number(r.shipping_fee ?? 0),
+    quantity: Number(r.quantity ?? 1),
     stripePaymentIntent: r.stripe_payment_intent,
     trackingNumber: r.tracking_number,
     shippedAt: r.shipped_at,

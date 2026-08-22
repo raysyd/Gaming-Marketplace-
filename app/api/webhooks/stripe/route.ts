@@ -87,6 +87,9 @@ export async function POST(req: Request) {
           amount: amountCents / 100,
           platform_fee: feeCents / 100,
           shipping_fee: i === 0 ? shippingFee : 0,
+          // Stripe's own line item quantity, not re-derived from metadata
+          // — it's the actual number of units this line item charged for.
+          quantity: lineItems.data[i]?.quantity ?? 1,
           stripe_payment_intent: paymentIntent,
           status: "paid",
         };
@@ -102,8 +105,8 @@ export async function POST(req: Request) {
       if (error) console.error("Stripe webhook: order insert failed —", error.message);
 
       // Stock was already decremented (and flipped to "sold" if it hit 0)
-      // at reservation time in /api/checkout, via reserve_listing_stock —
-      // nothing left to do to the listing here. A completed payment just
+      // at reservation time in /api/checkout, via reserve_listing_stock_qty
+      // — nothing left to do to the listing here. A completed payment just
       // confirms the reservation is kept, not released.
 
       // Best-effort — see lib/email/send.ts, which itself never throws.
@@ -158,13 +161,18 @@ export async function POST(req: Request) {
 
     case "checkout.session.expired": {
       // Buyer never finished paying — restock what /api/checkout reserved.
-      // release_listing_stock only ever increments and never touches a
+      // release_listing_stock_qty only ever increments and never touches a
       // listing that isn't in this exact id list, so this can't undo a
       // sale that completed through some other path.
       const session = event.data.object as Stripe.Checkout.Session;
       const listingIds = (session.metadata?.listingIds ?? "").split(",").filter(Boolean);
+      const listingQtys = (session.metadata?.listingQtys ?? "")
+        .split(",")
+        .filter(Boolean)
+        .map(Number);
       if (listingIds.length) {
-        const { error } = await admin.rpc("release_listing_stock", { ids: listingIds });
+        const qtys = listingIds.map((_, i) => listingQtys[i] ?? 1);
+        const { error } = await admin.rpc("release_listing_stock_qty", { ids: listingIds, qtys });
         if (error) console.error("Stripe webhook: reservation release failed —", error.message);
       }
       break;
@@ -181,17 +189,21 @@ export async function POST(req: Request) {
           .from("orders")
           .update({ status: "refunded" })
           .eq("stripe_payment_intent", paymentIntent)
-          .select("listing_id");
+          .select("listing_id, quantity");
         if (error) console.error("Stripe webhook: refund update failed —", error.message);
 
-        // A refunded sale gives the unit back — otherwise it's stuck sold
+        // A refunded sale gives the units back — otherwise it's stuck sold
         // (or under-counted, for a quantity > 1 listing) with no way for
-        // the seller to sell it again. release_listing_stock only flips
+        // the seller to sell it again. release_listing_stock_qty only flips
         // status back to "active" if it's currently "sold" — a listing the
         // seller separately deactivated on purpose stays deactivated.
         const listingIds = (refundedOrders ?? []).map((o) => o.listing_id);
+        const qtys = (refundedOrders ?? []).map((o) => o.quantity ?? 1);
         if (listingIds.length) {
-          const { error: relistError } = await admin.rpc("release_listing_stock", { ids: listingIds });
+          const { error: relistError } = await admin.rpc("release_listing_stock_qty", {
+            ids: listingIds,
+            qtys,
+          });
           if (relistError)
             console.error("Stripe webhook: relist-after-refund failed —", relistError.message);
         }
@@ -241,6 +253,21 @@ export async function POST(req: Request) {
           .eq("id", userId)
           .eq("premium_subscription_id", sub.id);
         if (error) console.error("Stripe webhook: premium cancellation sync failed —", error.message);
+      }
+      break;
+    }
+
+    // The only place profiles.verified is ever set — see
+    // app/api/identity/route.ts and the column-grant lockdown in
+    // 08-premium-seller.sql, which blocks a user (or the API route) from
+    // setting it directly. A passed check is permanent; there's no
+    // matching "unverify" event to react to.
+    case "identity.verification_session.verified": {
+      const vs = event.data.object as Stripe.Identity.VerificationSession;
+      const userId = vs.metadata?.userId;
+      if (userId) {
+        const { error } = await admin.from("profiles").update({ verified: true }).eq("id", userId);
+        if (error) console.error("Stripe webhook: verified flag sync failed —", error.message);
       }
       break;
     }

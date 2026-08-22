@@ -8,6 +8,8 @@ export type CartItem = {
   title: string;
   price: number;
   qty: number;
+  /** Available units at the time this was added — caps increment(), never trusted at checkout (see /api/checkout). */
+  stock: number;
   sellerId: string;
   shipsFree: boolean;
 };
@@ -16,6 +18,8 @@ type Ctx = {
   items: CartItem[];
   add: (item: Omit<CartItem, "qty">) => void;
   remove: (id: string) => void;
+  /** Clamped to [1, item.stock] — going to 0 removes the same way the Remove button does. */
+  setQty: (id: string, qty: number) => void;
   clear: () => void;
   count: number;
   subtotal: number;
@@ -49,17 +53,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [items]);
 
+  // Already-in-cart + "Add to cart" again bumps quantity by one (capped at
+  // stock) instead of doing nothing — that's the only UI path to more than
+  // one unit of the same listing, since the cart can't know a listing's
+  // stock on its own.
   const add: Ctx["add"] = (item) =>
-    setItems((prev) =>
-      prev.some((i) => i.id === item.id)
-        ? prev
-        : [...prev, { ...item, qty: 1 }]
-    );
+    setItems((prev) => {
+      const existing = prev.find((i) => i.id === item.id);
+      if (!existing) return [...prev, { ...item, qty: 1 }];
+      return prev.map((i) =>
+        i.id === item.id ? { ...i, qty: Math.min(i.qty + 1, Math.max(1, item.stock)) } : i
+      );
+    });
 
   const value: Ctx = {
     items,
     add,
     remove: (id) => setItems((p) => p.filter((i) => i.id !== id)),
+    setQty: (id, qty) =>
+      setItems((p) => {
+        if (qty <= 0) return p.filter((i) => i.id !== id);
+        return p.map((i) => (i.id === id ? { ...i, qty: Math.min(qty, Math.max(1, i.stock)) } : i));
+      }),
     clear: () => setItems([]),
     count: items.reduce((n, i) => n + i.qty, 0),
     subtotal: items.reduce((n, i) => n + i.price * i.qty, 0),

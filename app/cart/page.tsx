@@ -6,7 +6,7 @@ import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 
 export default function CartPage() {
-  const { items, remove, subtotal, shipping, clear } = useCart();
+  const { items, remove, setQty, subtotal, shipping, clear } = useCart();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
@@ -80,10 +80,28 @@ export default function CartPage() {
                   {i.title}
                 </Link>
                 <p className="spec mt-1 text-muted">
-                  Qty {i.qty} · {i.shipsFree ? "Free shipping" : "Paid shipping"}
+                  {i.shipsFree ? "Free shipping" : "Paid shipping"}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setQty(i.id, i.qty - 1)}
+                    aria-label={`Reduce quantity of ${i.title}`}
+                    className="flex h-7 w-7 items-center justify-center rounded border border-line text-[14px] hover:border-ink/40"
+                  >
+                    −
+                  </button>
+                  <span className="spec w-6 text-center">{i.qty}</span>
+                  <button
+                    onClick={() => setQty(i.id, i.qty + 1)}
+                    disabled={i.qty >= i.stock}
+                    aria-label={`Increase quantity of ${i.title}`}
+                    className="flex h-7 w-7 items-center justify-center rounded border border-line text-[14px] hover:border-ink/40 disabled:opacity-40"
+                  >
+                    +
+                  </button>
+                </div>
                 <span className="display text-[18px]">{money(i.price * i.qty)}</span>
                 <button
                   onClick={() => remove(i.id)}

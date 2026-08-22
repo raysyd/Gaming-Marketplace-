@@ -47,7 +47,19 @@ export async function POST(req: Request) {
   if (!Array.isArray(items) || items.length === 0)
     return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
 
-  const ids = [...new Set(items.map((i: { id?: string }) => i.id).filter(Boolean))] as string[];
+  // Quantity is read from the cart here, but never trusted for price —
+  // only for how many units to reserve and charge for. Duplicate ids in
+  // the payload (shouldn't happen from the cart UI, but this is the
+  // trust boundary) are summed rather than overwritten, so nothing can
+  // under-count a listing's actual requested quantity.
+  const qtyById = new Map<string, number>();
+  for (const i of items as { id?: string; qty?: number }[]) {
+    if (!i?.id) continue;
+    const qty = Math.floor(Number(i.qty));
+    if (!Number.isFinite(qty) || qty <= 0) continue;
+    qtyById.set(i.id, (qtyById.get(i.id) ?? 0) + qty);
+  }
+  const ids = [...qtyById.keys()];
   if (!ids.length)
     return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
 
@@ -66,13 +78,23 @@ export async function POST(req: Request) {
   // `active` status is enforced by RLS on this table regardless.
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
-    .select("id, title, price, seller_id, status, ships_free")
+    .select("id, title, price, seller_id, status, ships_free, stock")
     .in("id", ids);
   if (listingsError || !listings?.length)
     return NextResponse.json({ error: "Couldn't load those listings." }, { status: 400 });
   if (listings.length !== ids.length || listings.some((l) => l.status !== "active"))
     return NextResponse.json(
       { error: "One or more items in your cart are no longer available." },
+      { status: 409 }
+    );
+  // Cheap early check against a stale cart — reserve_listing_stock_qty's
+  // own atomic `stock >= req.qty` is still what actually decides this
+  // under a race; this just gives a clearer message for the common case
+  // of a cart that's simply gone stale.
+  const overStock = listings.find((l) => (qtyById.get(l.id) ?? 0) > l.stock);
+  if (overStock)
+    return NextResponse.json(
+      { error: `Only ${overStock.stock} left of "${overStock.title}" — lower the quantity in your cart.` },
       { status: 409 }
     );
 
@@ -131,23 +153,22 @@ export async function POST(req: Request) {
     );
   }
 
-  // Reserve one unit of stock per listing, atomically, before Stripe ever
-  // sees this checkout — via a SECURITY DEFINER function
-  // (supabase/06-listing-quantity.sql), not a plain .update(). There is no
-  // RLS policy letting a buyer touch a listing they don't own (only
+  // Reserve the requested quantity of stock per listing, atomically,
+  // before Stripe ever sees this checkout — via a SECURITY DEFINER
+  // function (supabase/09-cart-quantity.sql), not a plain .update(). There
+  // is no RLS policy letting a buyer touch a listing they don't own (only
   // "sellers manage own listings" exists), so a direct update from this
-  // buyer-authed client would silently match zero rows every time — that
-  // was a real, confirmed bug: checkout never actually worked for a
-  // cross-user purchase. The function's own atomic
-  // `stock = stock - 1 ... where status = 'active' and stock > 0` is what
-  // makes concurrent checkouts on the last unit safe: Postgres's row lock
-  // means whichever request's update commits first wins, and the second
-  // gets 0 rows back instead of a false "it worked". This is the first
-  // line of defense; the `stock >= 0` check constraint is what holds even
-  // if this logic ever has a bug.
+  // buyer-authed client would silently match zero rows every time. The
+  // function's own atomic `stock = stock - qty ... where status = 'active'
+  // and stock >= qty` is what makes concurrent checkouts on the last units
+  // safe: Postgres's row lock means whichever request's update commits
+  // first wins, and the second gets 0 rows back instead of a false "it
+  // worked". This is the first line of defense; the `stock >= 0` check
+  // constraint is what holds even if this logic ever has a bug.
+  const qtys = ids.map((id) => qtyById.get(id) ?? 0);
   const { data: reserved, error: reserveError } = await supabase.rpc(
-    "reserve_listing_stock",
-    { ids }
+    "reserve_listing_stock_qty",
+    { ids, qtys }
   );
   if (reserveError)
     return NextResponse.json({ error: "Couldn't start checkout. Try again." }, { status: 500 });
@@ -155,8 +176,13 @@ export async function POST(req: Request) {
     // Partial reservation — someone else got the rest a moment before us
     // (or a listing had already sold out). Put back only what we actually
     // took, not the whole cart.
-    if (reserved?.length)
-      await supabase.rpc("release_listing_stock", { ids: reserved.map((r: { id: string }) => r.id) });
+    if (reserved?.length) {
+      const reservedIds = reserved.map((r: { id: string }) => r.id);
+      await supabase.rpc("release_listing_stock_qty", {
+        ids: reservedIds,
+        qtys: reservedIds.map((id: string) => qtyById.get(id) ?? 0),
+      });
+    }
     return NextResponse.json(
       { error: "Someone just bought one or more of these items. Refresh your cart and try again." },
       { status: 409 }
@@ -166,6 +192,7 @@ export async function POST(req: Request) {
   const site = siteUrlFrom(req);
   const currency = BRAND.currency.toLowerCase();
   const listingIds = listings.map((l) => l.id).join(",");
+  const listingQtys = listings.map((l) => qtyById.get(l.id) ?? 1).join(",");
 
   // Shipping ships as one parcel per seller, so it's charged once per
   // checkout, never per item — a mixed cart of free- and paid-shipping
@@ -180,12 +207,12 @@ export async function POST(req: Request) {
       mode: "payment",
       line_items: [
         ...listings.map((l) => ({
-          // One unit of each listing per checkout — the cart doesn't offer
-          // buying more than one unit of the same listing in a single
-          // pass, so this is always 1 regardless of how much stock the
-          // listing has. Client-submitted quantity is ignored for the same
-          // reason price is.
-          quantity: 1,
+          // The quantity actually reserved above — client-submitted qty was
+          // only ever a hint for how much to reserve, never trusted for
+          // price, but this is the one field it's allowed to drive, since
+          // reserve_listing_stock_qty already re-validated it against real
+          // stock.
+          quantity: qtyById.get(l.id) ?? 1,
           price_data: {
             currency,
             unit_amount: Math.round(l.price * 100),
@@ -211,9 +238,9 @@ export async function POST(req: Request) {
       // and stored on the order row by the webhook below, then actually
       // applied as the transfer amount in /api/orders/[id]/release.
       payment_intent_data: {
-        metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
+        metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee) },
       },
-      metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
+      metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee) },
       // Bounds how long a reservation can hold stock hostage if the buyer
       // just closes the tab — checkout.session.expired (see the webhook)
       // restocks these listings when this passes.
@@ -225,7 +252,7 @@ export async function POST(req: Request) {
   } catch (e) {
     // The reservation already happened — a Stripe-side failure here must
     // not leave stock stuck decremented with no checkout ever created.
-    await supabase.rpc("release_listing_stock", { ids });
+    await supabase.rpc("release_listing_stock_qty", { ids, qtys });
     const message = e instanceof Error ? e.message : "Checkout failed.";
     return NextResponse.json({ url: null, message }, { status: 500 });
   }

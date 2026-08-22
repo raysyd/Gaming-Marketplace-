@@ -28,6 +28,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
       price: listing.price,
       sellerId: listing.sellerId,
       shipsFree: listing.shipsFree,
+      stock: listing.stock,
     });
     setAdded(true);
   };

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { AvatarUploader } from "@/components/AvatarUploader";
+import { IdentityVerificationButton } from "@/components/IdentityVerificationButton";
 
 const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
 
@@ -52,10 +53,12 @@ export function AccountSettingsForm({
 
   return (
     <div className="mt-6 space-y-5 rounded-[10px] border border-line bg-card p-6">
-      {verified && (
+      {verified ? (
         <p className="spec inline-block w-fit rounded bg-trust-soft px-2 py-1 font-semibold text-trust">
           ✓ Verified seller
         </p>
+      ) : (
+        <IdentityVerificationButton />
       )}
 
       <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />

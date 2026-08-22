@@ -97,7 +97,8 @@ export default async function BuyingPage({ searchParams }: { searchParams: Promi
                   {o.listingTitle ?? "Listing"}
                 </Link>
                 <p className="spec mt-1 text-muted">
-                  {money(o.amount + (o.shippingFee ?? 0))} · from {o.sellerName ?? "seller"} · ordered{" "}
+                  {money(o.amount + (o.shippingFee ?? 0))}
+                  {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""} · from {o.sellerName ?? "seller"} · ordered{" "}
                   {timeAgo(o.createdAt)}
                 </p>
                 {o.status === "disputed" && (

@@ -35,6 +35,33 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // A signed-in account with no username yet hasn't finished the
+  // post-signup onboarding step — send it there before any page where
+  // that identity actually shows up to someone else (selling, messaging,
+  // checking out). Browsing, security settings and account deletion stay
+  // reachable either way, and the onboarding page itself obviously can't
+  // require having already been through it.
+  if (user) {
+    const needsIdentity = ["/sell", "/selling", "/buying", "/cart", "/messages"];
+    const exempt =
+      path.startsWith("/account/onboarding") ||
+      path.startsWith("/account/security") ||
+      path.startsWith("/account/delete");
+    if (!exempt && needsIdentity.some((p) => path.startsWith(p))) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!profile?.username) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/account/onboarding";
+        url.searchParams.set("next", path);
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   return response;
 }
 

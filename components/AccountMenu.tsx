@@ -85,8 +85,15 @@ export function AccountMenu() {
           </Link>
 
           <Link
-            href="/account/security"
+            href="/account"
             className="block border-t border-line px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+          >
+            Profile & settings
+          </Link>
+
+          <Link
+            href="/account/security"
+            className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
           >
             Security (2FA)
           </Link>

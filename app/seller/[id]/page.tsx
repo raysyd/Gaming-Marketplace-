@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { queryListings } from "@/lib/data";
 import { getSellerReviews, getOneSellerStats } from "@/lib/reviews-data";
+import { getProfile } from "@/lib/profile-data";
 import { timeAgo } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 
@@ -14,27 +15,42 @@ export default async function SellerProfilePage({
 }) {
   const { id } = await params;
 
-  const [{ items: listings }, reviews, stats] = await Promise.all([
+  const [{ items: listings }, reviews, stats, profile] = await Promise.all([
     queryListings({ sellerId: id, perPage: 48 }),
     getSellerReviews(id),
     getOneSellerStats(id),
+    getProfile(id),
   ]);
 
-  if (!listings.length && !reviews.length && !stats.salesCount) notFound();
+  if (!listings.length && !reviews.length && !stats.salesCount && !profile) notFound();
 
-  const sellerName = listings[0]?.sellerName ?? reviews[0]?.reviewerName ?? "Seller";
-  const verified = listings.some((l) => l.sellerVerified);
+  // profiles.display_name is the canonical name once a profile exists;
+  // listings.seller_name/reviews.reviewer_name are only the pre-profile
+  // fallback for an account that predates this or never finished
+  // onboarding (a soft-launch/demo-data situation, not the normal path).
+  const sellerName = profile?.displayName || listings[0]?.sellerName || reviews[0]?.reviewerName || "Seller";
+  const location = [profile?.suburb, profile?.state].filter(Boolean).join(", ");
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
       <div className="flex items-center gap-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-trust text-[20px] font-semibold text-white">
-          {sellerName[0]}
+        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust">
+          {profile?.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span className="grid h-full w-full place-items-center text-[20px] font-semibold text-white">
+              {sellerName[0]}
+            </span>
+          )}
         </div>
         <div>
-          <h1 className="display flex items-center gap-2 text-[26px]">
+          <h1 className="display flex flex-wrap items-center gap-2 text-[26px]">
             {sellerName}
-            {verified && (
+            {profile?.username && (
+              <span className="spec font-normal text-muted">@{profile.username}</span>
+            )}
+            {profile?.verified && (
               <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
                 Verified
               </span>
@@ -45,7 +61,9 @@ export default async function SellerProfilePage({
               ? `★ ${stats.avgRating.toFixed(1)} (${stats.reviewCount} review${stats.reviewCount === 1 ? "" : "s"})`
               : "No reviews yet"}{" "}
             · {stats.salesCount} sale{stats.salesCount === 1 ? "" : "s"}
+            {location && ` · ${location}`}
           </p>
+          {profile?.bio && <p className="mt-2 max-w-lg text-[13.5px] text-muted">{profile.bio}</p>}
         </div>
       </div>
 

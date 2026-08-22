@@ -34,7 +34,7 @@ export function SiteFooter() {
             ["About", "/about"],
             ["Trust & Safety", "/trust"],
             ["Privacy Policy", "/privacy"],
-            ["Contact", `mailto:${BRAND.supportEmail}`],
+            ["Contact", "/contact"],
           ]}
         />
         <div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { CompanyNav } from "@/components/CompanyNav";
 
 export const metadata = { title: `Trust & Safety — ${BRAND.name}` };
 
@@ -14,7 +15,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Verified sellers",
-    "Sellers who have completed identity checks and a run of clean sales carry a Verified badge. You can filter the whole marketplace to verified sellers only.",
+    "A Verified badge means identity checked through Stripe — never something a subscription or a fee can buy. You can filter the whole marketplace to verified sellers only.",
   ],
   [
     "Keep it on the platform",
@@ -29,7 +30,9 @@ const SECTIONS: [string, string][] = [
 export default function TrustPage() {
   return (
     <div className="mx-auto max-w-[760px] px-4 py-14">
-      <p className="eyebrow">Trust &amp; Safety</p>
+      <CompanyNav active="/trust" />
+
+      <p className="eyebrow mt-8">Trust &amp; Safety</p>
       <h1 className="display mt-2 text-[36px]">
         How {BRAND.name} keeps a stranger&apos;s money safe.
       </h1>

@@ -1,11 +1,34 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
 
 export function AccountMenu() {
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
 
   if (loading)
     return <span className="h-9 w-9 rounded px-2.5 py-2" aria-hidden="true" />;
@@ -23,12 +46,10 @@ export function AccountMenu() {
       </Link>
     );
 
+  const closeMenu = () => setOpen(false);
+
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div ref={menuRef} className="relative">
       <button
         type="button"
         aria-label="Open account menu"
@@ -55,6 +76,8 @@ export function AccountMenu() {
             <Link
               key={label}
               href={href}
+              prefetch={false}
+              onClick={closeMenu}
               className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
             >
               {label}
@@ -71,6 +94,8 @@ export function AccountMenu() {
             <Link
               key={label}
               href={href}
+              prefetch={false}
+              onClick={closeMenu}
               className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
             >
               {label}
@@ -79,6 +104,8 @@ export function AccountMenu() {
 
           <Link
             href="/sell"
+            prefetch={false}
+            onClick={closeMenu}
             className="block border-t border-line px-4 py-2 text-[13px] font-semibold text-trust transition hover:bg-paper"
           >
             List an item
@@ -86,6 +113,8 @@ export function AccountMenu() {
 
           <Link
             href="/account"
+            prefetch={false}
+            onClick={closeMenu}
             className="block border-t border-line px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
           >
             Profile & settings
@@ -93,6 +122,8 @@ export function AccountMenu() {
 
           <Link
             href="/account/security"
+            prefetch={false}
+            onClick={closeMenu}
             className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
           >
             Security (2FA)
@@ -101,6 +132,7 @@ export function AccountMenu() {
           <form action="/auth/signout" method="post" className="border-t border-line">
             <button
               type="submit"
+              onClick={closeMenu}
               className="w-full px-4 py-2 text-left text-[13px] text-ink transition hover:bg-paper"
             >
               Sign out
@@ -108,6 +140,8 @@ export function AccountMenu() {
           </form>
           <Link
             href="/account/delete"
+            prefetch={false}
+            onClick={closeMenu}
             className="block px-4 py-2 text-[13px] text-deal transition hover:bg-paper"
           >
             Delete account
@@ -125,7 +159,7 @@ function UserIcon() {
       viewBox="0 0 24 24"
       className="h-6 w-6 fill-current"
     >
-      <circle cx="12" cy="8" r="3.2" />
+      <circle cx="12" cy={8} r="3.2" />
       <path d="M5.5 20c.6-3.3 3-5.2 6.5-5.2s5.9 1.9 6.5 5.2H5.5Z" />
     </svg>
   );

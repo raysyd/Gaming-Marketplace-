@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAuthedUser } from "@/lib/supabase/server";
+import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { AccountSettingsForm } from "@/components/AccountSettingsForm";
+import { PremiumCard } from "@/components/PremiumCard";
 
 export default async function AccountPage() {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) redirect("/login?next=/account");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, avatar_url, bio, suburb, state, verified")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile }, plan] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("username, avatar_url, bio, suburb, state, verified, premium_status")
+      .eq("id", user.id)
+      .maybeSingle(),
+    getPremiumPlan(),
+  ]);
+  const premium = isPremiumActive(profile?.premium_status);
 
   // The onboarding step is what actually sets username — a signed-in
   // account that skipped it (or predates this feature) lands here without
@@ -34,6 +40,14 @@ export default async function AccountPage() {
         state={profile.state ?? ""}
         verified={Boolean(profile.verified)}
         email={user.email ?? ""}
+      />
+
+      <PremiumCard
+        active={premium}
+        badgeLabel={plan.badgeLabel}
+        monthlyPriceCents={plan.monthlyPriceCents}
+        listingLimit={premium ? plan.premiumListingLimit : plan.freeListingLimit}
+        maxPhotos={premium ? plan.premiumMaxPhotos : plan.freeMaxPhotos}
       />
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">

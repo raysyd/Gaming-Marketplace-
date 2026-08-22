@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { queryListings } from "@/lib/data";
 import { getSellerReviews, getOneSellerStats } from "@/lib/reviews-data";
 import { getProfile } from "@/lib/profile-data";
+import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { timeAgo } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 
@@ -15,12 +16,14 @@ export default async function SellerProfilePage({
 }) {
   const { id } = await params;
 
-  const [{ items: listings }, reviews, stats, profile] = await Promise.all([
+  const [{ items: listings }, reviews, stats, profile, plan] = await Promise.all([
     queryListings({ sellerId: id, perPage: 48 }),
     getSellerReviews(id),
     getOneSellerStats(id),
     getProfile(id),
+    getPremiumPlan(),
   ]);
+  const premium = isPremiumActive(profile?.premiumStatus);
 
   if (!listings.length && !reviews.length && !stats.salesCount && !profile) notFound();
 
@@ -53,6 +56,14 @@ export default async function SellerProfilePage({
             {profile?.verified && (
               <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
                 Verified
+              </span>
+            )}
+            {/* Deliberately styled and worded differently from Verified —
+                this is a paid badge, not an identity check, and the two
+                must never look interchangeable. See lib/premium.ts. */}
+            {premium && (
+              <span className="spec rounded bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">
+                {plan.badgeLabel}
               </span>
             )}
           </h1>

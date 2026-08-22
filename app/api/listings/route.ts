@@ -5,9 +5,9 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify, findTop, findSub } from "@/lib/taxonomy";
 import { getConnectAccountStatus } from "@/lib/stripe";
 import { nameFromEmail } from "@/lib/profile-name";
+import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 
 const MIN_PHOTOS = 5;
-const MAX_PHOTOS = 10;
 
 export async function POST(req: Request) {
   const limited = rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
@@ -36,12 +36,14 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
-  // The uploader and the publish button both block outside 5–10, but this
-  // is the boundary a client that skips the form can't get past.
+  // The lower bound never moves with plan tier, so it's checked before
+  // even knowing who's asking — this is the boundary a client that skips
+  // the form can't get past. The upper bound is Premium-aware, checked
+  // below once the seller's plan is known.
   const photoCount = (payload.image ? 1 : 0) + (payload.images?.length ?? 0);
-  if (photoCount < MIN_PHOTOS || photoCount > MAX_PHOTOS)
+  if (photoCount < MIN_PHOTOS)
     return NextResponse.json(
-      { error: `Listings need between ${MIN_PHOTOS} and ${MAX_PHOTOS} photos.` },
+      { error: `Listings need at least ${MIN_PHOTOS} photos.` },
       { status: 400 }
     );
 
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("stripe_account_id, display_name")
+    .select("stripe_account_id, display_name, premium_status")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -76,6 +78,33 @@ export async function POST(req: Request) {
         { status: 403 }
       );
   }
+
+  // Premium Seller-aware limits (see lib/premium.ts) — the client mirrors
+  // both of these for UX, but this is the actual gate.
+  const plan = await getPremiumPlan();
+  const premium = isPremiumActive(profile?.premium_status);
+  const maxPhotos = premium ? plan.premiumMaxPhotos : plan.freeMaxPhotos;
+  if (photoCount > maxPhotos)
+    return NextResponse.json(
+      { error: `Listings can have up to ${maxPhotos} photos${premium ? "" : " on the free plan"}.` },
+      { status: 400 }
+    );
+
+  const listingLimit = premium ? plan.premiumListingLimit : plan.freeListingLimit;
+  const { count: activeCount } = await supabase
+    .from("listings")
+    .select("id", { count: "exact", head: true })
+    .eq("seller_id", user.id)
+    .eq("status", "active");
+  if ((activeCount ?? 0) >= listingLimit)
+    return NextResponse.json(
+      {
+        error: premium
+          ? `You're at your ${listingLimit}-listing limit.`
+          : `You're at the free ${listingLimit}-listing limit — upgrade to Premium Seller for more.`,
+      },
+      { status: 403 }
+    );
 
   // Neither profiles.display_name nor listings.seller_name were ever
   // actually written anywhere — every real listing's seller showed up as

@@ -14,17 +14,25 @@ export async function querySellerListings(): Promise<Listing[]> {
   return data.map((r) => rowToListing(r));
 }
 
-export type SellerProfile = { userId: string; stripeAccountId: string | null };
+export type SellerProfile = {
+  userId: string;
+  stripeAccountId: string | null;
+  premiumStatus: string | null;
+};
 
 export async function getSellerProfile(): Promise<SellerProfile | null> {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) return null;
   const { data } = await supabase
     .from("profiles")
-    .select("stripe_account_id")
+    .select("stripe_account_id, premium_status")
     .eq("id", user.id)
     .maybeSingle();
-  return { userId: user.id, stripeAccountId: data?.stripe_account_id ?? null };
+  return {
+    userId: user.id,
+    stripeAccountId: data?.stripe_account_id ?? null,
+    premiumStatus: data?.premium_status ?? null,
+  };
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

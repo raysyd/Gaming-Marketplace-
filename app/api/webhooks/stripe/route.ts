@@ -36,6 +36,16 @@ export async function POST(req: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Two entirely different kinds of checkout land on this same event:
+      // a marketplace purchase (mode "payment", handled below) and a
+      // Premium Seller signup (mode "subscription", handled by
+      // customer.subscription.* instead — the subscription itself, not
+      // this session, is the durable record of what the buyer actually
+      // has, since Stripe can create the session before the first invoice
+      // is confirmed to have succeeded).
+      if (session.mode === "subscription") break;
+
       const meta = session.metadata ?? {};
       const buyerId = meta.buyerId;
       const sellerId = meta.sellerId;
@@ -185,6 +195,52 @@ export async function POST(req: Request) {
           if (relistError)
             console.error("Stripe webhook: relist-after-refund failed —", relistError.message);
         }
+      }
+      break;
+    }
+
+    // Premium Seller (see app/api/premium/checkout/route.ts) — a plain
+    // Stripe subscription, unrelated to Connect. The subscription object
+    // itself is the source of truth for status, not the checkout session
+    // that started it (a session completing doesn't guarantee the first
+    // invoice actually succeeded).
+    case "customer.subscription.created":
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.userId;
+      if (userId) {
+        // Stripe has several non-"active" statuses (past_due, unpaid,
+        // incomplete, …) — none of them grant anything, so only "active"
+        // (and "trialing", if a trial is ever configured on the price)
+        // is stored as active; everything else is stored as-is for
+        // visibility but isPremiumActive() treats it as not premium.
+        const status = sub.status === "trialing" ? "active" : sub.status;
+        const { error } = await admin
+          .from("profiles")
+          .update({
+            premium_status: status,
+            premium_subscription_id: sub.id,
+            stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer.id,
+          })
+          .eq("id", userId);
+        if (error) console.error("Stripe webhook: premium status sync failed —", error.message);
+      }
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.userId;
+      if (userId) {
+        // Scoped to this exact subscription id so a delete event that
+        // arrives after the seller already resubscribed (a new
+        // subscription id) can't clobber the newer, active one.
+        const { error } = await admin
+          .from("profiles")
+          .update({ premium_status: "canceled" })
+          .eq("id", userId)
+          .eq("premium_subscription_id", sub.id);
+        if (error) console.error("Stripe webhook: premium cancellation sync failed —", error.message);
       }
       break;
     }

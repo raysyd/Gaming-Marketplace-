@@ -13,7 +13,6 @@ const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const DEFAULT_TOP = "pc-parts-and-components";
 const DEFAULT_SUB = "graphics-cards";
 const MIN_PHOTOS = 5;
-const MAX_PHOTOS = 10;
 
 /**
  * `payoutsReady` comes from the server (app/sell/page.tsx) — true when
@@ -22,14 +21,27 @@ const MAX_PHOTOS = 10;
  * Mirrored server-side in POST /api/listings, which is the real gate —
  * this only saves a seller the round trip of filling out the whole form
  * first.
+ *
+ * `maxPhotos`, `listingLimit` and `activeListingCount` are Premium
+ * Seller-aware (see lib/premium.ts) — also re-enforced in POST
+ * /api/listings for the same reason payoutsReady is.
  */
 export function SellForm({
   payoutsReady,
   payoutStatus = "none",
+  maxPhotos = 10,
+  listingLimit = 10,
+  activeListingCount = 0,
+  premium = false,
 }: {
   payoutsReady: boolean;
   payoutStatus?: "none" | "pending" | "active" | "unknown";
+  maxPhotos?: number;
+  listingLimit?: number;
+  activeListingCount?: number;
+  premium?: boolean;
 }) {
+  const atListingLimit = activeListingCount >= listingLimit;
   const [form, setForm] = useState({
     title: "",
     categorySlug: DEFAULT_TOP,
@@ -90,6 +102,13 @@ export function SellForm({
   const submit = async () => {
     if (!payoutsReady) {
       setErrorMsg("Finish payout setup before publishing — see above.");
+      setState("error");
+      return;
+    }
+    if (atListingLimit) {
+      setErrorMsg(
+        `You're at your ${listingLimit}-listing limit. Take one down, or upgrade to Premium Seller for more.`
+      );
       setState("error");
       return;
     }
@@ -187,6 +206,27 @@ export function SellForm({
             you&apos;ll actually get paid once a sale is delivered and confirmed.
           </p>
           <ConnectPayoutButton status={payoutStatus} />
+        </div>
+      )}
+
+      {payoutsReady && atListingLimit && (
+        <div className="mt-6 rounded-[10px] border border-line bg-paper p-5">
+          <p className="text-[14px] font-semibold">
+            You&apos;ve reached your {listingLimit}-listing limit
+          </p>
+          <p className="mt-1 max-w-lg text-[13.5px] text-muted">
+            {premium
+              ? "Take a listing down to free up a slot."
+              : "Take a listing down, or upgrade to Premium Seller for a higher limit and more photos per listing."}
+          </p>
+          {!premium && (
+            <Link
+              href="/account"
+              className="mt-3 inline-block rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white"
+            >
+              Upgrade to Premium Seller
+            </Link>
+          )}
         </div>
       )}
 
@@ -299,8 +339,8 @@ export function SellForm({
             </Field>
           </div>
 
-          <Field label={`Photos — ${photos.length} of ${MIN_PHOTOS} minimum`}>
-            <PhotoUploader photos={photos} onChange={setPhotos} min={MIN_PHOTOS} max={MAX_PHOTOS} />
+          <Field label={`Photos — ${photos.length} of ${MIN_PHOTOS} minimum (up to ${maxPhotos})`}>
+            <PhotoUploader photos={photos} onChange={setPhotos} min={MIN_PHOTOS} max={maxPhotos} />
           </Field>
 
           <Field label="Specs — these are what buyers actually filter on">
@@ -378,16 +418,24 @@ export function SellForm({
 
           <button
             onClick={submit}
-            disabled={state === "saving" || photos.length < MIN_PHOTOS || !!missingAttr || !payoutsReady}
+            disabled={
+              state === "saving" ||
+              photos.length < MIN_PHOTOS ||
+              !!missingAttr ||
+              !payoutsReady ||
+              atListingLimit
+            }
             className="rgb-ring w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
           >
             {state === "saving"
               ? "Publishing…"
               : !payoutsReady
                 ? "Finish payout setup first"
-                : photos.length < MIN_PHOTOS
-                  ? `Add ${MIN_PHOTOS - photos.length} more photo${MIN_PHOTOS - photos.length === 1 ? "" : "s"}`
-                  : "Publish listing"}
+                : atListingLimit
+                  ? "Listing limit reached"
+                  : photos.length < MIN_PHOTOS
+                    ? `Add ${MIN_PHOTOS - photos.length} more photo${MIN_PHOTOS - photos.length === 1 ? "" : "s"}`
+                    : "Publish listing"}
           </button>
         </div>
 

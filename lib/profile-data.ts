@@ -9,6 +9,8 @@ export type Profile = {
   suburb: string | null;
   state: string | null;
   verified: boolean;
+  /** "active" is the only value that means anything is granted — see lib/premium.ts. */
+  premiumStatus: string | null;
 };
 
 function rowToProfile(r: Record<string, unknown>): Profile {
@@ -21,6 +23,7 @@ function rowToProfile(r: Record<string, unknown>): Profile {
     suburb: (r.suburb as string) ?? null,
     state: (r.state as string) ?? null,
     verified: Boolean(r.verified),
+    premiumStatus: (r.premium_status as string) ?? null,
   };
 }
 
@@ -30,7 +33,7 @@ export async function getProfile(id: string): Promise<Profile | null> {
   if (!supabase) return null;
   const { data } = await supabase
     .from("profiles")
-    .select("id, display_name, username, avatar_url, bio, suburb, state, verified")
+    .select("id, display_name, username, avatar_url, bio, suburb, state, verified, premium_status")
     .eq("id", id)
     .maybeSingle();
   return data ? rowToProfile(data) : null;

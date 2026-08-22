@@ -69,6 +69,19 @@ export async function POST(req: Request) {
   if (payload.suburb !== undefined) update.suburb = String(payload.suburb).slice(0, 80);
   if (payload.state !== undefined) update.state = String(payload.state).slice(0, 40);
 
+  if (payload.bannerUrl !== undefined) update.banner_url = payload.bannerUrl || null;
+  if (payload.policyNote !== undefined) update.policy_note = String(payload.policyNote).slice(0, 500);
+  if (payload.contactLink !== undefined) {
+    const link = String(payload.contactLink).trim();
+    if (!link) update.contact_link = null;
+    else if (!/^https:\/\/.+/i.test(link))
+      return NextResponse.json(
+        { error: "Contact link must start with https://." },
+        { status: 400 }
+      );
+    else update.contact_link = link.slice(0, 300);
+  }
+
   const { error } = await supabase.from("profiles").upsert(update);
   if (error) {
     // The unique index (profiles_username_idx) is the real guarantee

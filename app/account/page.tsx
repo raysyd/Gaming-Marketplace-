@@ -9,13 +9,20 @@ export default async function AccountPage() {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) redirect("/login?next=/account");
 
-  const [{ data: profile, error: profileError }, plan] = await Promise.all([
+  const [{ data: profile, error: profileError }, plan, { count: activeCount }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, username, avatar_url, bio, suburb, state, verified, premium_status")
+      .select(
+        "display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status"
+      )
       .eq("id", user.id)
       .maybeSingle(),
     getPremiumPlan(),
+    supabase
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", user.id)
+      .eq("status", "active"),
   ]);
 
   // A real query error (bad column, RLS/grant mismatch, transient network
@@ -48,9 +55,12 @@ export default async function AccountPage() {
       <AccountSettingsForm
         displayName={profile.display_name ?? ""}
         avatarUrl={profile.avatar_url ?? ""}
+        bannerUrl={profile.banner_url ?? ""}
         bio={profile.bio ?? ""}
         suburb={profile.suburb ?? ""}
         state={profile.state ?? ""}
+        contactLink={profile.contact_link ?? ""}
+        policyNote={profile.policy_note ?? ""}
         verified={Boolean(profile.verified)}
         email={user.email ?? ""}
       />
@@ -61,7 +71,23 @@ export default async function AccountPage() {
         monthlyPriceCents={plan.monthlyPriceCents}
         listingLimit={premium ? plan.premiumListingLimit : plan.freeListingLimit}
         maxPhotos={premium ? plan.premiumMaxPhotos : plan.freeMaxPhotos}
+        activeListingCount={activeCount ?? 0}
       />
+
+      {/* Grandfathered, not force-deactivated: dropping below Premium never
+          takes existing listings down on its own (see
+          app/api/listings/route.ts, which only blocks *new* ones past the
+          limit) — this just makes that policy visible instead of a silent
+          surprise the next time they try to list something. */}
+      {!premium && (activeCount ?? 0) > plan.freeListingLimit && (
+        <div className="mt-4 rounded-[10px] border border-deal/40 bg-deal-soft px-4 py-3.5 text-[13.5px] leading-relaxed text-ink">
+          <strong>
+            You have {activeCount} active listings, over the free plan&apos;s {plan.freeListingLimit}-listing limit.
+          </strong>{" "}
+          They&apos;ll stay live — you just can&apos;t add another until you&apos;re back under the limit
+          (take one down) or you resubscribe to {plan.badgeLabel}.
+        </div>
+      )}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Link

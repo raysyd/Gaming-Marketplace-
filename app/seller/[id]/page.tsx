@@ -36,6 +36,12 @@ export default async function SellerProfilePage({
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
+      {profile?.bannerUrl && (
+        <div className="-mt-2 mb-6 h-32 w-full overflow-hidden rounded-[10px] bg-trust-soft sm:h-44">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+        </div>
+      )}
       <div className="flex items-center gap-4">
         <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust">
           {profile?.avatarUrl ? (
@@ -75,8 +81,25 @@ export default async function SellerProfilePage({
             {location && ` · ${location}`}
           </p>
           {profile?.bio && <p className="mt-2 max-w-lg text-[13.5px] text-muted">{profile.bio}</p>}
+          {profile?.contactLink && (
+            <a
+              href={profile.contactLink}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="spec mt-2 inline-block font-semibold text-trust hover:underline"
+            >
+              {profile.contactLink.replace(/^https?:\/\//, "")} ↗
+            </a>
+          )}
         </div>
       </div>
+
+      {profile?.policyNote && (
+        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
+          <p className="eyebrow">Shipping &amp; returns</p>
+          <p className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-muted">{profile.policyNote}</p>
+        </div>
+      )}
 
       <h2 className="display mt-10 text-[20px]">Active listings</h2>
       {listings.length === 0 ? (

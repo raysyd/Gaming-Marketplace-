@@ -8,6 +8,7 @@ import { TAXONOMY, findTop, findSub, slugify } from "@/lib/taxonomy";
 import { SUGGESTED_SPECS } from "@/lib/specs";
 import { attributesFor } from "@/lib/attributes";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
+import { ListingUsageBar } from "@/components/ListingUsageBar";
 
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const DEFAULT_TOP = "pc-parts-and-components";
@@ -60,6 +61,23 @@ export function SellForm({
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [error, setErrorMsg] = useState("");
   const [listingId, setListingId] = useState("");
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+
+  const upgrade = async () => {
+    setUpgradeBusy(true);
+    try {
+      const res = await fetch("/api/premium/checkout", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch {
+      // No url and no throw — button just stops spinning; /account/
+      // PremiumCard is still reachable directly if this keeps failing.
+    }
+    setUpgradeBusy(false);
+  };
 
   const price = Number(form.price) || 0;
   const quantity = Math.max(1, Number(form.quantity) || 1);
@@ -197,6 +215,9 @@ export function SellForm({
         Listing is free. {BRAND.name} takes {BRAND.feePercent}% only when the item
         sells and the buyer confirms delivery.
       </p>
+      <div className="max-w-xs">
+        <ListingUsageBar count={activeListingCount} limit={listingLimit} />
+      </div>
 
       {!payoutsReady && (
         <div className="mt-6 rounded-[10px] border border-trust bg-trust/5 p-5">
@@ -220,12 +241,14 @@ export function SellForm({
               : "Take a listing down, or upgrade to Premium Seller for a higher limit and more photos per listing."}
           </p>
           {!premium && (
-            <Link
-              href="/account"
-              className="mt-3 inline-block rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white"
+            <button
+              type="button"
+              onClick={upgrade}
+              disabled={upgradeBusy}
+              className="mt-3 rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
             >
-              Upgrade to Premium Seller
-            </Link>
+              {upgradeBusy ? "Loading…" : "Upgrade to Premium Seller"}
+            </button>
           )}
         </div>
       )}

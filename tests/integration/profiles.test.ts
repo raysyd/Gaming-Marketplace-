@@ -53,4 +53,16 @@ describe.skipIf(!hasTestSupabase)("profile creation and its guardrails", () => {
       .eq("id", user.id);
     expect(error).toBeNull();
   });
+
+  it("allows editing the newer contact link / policy note / banner fields", async () => {
+    const { error } = await user.client
+      .from("profiles")
+      .update({
+        contact_link: "https://example.test/seller",
+        policy_note: "Ships within 2 business days.",
+        banner_url: "https://example.test/banner.jpg",
+      })
+      .eq("id", user.id);
+    expect(error).toBeNull();
+  });
 });

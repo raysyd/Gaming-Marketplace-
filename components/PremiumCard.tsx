@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { money } from "@/lib/format";
+import { ListingUsageBar } from "./ListingUsageBar";
 
 export function PremiumCard({
   active,
@@ -8,12 +9,14 @@ export function PremiumCard({
   monthlyPriceCents,
   listingLimit,
   maxPhotos,
+  activeListingCount,
 }: {
   active: boolean;
   badgeLabel: string;
   monthlyPriceCents: number;
   listingLimit: number;
   maxPhotos: number;
+  activeListingCount: number;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,6 +56,7 @@ export function PremiumCard({
       <p className="spec mt-1 text-muted">
         A paid badge, not an identity check — separate from Verified.
       </p>
+      <ListingUsageBar count={activeListingCount} limit={listingLimit} />
       {error && <p className="spec mt-2 text-deal">{error}</p>}
       <button
         onClick={() => go(active ? "/api/premium/portal" : "/api/premium/checkout")}

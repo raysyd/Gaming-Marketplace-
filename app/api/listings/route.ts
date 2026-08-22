@@ -6,6 +6,7 @@ import { slugify, findTop, findSub } from "@/lib/taxonomy";
 import { getConnectAccountStatus } from "@/lib/stripe";
 import { nameFromEmail } from "@/lib/profile-name";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
+import { isValidQuantity, MAX_LISTING_QUANTITY } from "@/lib/validation";
 
 const MIN_PHOTOS = 5;
 
@@ -28,11 +29,10 @@ export async function POST(req: Request) {
   // integer" — this is what /api/checkout's reserve_listing_stock later
   // decrements against, so it's the one number here that directly bounds
   // how many units can ever be sold.
-  const MAX_QUANTITY = 500;
   const quantity = Math.trunc(Number(payload.quantity));
-  if (!Number.isFinite(quantity) || quantity < 1 || quantity > MAX_QUANTITY)
+  if (!isValidQuantity(quantity))
     return NextResponse.json(
-      { error: `Quantity must be between 1 and ${MAX_QUANTITY}.` },
+      { error: `Quantity must be between 1 and ${MAX_LISTING_QUANTITY}.` },
       { status: 400 }
     );
 

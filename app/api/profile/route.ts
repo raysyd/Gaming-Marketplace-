@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
-
-const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+import { isValidUsername } from "@/lib/validation";
 
 /**
  * Creates or updates the signed-in user's own profile — used by both the
@@ -50,7 +49,7 @@ export async function POST(req: Request) {
           { status: 400 }
         );
     } else {
-      if (!USERNAME_RE.test(username))
+      if (!isValidUsername(username))
         return NextResponse.json(
           { error: "Username must be 3-20 characters: lowercase letters, numbers, underscores." },
           { status: 400 }

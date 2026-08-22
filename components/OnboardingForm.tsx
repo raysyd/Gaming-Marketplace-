@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { AvatarUploader } from "@/components/AvatarUploader";
+import { isValidUsername } from "@/lib/validation";
 
-const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
 
 export function OnboardingForm({ next, email }: { next: string; email: string }) {
@@ -15,7 +15,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const usernameValid = USERNAME_RE.test(username);
+  const usernameValid = isValidUsername(username);
 
   const submit = async () => {
     if (!usernameValid) {

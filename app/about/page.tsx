@@ -6,25 +6,30 @@ export const metadata = { title: `About — ${BRAND.name}` };
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-[760px] px-4 py-14">
+    <div className="mx-auto max-w-[880px] px-4 py-14">
       <CompanyNav active="/about" />
 
-      <p className="eyebrow mt-8">About</p>
-      <h1 className="display mt-2 text-[32px]">{BRAND.tagline}</h1>
-      <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-muted">{BRAND.blurb}</p>
+      <div className="mt-10 max-w-2xl">
+        <p className="eyebrow">About</p>
+        <h1 className="display mt-2 text-[40px] sm:text-[48px]">{BRAND.tagline}</h1>
+        <p className="mt-4 text-[16px] leading-relaxed text-muted">{BRAND.blurb}</p>
+      </div>
 
-      <div className="mt-10 space-y-8">
-        <section className="border-t border-line pt-6">
-          <h2 className="text-[17px] font-semibold">No warehouse, no stock</h2>
-          <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
-            {BRAND.name} doesn&apos;t hold inventory. Every listing is a real
-            seller&apos;s own hardware — the box they upgraded out of, the parts
-            left over from a build. We&apos;re the layer that makes trading that
-            stuff between strangers feel safe.
-          </p>
-        </section>
+      {/* The identity-defining claim, pulled out of the section stack below
+          into its own callout — this is the one thing about the model that
+          most needs to land before anything else. */}
+      <div className="mt-8 rounded-[10px] border border-trust bg-trust-soft p-6 sm:p-7">
+        <h2 className="text-[18px] font-semibold text-trust">No warehouse, no stock</h2>
+        <p className="mt-2 max-w-lg text-[14.5px] leading-relaxed text-ink">
+          {BRAND.name} doesn&apos;t hold inventory. Every listing is a real
+          seller&apos;s own hardware — the box they upgraded out of, the parts
+          left over from a build. We&apos;re the layer that makes trading that
+          stuff between strangers feel safe.
+        </p>
+      </div>
 
-        <section className="border-t border-line pt-6">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="rounded-[10px] border border-line bg-card p-6">
           <h2 className="text-[17px] font-semibold">How the money works</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             Payment is held by {BRAND.name} the moment a buyer checks out, and
@@ -35,9 +40,9 @@ export default function AboutPage() {
             </Link>
             .
           </p>
-        </section>
+        </div>
 
-        <section className="border-t border-line pt-6">
+        <div className="rounded-[10px] border border-line bg-card p-6">
           <h2 className="text-[17px] font-semibold">Questions</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             See{" "}
@@ -50,7 +55,7 @@ export default function AboutPage() {
             </a>{" "}
             directly.
           </p>
-        </section>
+        </div>
       </div>
     </div>
   );

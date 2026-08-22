@@ -6,13 +6,15 @@ export const metadata = { title: `Privacy Policy — ${BRAND.name}` };
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-[760px] px-4 py-14">
+    <div className="mx-auto max-w-[880px] px-4 py-14">
       <CompanyNav active="/privacy" />
 
-      <p className="eyebrow mt-8">Legal</p>
-      <h1 className="display mt-2 text-[32px]">Privacy Policy</h1>
+      <div className="mt-10">
+        <p className="eyebrow">Legal</p>
+        <h1 className="display mt-2 text-[36px] sm:text-[40px]">Privacy Policy</h1>
+      </div>
 
-      <div className="mt-4 rounded-[10px] border border-deal/40 bg-deal-soft px-4 py-3.5 text-[13.5px] leading-relaxed text-ink">
+      <div className="mt-6 rounded-[10px] border border-deal/40 bg-deal-soft px-5 py-4 text-[13.5px] leading-relaxed text-ink">
         <strong>Draft, not legal advice.</strong> This describes what the
         codebase actually does with data today. Before {BRAND.name} takes
         real users, have this reviewed against Australian privacy law (the
@@ -20,7 +22,7 @@ export default function PrivacyPage() {
         match — this page alone doesn&apos;t make the site compliant.
       </div>
 
-      <div className="mt-10 space-y-8">
+      <div className="mt-10 max-w-2xl space-y-8">
         <section className="border-t border-line pt-6">
           <h2 className="text-[17px] font-semibold">What we collect</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">

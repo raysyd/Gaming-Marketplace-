@@ -13,15 +13,17 @@ const SELF_SERVE = [
 
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-[760px] px-4 py-14">
+    <div className="mx-auto max-w-[880px] px-4 py-14">
       <CompanyNav active="/contact" />
 
-      <p className="eyebrow mt-8">Contact</p>
-      <h1 className="display mt-2 text-[32px]">Get in touch</h1>
-      <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-muted">
-        Most things are faster to resolve from inside your account — a few
-        common ones are below. For anything else, email us directly.
-      </p>
+      <div className="mt-10 max-w-2xl">
+        <p className="eyebrow">Contact</p>
+        <h1 className="display mt-2 text-[32px]">Get in touch</h1>
+        <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+          Most things are faster to resolve from inside your account — a few
+          common ones are below. For anything else, email us directly.
+        </p>
+      </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         {SELF_SERVE.map(([title, body, href]) => (

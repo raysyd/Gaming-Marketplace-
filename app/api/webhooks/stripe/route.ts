@@ -104,6 +104,19 @@ export async function POST(req: Request) {
         .upsert(rows, { onConflict: "stripe_payment_intent,listing_id", ignoreDuplicates: true });
       if (error) console.error("Stripe webhook: order insert failed —", error.message);
 
+      // An accepted offer's price was honored above (see the
+      // offerPriceByListing lookup in app/api/checkout/route.ts) — mark it
+      // redeemed now that the purchase actually went through, so it can't
+      // be reused for a second order. Uses the service-role client since
+      // no authenticated-user RLS path is allowed to reach "redeemed" (see
+      // supabase/10-offer-responses.sql) — only this webhook can.
+      await admin
+        .from("offers")
+        .update({ status: "redeemed" })
+        .eq("buyer_id", buyerId)
+        .eq("status", "accepted")
+        .in("listing_id", listingIds);
+
       // Stock was already decremented (and flipped to "sold" if it hit 0)
       // at reservation time in /api/checkout, via reserve_listing_stock_qty
       // — nothing left to do to the listing here. A completed payment just

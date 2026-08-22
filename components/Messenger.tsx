@@ -83,30 +83,39 @@ export function Messenger({
     const target =
       initialConversations.find((c) => c.listingId === deepListing)?.id ?? convId;
 
-    setMessages((prev) => {
-      const thread = prev[target] ?? [];
-      if (!deepOffer) return prev[target] ? prev : { ...prev, [target]: thread };
+    // In real (Supabase) mode, POST /api/offers already persisted both the
+    // offer row and its announcing message before this navigation — the
+    // fresh server render that produced initialMessages already has it, so
+    // synthesizing a second, unlinked copy here would just duplicate the
+    // bubble. Demo mode has no backend to have persisted anything, so it's
+    // the one case this still fabricates locally.
+    if (!hasSupabase) {
+      setMessages((prev) => {
+        const thread = prev[target] ?? [];
+        if (!deepOffer) return prev[target] ? prev : { ...prev, [target]: thread };
 
-      // Deterministic id, so a repeated run replaces rather than appends.
-      const offerId = `offer-${deepListing}-${deepOffer}`;
-      if (thread.some((m) => m.id === offerId)) return prev;
+        // Deterministic id, so a repeated run replaces rather than appends.
+        const offerId = `offer-${deepListing}-${deepOffer}`;
+        if (thread.some((m) => m.id === offerId)) return prev;
 
-      return {
-        ...prev,
-        [target]: [
-          ...thread,
-          {
-            id: offerId,
-            conversationId: target,
-            senderId: ME,
-            body: "Offer sent",
-            kind: "offer",
-            offerAmount: Number(deepOffer),
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      };
-    });
+        return {
+          ...prev,
+          [target]: [
+            ...thread,
+            {
+              id: offerId,
+              conversationId: target,
+              senderId: ME,
+              body: "Offer sent",
+              kind: "offer",
+              offerAmount: Number(deepOffer),
+              offerStatus: "pending",
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        };
+      });
+    }
 
     setActiveId(target);
     setShowListOnMobile(false);
@@ -306,6 +315,87 @@ export function Messenger({
     setSending(false);
   };
 
+  const [respondingOfferId, setRespondingOfferId] = useState<string | null>(null);
+  const [counterDraft, setCounterDraft] = useState<Record<string, string>>({});
+  const [counteringOfferId, setCounteringOfferId] = useState<string | null>(null);
+  const [offerError, setOfferError] = useState<{ offerId: string; message: string } | null>(null);
+
+  /**
+   * Accept/decline/counter a pending offer, or accept/decline a counter.
+   * The server (app/api/offers/route.ts PATCH) is the actual authority on
+   * who can do what — RLS backs it up (supabase/10-offer-responses.sql).
+   * On success it also drops a real "system" message into this same
+   * thread, which the realtime subscription above picks up for the other
+   * party; refreshing here (router.refresh-free — just re-fetch this
+   * offer's status) keeps the acting side's own view in sync without
+   * waiting on its own realtime echo (which is intentionally skipped for
+   * the sender — see the INSERT handler above).
+   */
+  const respondToOffer = async (offerId: string, action: "accept" | "decline" | "counter") => {
+    setOfferError(null);
+    const counterAmount = action === "counter" ? Number(counterDraft[offerId]) : undefined;
+    if (action === "counter" && (!counterAmount || counterAmount <= 0)) {
+      setOfferError({ offerId, message: "Enter a counter amount above zero." });
+      return;
+    }
+    setRespondingOfferId(offerId);
+    try {
+      const res = await fetch("/api/offers", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offerId, action, counterAmount }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setOfferError({ offerId, message: data.error ?? "Couldn't update that offer." });
+        setRespondingOfferId(null);
+        return;
+      }
+      // Reflect the new status on every message announcing this offer
+      // (there's exactly one, but this doesn't assume that) without
+      // waiting for a reload.
+      setMessages((prev) => {
+        const next: typeof prev = {};
+        for (const [convId, msgs] of Object.entries(prev)) {
+          next[convId] = msgs.map((m) =>
+            m.offerId === offerId
+              ? {
+                  ...m,
+                  offerStatus: data.status,
+                  offerCounterAmount: action === "counter" ? counterAmount : m.offerCounterAmount,
+                }
+              : m
+          );
+        }
+        return next;
+      });
+      // The server also drops a "system" message announcing this — the
+      // realtime INSERT handler above deliberately skips echoing back the
+      // acting user's own sends, so without this the person who just
+      // clicked Accept/Decline/Counter wouldn't see that line appear until
+      // a reload.
+      if (activeId && ME) {
+        const body =
+          action === "counter"
+            ? `Countered at $${counterAmount}`
+            : action === "accept"
+              ? "Offer accepted. The buyer can check out at this price from the cart."
+              : "Offer declined.";
+        setMessages((p) => ({
+          ...p,
+          [activeId]: [
+            ...(p[activeId] ?? []),
+            { id: `sys-${Date.now()}`, conversationId: activeId, senderId: ME, body, kind: "system", createdAt: new Date().toISOString() },
+          ],
+        }));
+      }
+      setCounteringOfferId(null);
+    } catch {
+      setOfferError({ offerId, message: "Couldn't reach the server. Try again." });
+    }
+    setRespondingOfferId(null);
+  };
+
   // Server-rendered conversations/messages already belong to the right
   // user (they came from a cookie-authed query), but *which side* each
   // message renders on depends on ME, which only exists once useAuth()'s
@@ -449,33 +539,129 @@ export function Messenger({
             )}
             {thread.map((m) => {
               const mine = m.senderId === ME;
-              if (m.kind === "offer")
+              if (m.kind === "system")
+                return (
+                  <p key={m.id} className="spec py-1 text-center text-muted">
+                    {m.body} · {clockTime(m.createdAt)}
+                  </p>
+                );
+              if (m.kind === "offer") {
+                // The offer message is always sent by the buyer, so "mine"
+                // here means "I'm the buyer on this offer" — the seller is
+                // whoever it's *not* mine for. Who gets which buttons
+                // depends on both that and the offer's live status.
+                const status = m.offerStatus ?? "pending";
+                const iAmSeller = !mine;
+                const canRespond =
+                  (status === "pending" && iAmSeller) || (status === "countered" && mine);
+                const busy = respondingOfferId === m.offerId;
+                const showingCounter = counteringOfferId === m.offerId;
                 return (
                   <div
                     key={m.id}
                     className={`flex ${mine ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="rounded-lg border border-deal bg-deal-soft px-4 py-3">
+                    <div className="w-full max-w-[280px] rounded-lg border border-deal bg-deal-soft px-4 py-3">
                       <p className="eyebrow text-deal">
                         {mine ? "You offered" : "Offer received"}
                       </p>
                       <p className="display mt-1 text-[22px]">
                         {money(m.offerAmount ?? 0)}
                       </p>
-                      {!mine && (
-                        <div className="mt-2 flex gap-2">
-                          <button className="rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white">
+
+                      {status === "pending" && !canRespond && (
+                        <p className="spec mt-2 text-muted">Waiting for a response…</p>
+                      )}
+                      {status === "countered" && (
+                        <p className="spec mt-2 font-semibold text-deal">
+                          {iAmSeller ? "You countered at " : "Countered at "}
+                          {money(m.offerCounterAmount ?? 0)}
+                          {!mine && " — waiting on the buyer"}
+                        </p>
+                      )}
+                      {status === "accepted" && (
+                        <p className="spec mt-2 font-semibold text-good">Accepted ✓</p>
+                      )}
+                      {status === "declined" && (
+                        <p className="spec mt-2 font-semibold text-muted">Declined</p>
+                      )}
+                      {status === "redeemed" && (
+                        <p className="spec mt-2 font-semibold text-good">Purchased ✓</p>
+                      )}
+
+                      {canRespond && !showingCounter && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => m.offerId && respondToOffer(m.offerId, "accept")}
+                            disabled={busy}
+                            className="rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50"
+                          >
                             Accept
                           </button>
-                          <button className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold">
-                            Counter
+                          {status === "pending" && (
+                            <button
+                              onClick={() => m.offerId && setCounteringOfferId(m.offerId)}
+                              disabled={busy}
+                              className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold disabled:opacity-50"
+                            >
+                              Counter
+                            </button>
+                          )}
+                          <button
+                            onClick={() => m.offerId && respondToOffer(m.offerId, "decline")}
+                            disabled={busy}
+                            className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold disabled:opacity-50"
+                          >
+                            Decline
                           </button>
                         </div>
+                      )}
+                      {canRespond && showingCounter && (
+                        <div className="mt-2 space-y-1.5">
+                          <input
+                            value={counterDraft[m.offerId ?? ""] ?? ""}
+                            onChange={(e) =>
+                              setCounterDraft((p) => ({
+                                ...p,
+                                [m.offerId ?? ""]: e.target.value.replace(/[^0-9]/g, ""),
+                              }))
+                            }
+                            placeholder="Your counter amount"
+                            className="input text-[13px]"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => m.offerId && respondToOffer(m.offerId, "counter")}
+                              disabled={busy}
+                              className="rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50"
+                            >
+                              Send counter
+                            </button>
+                            <button
+                              onClick={() => setCounteringOfferId(null)}
+                              className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {status === "accepted" && mine && (
+                        <Link
+                          href="/cart"
+                          className="mt-2 inline-block rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white"
+                        >
+                          Go to checkout
+                        </Link>
+                      )}
+                      {offerError && offerError.offerId === m.offerId && (
+                        <p className="spec mt-2 text-deal">{offerError.message}</p>
                       )}
                       <p className="spec mt-2 text-muted">{clockTime(m.createdAt)}</p>
                     </div>
                   </div>
                 );
+              }
               return (
                 <div
                   key={m.id}

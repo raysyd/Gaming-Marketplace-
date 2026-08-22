@@ -52,9 +52,12 @@ export async function queryMessengerData(): Promise<{
   });
 
   const convIds = convRows.map((c) => c.id);
+  // Embeds the offer row a message announces, if any — the message itself
+  // is immutable (05-messages-immutable.sql), so its live accept/decline/
+  // counter status has to come from a join, not the message row.
   const { data: msgRows } = await supabase
     .from("messages")
-    .select("*")
+    .select("*, offers(status, counter_amount)")
     .in("conversation_id", convIds)
     .order("created_at", { ascending: true });
 
@@ -68,6 +71,9 @@ export async function queryMessengerData(): Promise<{
       body: m.body,
       kind: (m.kind as Message["kind"]) ?? "text",
       offerAmount: m.offer_amount ? Number(m.offer_amount) : undefined,
+      offerId: m.offer_id ?? undefined,
+      offerStatus: m.offers?.status as Message["offerStatus"],
+      offerCounterAmount: m.offers?.counter_amount ? Number(m.offers.counter_amount) : undefined,
       createdAt: m.created_at,
     });
   }

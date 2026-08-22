@@ -98,6 +98,25 @@ export async function POST(req: Request) {
       { status: 409 }
     );
 
+  // An accepted offer (from components/Messenger.tsx's accept flow) binds
+  // the price for that one listing — only ever for a qty-1 purchase, since
+  // an offer is on one unit of one listing, not a bulk rate. Never trusted
+  // from the client: read straight from `offers`, scoped to this buyer, and
+  // only 'accepted' (not 'redeemed' — already used once) counts.
+  const offerPriceByListing = new Map<string, number>();
+  const singleQtyIds = ids.filter((id) => (qtyById.get(id) ?? 0) === 1);
+  if (singleQtyIds.length) {
+    const { data: acceptedOffers } = await supabase
+      .from("offers")
+      .select("listing_id, amount, counter_amount")
+      .eq("buyer_id", user.id)
+      .eq("status", "accepted")
+      .in("listing_id", singleQtyIds);
+    for (const o of acceptedOffers ?? []) {
+      offerPriceByListing.set(o.listing_id, Number(o.counter_amount ?? o.amount));
+    }
+  }
+
   const sellerIds = [...new Set(listings.map((l) => l.seller_id))];
   if (sellerIds.length !== 1)
     return NextResponse.json(
@@ -215,7 +234,7 @@ export async function POST(req: Request) {
           quantity: qtyById.get(l.id) ?? 1,
           price_data: {
             currency,
-            unit_amount: Math.round(l.price * 100),
+            unit_amount: Math.round((offerPriceByListing.get(l.id) ?? l.price) * 100),
             product_data: { name: l.title },
           },
         })),

@@ -80,8 +80,13 @@ export type Message = {
   senderId: string;
   body: string;
   createdAt: string;
-  kind?: "text" | "offer";
+  kind?: "text" | "offer" | "system";
   offerAmount?: number;
+  /** Only set on kind "offer" — the real offers-table row this message announces. */
+  offerId?: string;
+  /** Live status of that row, joined in at read time (see lib/messages-data.ts) — not frozen at send time. */
+  offerStatus?: "pending" | "accepted" | "declined" | "countered" | "redeemed";
+  offerCounterAmount?: number;
 };
 
 export type Conversation = {

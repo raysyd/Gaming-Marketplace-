@@ -131,31 +131,32 @@ export async function POST(req: Request) {
     );
   }
 
-  // Reserve every listing atomically — active -> reserved, conditioned on
-  // still being active — before Stripe ever sees this checkout. Postgres's
-  // row lock during the UPDATE is what makes this safe against two buyers
-  // clicking checkout on the same listing in the same second: whichever
-  // request's UPDATE commits first wins the row, and the second gets 0
-  // rows back instead of a false "it worked". This is the first line of
-  // defense; the partial unique index on orders (see
-  // supabase/02-order-lifecycle.sql) is the one that holds even if this
-  // one has a bug.
-  const { data: reserved, error: reserveError } = await supabase
-    .from("listings")
-    .update({ status: "reserved" })
-    .in("id", ids)
-    .eq("status", "active")
-    .select("id");
+  // Reserve one unit of stock per listing, atomically, before Stripe ever
+  // sees this checkout — via a SECURITY DEFINER function
+  // (supabase/06-listing-quantity.sql), not a plain .update(). There is no
+  // RLS policy letting a buyer touch a listing they don't own (only
+  // "sellers manage own listings" exists), so a direct update from this
+  // buyer-authed client would silently match zero rows every time — that
+  // was a real, confirmed bug: checkout never actually worked for a
+  // cross-user purchase. The function's own atomic
+  // `stock = stock - 1 ... where status = 'active' and stock > 0` is what
+  // makes concurrent checkouts on the last unit safe: Postgres's row lock
+  // means whichever request's update commits first wins, and the second
+  // gets 0 rows back instead of a false "it worked". This is the first
+  // line of defense; the `stock >= 0` check constraint is what holds even
+  // if this logic ever has a bug.
+  const { data: reserved, error: reserveError } = await supabase.rpc(
+    "reserve_listing_stock",
+    { ids }
+  );
   if (reserveError)
     return NextResponse.json({ error: "Couldn't start checkout. Try again." }, { status: 500 });
   if (!reserved || reserved.length !== ids.length) {
-    // Partial reservation — someone else got the rest a moment before us.
-    // Put back only what we actually took, not the whole cart.
+    // Partial reservation — someone else got the rest a moment before us
+    // (or a listing had already sold out). Put back only what we actually
+    // took, not the whole cart.
     if (reserved?.length)
-      await supabase
-        .from("listings")
-        .update({ status: "active" })
-        .in("id", reserved.map((r) => r.id));
+      await supabase.rpc("release_listing_stock", { ids: reserved.map((r: { id: string }) => r.id) });
     return NextResponse.json(
       { error: "Someone just bought one or more of these items. Refresh your cart and try again." },
       { status: 409 }
@@ -179,8 +180,11 @@ export async function POST(req: Request) {
       mode: "payment",
       line_items: [
         ...listings.map((l) => ({
-          // Every listing here has stock 1 — one line item each, quantity 1.
-          // Client-submitted quantity is ignored for the same reason price is.
+          // One unit of each listing per checkout — the cart doesn't offer
+          // buying more than one unit of the same listing in a single
+          // pass, so this is always 1 regardless of how much stock the
+          // listing has. Client-submitted quantity is ignored for the same
+          // reason price is.
           quantity: 1,
           price_data: {
             currency,
@@ -210,9 +214,9 @@ export async function POST(req: Request) {
         metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
       },
       metadata: { buyerId: user.id, sellerId, listingIds, shippingFee: String(shippingFee) },
-      // Bounds how long a reservation can hold a listing hostage if the
-      // buyer just closes the tab — checkout.session.expired (see the
-      // webhook) puts reserved listings back to active when this passes.
+      // Bounds how long a reservation can hold stock hostage if the buyer
+      // just closes the tab — checkout.session.expired (see the webhook)
+      // restocks these listings when this passes.
       expires_at: Math.floor(Date.now() / 1000) + RESERVATION_MINUTES * 60,
       success_url: `${site}/buying/confirmation?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${site}/cart`,
@@ -220,8 +224,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (e) {
     // The reservation already happened — a Stripe-side failure here must
-    // not leave listings stuck reserved with no checkout ever created.
-    await supabase.from("listings").update({ status: "active" }).in("id", ids).eq("status", "reserved");
+    // not leave stock stuck decremented with no checkout ever created.
+    await supabase.rpc("release_listing_stock", { ids });
     const message = e instanceof Error ? e.message : "Checkout failed.";
     return NextResponse.json({ url: null, message }, { status: 500 });
   }

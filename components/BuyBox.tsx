@@ -76,6 +76,16 @@ export function BuyBox({ listing }: { listing: Listing }) {
         {listing.location}
       </p>
 
+      {/* Only worth saying anything when it's informative: quiet for a
+          normal single unit, a nudge when stock is getting low, and the
+          sold-out branch below already covers zero. */}
+      {listing.status === "active" && listing.stock > 1 && listing.stock <= 5 && (
+        <p className="spec mt-1 font-semibold text-deal">Only {listing.stock} left</p>
+      )}
+      {listing.status === "active" && listing.stock > 5 && (
+        <p className="spec mt-1 text-muted">{listing.stock} in stock</p>
+      )}
+
       <div className="mt-4 space-y-2">
         {ownListing ? (
           <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
@@ -83,11 +93,7 @@ export function BuyBox({ listing }: { listing: Listing }) {
           </p>
         ) : listing.status === "sold" ? (
           <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
-            Sold
-          </p>
-        ) : listing.status === "reserved" ? (
-          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
-            In someone&apos;s cart right now — check back shortly.
+            Sold out
           </p>
         ) : (
           <button

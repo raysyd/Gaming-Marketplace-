@@ -24,6 +24,18 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
+  // Never trust a client-submitted quantity past "is it a sane positive
+  // integer" — this is what /api/checkout's reserve_listing_stock later
+  // decrements against, so it's the one number here that directly bounds
+  // how many units can ever be sold.
+  const MAX_QUANTITY = 500;
+  const quantity = Math.trunc(Number(payload.quantity));
+  if (!Number.isFinite(quantity) || quantity < 1 || quantity > MAX_QUANTITY)
+    return NextResponse.json(
+      { error: `Quantity must be between 1 and ${MAX_QUANTITY}.` },
+      { status: 400 }
+    );
+
   // The uploader and the publish button both block outside 5–10, but this
   // is the boundary a client that skips the form can't get past.
   const photoCount = (payload.image ? 1 : 0) + (payload.images?.length ?? 0);
@@ -102,7 +114,7 @@ export async function POST(req: Request) {
       seller_name: sellerName,
       slug: slugify(payload.title),
       status: "active",
-      stock: 1,
+      stock: quantity,
     })
     .select("id")
     .single();

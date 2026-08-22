@@ -100,7 +100,11 @@ function make(
     // the high numbers, via an occasional second roll instead of a flat
     // distribution that piles up in the middle of its range.
     watchers: Math.floor(rand() * 60) + (rand() > 0.85 ? Math.floor(rand() * 260) : 0),
-    stock: 1,
+    // A used item is a single physical unit — only genuinely new-condition
+    // stock (a seller with a few of the same new part) plausibly has more
+    // than one on hand, and even then usually just a couple.
+    stock:
+      partial.condition === "New" && rand() > 0.6 ? 1 + Math.floor(rand() * 4) : 1,
     createdAt: iso(age),
     ...partial,
   };

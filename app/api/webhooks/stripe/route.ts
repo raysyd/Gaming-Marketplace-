@@ -91,16 +91,10 @@ export async function POST(req: Request) {
         .upsert(rows, { onConflict: "stripe_payment_intent,listing_id", ignoreDuplicates: true });
       if (error) console.error("Stripe webhook: order insert failed —", error.message);
 
-      // The listing was only ever "reserved" (see /api/checkout) — this is
-      // the one place a sale actually locks in. Scoped to `reserved` so a
-      // listing a seller separately took down mid-checkout doesn't get
-      // silently resurrected as "sold".
-      const { error: soldError } = await admin
-        .from("listings")
-        .update({ status: "sold" })
-        .in("id", listingIds)
-        .eq("status", "reserved");
-      if (soldError) console.error("Stripe webhook: listing sold-flip failed —", soldError.message);
+      // Stock was already decremented (and flipped to "sold" if it hit 0)
+      // at reservation time in /api/checkout, via reserve_listing_stock —
+      // nothing left to do to the listing here. A completed payment just
+      // confirms the reservation is kept, not released.
 
       // Best-effort — see lib/email/send.ts, which itself never throws.
       // A missing/broken SMTP config or a lookup failure here must not
@@ -153,17 +147,14 @@ export async function POST(req: Request) {
     }
 
     case "checkout.session.expired": {
-      // Buyer never finished paying — release the hold. Scoped to
-      // `reserved` so this can never undo a sale that completed through
-      // some other path.
+      // Buyer never finished paying — restock what /api/checkout reserved.
+      // release_listing_stock only ever increments and never touches a
+      // listing that isn't in this exact id list, so this can't undo a
+      // sale that completed through some other path.
       const session = event.data.object as Stripe.Checkout.Session;
       const listingIds = (session.metadata?.listingIds ?? "").split(",").filter(Boolean);
       if (listingIds.length) {
-        const { error } = await admin
-          .from("listings")
-          .update({ status: "active" })
-          .in("id", listingIds)
-          .eq("status", "reserved");
+        const { error } = await admin.rpc("release_listing_stock", { ids: listingIds });
         if (error) console.error("Stripe webhook: reservation release failed —", error.message);
       }
       break;
@@ -183,15 +174,14 @@ export async function POST(req: Request) {
           .select("listing_id");
         if (error) console.error("Stripe webhook: refund update failed —", error.message);
 
-        // A refunded sale frees the listing back up — otherwise it's
-        // stuck "sold" forever with no way for the seller to relist it.
+        // A refunded sale gives the unit back — otherwise it's stuck sold
+        // (or under-counted, for a quantity > 1 listing) with no way for
+        // the seller to sell it again. release_listing_stock only flips
+        // status back to "active" if it's currently "sold" — a listing the
+        // seller separately deactivated on purpose stays deactivated.
         const listingIds = (refundedOrders ?? []).map((o) => o.listing_id);
         if (listingIds.length) {
-          const { error: relistError } = await admin
-            .from("listings")
-            .update({ status: "active" })
-            .in("id", listingIds)
-            .eq("status", "sold");
+          const { error: relistError } = await admin.rpc("release_listing_stock", { ids: listingIds });
           if (relistError)
             console.error("Stripe webhook: relist-after-refund failed —", relistError.message);
         }

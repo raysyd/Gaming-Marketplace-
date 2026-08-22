@@ -80,10 +80,10 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
 async function getListingUncached(id: string): Promise<Listing | null> {
   const supabase = createPublicClient();
   if (!supabase) return DEMO_LISTINGS.find((l) => l.id === id) ?? null;
-  // Not filtered to status = "active": a sold (or mid-checkout "reserved")
-  // listing must still resolve so order history and direct links don't
-  // 404 — the buy box is what shows it as unavailable. Only a seller
-  // taking a listing down ("inactive") should actually 404 it.
+  // Not filtered to status = "active": a sold-out listing must still
+  // resolve so order history and direct links don't 404 — the buy box is
+  // what shows it as unavailable. Only a seller taking a listing down
+  // ("inactive") should actually 404 it.
   const { data } = await supabase
     .from("listings")
     .select("*")

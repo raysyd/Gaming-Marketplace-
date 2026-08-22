@@ -36,6 +36,7 @@ export function SellForm({
     subcategorySlug: DEFAULT_SUB,
     condition: "Used",
     price: "",
+    quantity: "1",
     location: "",
     description: "",
     shipsFree: true,
@@ -49,6 +50,7 @@ export function SellForm({
   const [listingId, setListingId] = useState("");
 
   const price = Number(form.price) || 0;
+  const quantity = Math.max(1, Number(form.quantity) || 1);
   const fee = Math.round((price * BRAND.feePercent) / 100);
   const subOptions = findTop(form.categorySlug)?.children ?? [];
   // Generic per-subcategory required fields (storage type, cooling type, …) —
@@ -118,6 +120,7 @@ export function SellForm({
           ...form,
           category: findSub(form.subcategorySlug)?.name ?? "",
           price,
+          quantity,
           specs: [...attrSpecs, ...specs.filter((s) => s.label && s.value)],
           image: photos[0] ?? "",
           images: photos.slice(1),
@@ -267,13 +270,22 @@ export function SellForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Field label={`Asking price (${BRAND.currency})`}>
               <input
                 value={form.price}
                 onChange={(e) => set("price", e.target.value.replace(/[^0-9]/g, ""))}
                 inputMode="numeric"
                 placeholder="1990"
+                className="input"
+              />
+            </Field>
+            <Field label="Quantity">
+              <input
+                value={form.quantity}
+                onChange={(e) => set("quantity", e.target.value.replace(/[^0-9]/g, ""))}
+                inputMode="numeric"
+                placeholder="1"
                 className="input"
               />
             </Field>

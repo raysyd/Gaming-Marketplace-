@@ -21,13 +21,17 @@ export function Messenger({
   initialMessages: Record<string, Message[]>;
   listings: Listing[];
 }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   // Real conversations/messages carry the signed-in user's actual id as
-  // sender_id/buyer_id/seller_id — comparing against a hardcoded demo id
-  // here meant every one of a real user's own messages rendered as if
-  // they were the other person's. This is the one thing every "mine?"
-  // check in this file has to agree on.
-  const ME = user?.id ?? DEMO_ME;
+  // sender_id/buyer_id/seller_id. Falling back to the demo id whenever
+  // `user` was falsy — which is also true for the split second before
+  // auth.getUser() resolves on a real, signed-in session — meant every
+  // message briefly rendered as if it belonged to the other person, since
+  // "u-you" never matches a real uuid. Only fall back to the demo id in
+  // actual demo mode; a real deployment either knows who ME is or isn't
+  // ready to render messages as "mine" yet.
+  const ME = hasSupabase ? (user?.id ?? null) : DEMO_ME;
+  const activeIdRef = useRef<string | null>(null);
 
   const params = useSearchParams();
   const deepListing = params.get("listing");
@@ -43,9 +47,13 @@ export function Messenger({
   const [showListOnMobile, setShowListOnMobile] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+
   /* Arriving from a listing: open that thread, creating it if it's new. */
   useEffect(() => {
-    if (!deepListing) return;
+    if (!deepListing || !ME) return;
     const listing = listings.find((l) => l.id === deepListing);
     if (!listing) return;
 
@@ -103,46 +111,118 @@ export function Messenger({
     setActiveId(target);
     setShowListOnMobile(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deepListing, deepOffer]);
+  }, [deepListing, deepOffer, ME]);
 
-  /* Live updates when Supabase is wired up. */
+  /*
+   * Live updates when Supabase is wired up — one subscription for the
+   * whole inbox, not per open thread. The previous version filtered
+   * postgres_changes down to `conversation_id=eq.${activeId}`, so a
+   * message landing in any conversation other than the one currently on
+   * screen was invisible until the page was reloaded: no badge, no
+   * preview update, nothing. Subscribing unfiltered instead relies on
+   * Realtime applying the same RLS "participants read messages"/
+   * "participants read conversations" policies to what gets broadcast,
+   * so this still only ever receives rows ME is actually a party to.
+   */
   useEffect(() => {
-    if (!hasSupabase || !activeId) return;
+    if (!hasSupabase || !ME) return;
     const supabase = createClient();
     if (!supabase) return;
     const channel = supabase
-      .channel(`messages:${activeId}`)
+      .channel(`inbox:${ME}`)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${activeId}`,
-        },
+        { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const r = payload.new as Record<string, unknown>;
+          const convId = String(r.conversation_id);
           const incoming: Message = {
             id: String(r.id),
-            conversationId: String(r.conversation_id),
+            conversationId: convId,
             senderId: String(r.sender_id),
             body: String(r.body ?? ""),
             kind: (r.kind as Message["kind"]) ?? "text",
             offerAmount: r.offer_amount ? Number(r.offer_amount) : undefined,
             createdAt: String(r.created_at),
           };
-          if (incoming.senderId === ME) return;
-          setMessages((p) => ({
-            ...p,
-            [activeId]: [...(p[activeId] ?? []), incoming],
-          }));
+          if (incoming.senderId === ME) return; // own send, already applied optimistically
+
+          setMessages((p) => {
+            if (p[convId]?.some((m) => m.id === incoming.id)) return p;
+            return { ...p, [convId]: [...(p[convId] ?? []), incoming] };
+          });
+          setConversations((p) => {
+            if (!p.some((c) => c.id === convId)) return p; // new-thread case, handled below
+            return p
+              .map((c) =>
+                c.id === convId
+                  ? {
+                      ...c,
+                      lastMessage: incoming.body,
+                      updatedAt: incoming.createdAt,
+                      unread: convId === activeIdRef.current ? 0 : c.unread + 1,
+                    }
+                  : c
+              )
+              .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
+          });
+          if (convId === activeIdRef.current) {
+            fetch("/api/messages", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ conversationId: convId }),
+            }).catch(() => {});
+          }
+        }
+      )
+      .on(
+        // A brand-new thread someone else started with ME (only relevant
+        // to sellers — a buyer already has their own thread in state the
+        // moment they send its first message) has no row in `conversations`
+        // client-side yet, so the INSERT above drops it. Pick it up here
+        // instead, using the listing data already loaded in `listings`.
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "conversations" },
+        async (payload) => {
+          const r = payload.new as Record<string, unknown>;
+          const convId = String(r.id);
+          if (r.buyer_id === ME) return; // I created this one myself, already in state
+          setConversations((p) => {
+            if (p.some((c) => c.id === convId)) return p;
+            const listing = listings.find((l) => l.id === String(r.listing_id));
+            const conv: Conversation = {
+              id: convId,
+              listingId: String(r.listing_id ?? ""),
+              listingTitle: listing?.title ?? "Listing",
+              listingImage: listing?.image ?? "",
+              buyerId: String(r.buyer_id),
+              sellerId: String(r.seller_id),
+              otherPartyName: "Buyer",
+              lastMessage: String(r.last_message ?? ""),
+              updatedAt: String(r.updated_at ?? new Date().toISOString()),
+              unread: 0,
+            };
+            return [conv, ...p];
+          });
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("id", String(r.buyer_id))
+            .maybeSingle();
+          if (profile?.display_name) {
+            setConversations((p) =>
+              p.map((c) =>
+                c.id === convId ? { ...c, otherPartyName: profile.display_name } : c
+              )
+            );
+          }
         }
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeId]);
+  }, [ME, listings]);
 
   /*
    * Opening a thread only ever cleared the unread count in local state
@@ -173,7 +253,7 @@ export function Messenger({
 
   const send = async () => {
     const body = draft.trim();
-    if (!body || !activeId) return;
+    if (!body || !activeId || !ME) return;
     setSending(true);
     const msg: Message = {
       id: `m-${Date.now()}`,
@@ -225,6 +305,16 @@ export function Messenger({
     }
     setSending(false);
   };
+
+  // Server-rendered conversations/messages already belong to the right
+  // user (they came from a cookie-authed query), but *which side* each
+  // message renders on depends on ME, which only exists once useAuth()'s
+  // getUser() call resolves client-side. Rendering through that gap used
+  // to show every message — including the viewer's own — as if it were
+  // the other person's. A brief loading state beats a wrong one.
+  if (hasSupabase && authLoading) {
+    return <div className="mx-auto max-w-[1240px] px-4 py-16 text-muted">Loading messages…</div>;
+  }
 
   if (conversations.length === 0) {
     return (

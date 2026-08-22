@@ -12,6 +12,7 @@ const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
  * trigger, which is the actual enforcement).
  */
 export function AccountSettingsForm({
+  displayName: initialDisplayName,
   avatarUrl: initialAvatar,
   bio: initialBio,
   suburb: initialSuburb,
@@ -19,6 +20,7 @@ export function AccountSettingsForm({
   verified,
   email,
 }: {
+  displayName: string;
   avatarUrl: string;
   bio: string;
   suburb: string;
@@ -26,6 +28,7 @@ export function AccountSettingsForm({
   verified: boolean;
   email: string;
 }) {
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatar);
   const [bio, setBio] = useState(initialBio);
   const [suburb, setSuburb] = useState(initialSuburb);
@@ -40,7 +43,7 @@ export function AccountSettingsForm({
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatarUrl, bio, suburb, state }),
+        body: JSON.stringify({ displayName, avatarUrl, bio, suburb, state }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -62,6 +65,16 @@ export function AccountSettingsForm({
       )}
 
       <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />
+
+      <label className="block">
+        <span className="eyebrow mb-1.5 block">Display name</span>
+        <input
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value.slice(0, 80))}
+          placeholder="Rayan Iqbal"
+          className="input"
+        />
+      </label>
 
       <label className="block">
         <span className="eyebrow mb-1.5 block">Bio</span>

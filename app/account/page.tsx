@@ -12,7 +12,7 @@ export default async function AccountPage() {
   const [{ data: profile }, plan] = await Promise.all([
     supabase
       .from("profiles")
-      .select("username, avatar_url, bio, suburb, state, verified, premium_status")
+      .select("display_name, username, avatar_url, bio, suburb, state, verified, premium_status")
       .eq("id", user.id)
       .maybeSingle(),
     getPremiumPlan(),
@@ -34,6 +34,7 @@ export default async function AccountPage() {
       </p>
 
       <AccountSettingsForm
+        displayName={profile.display_name ?? ""}
         avatarUrl={profile.avatar_url ?? ""}
         bio={profile.bio ?? ""}
         suburb={profile.suburb ?? ""}

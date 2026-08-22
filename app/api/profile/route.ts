@@ -32,11 +32,17 @@ export async function POST(req: Request) {
 
   const { data: existing } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, display_name")
     .eq("id", user.id)
     .maybeSingle();
 
   const update: Record<string, unknown> = { id: user.id };
+
+  if (payload.displayName !== undefined) {
+    const displayName = String(payload.displayName ?? "").trim();
+    if (!displayName) update.display_name = null;
+    else update.display_name = displayName.slice(0, 80);
+  }
 
   if (payload.username !== undefined) {
     const username = String(payload.username).trim().toLowerCase();

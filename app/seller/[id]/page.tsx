@@ -31,7 +31,7 @@ export default async function SellerProfilePage({
   // listings.seller_name/reviews.reviewer_name are only the pre-profile
   // fallback for an account that predates this or never finished
   // onboarding (a soft-launch/demo-data situation, not the normal path).
-  const sellerName = profile?.displayName || listings[0]?.sellerName || reviews[0]?.reviewerName || "Seller";
+  const sellerName = profile?.displayName || profile?.username || listings[0]?.sellerName || reviews[0]?.reviewerName || "Seller";
   const location = [profile?.suburb, profile?.state].filter(Boolean).join(", ");
 
   return (

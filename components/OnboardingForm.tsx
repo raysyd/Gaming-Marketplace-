@@ -7,6 +7,7 @@ import { isValidUsername } from "@/lib/validation";
 const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
 
 export function OnboardingForm({ next, email }: { next: string; email: string }) {
+  const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [bio, setBio] = useState("");
@@ -28,7 +29,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
       const res = await fetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, avatarUrl, bio, suburb, state }),
+        body: JSON.stringify({ displayName, username, avatarUrl, bio, suburb, state }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -53,6 +54,19 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
 
       <div className="mt-8 space-y-5 rounded-[10px] border border-line bg-card p-6">
         <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />
+
+        <label className="block">
+          <span className="eyebrow mb-1.5 block">Display name</span>
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value.slice(0, 80))}
+            placeholder="Rayan Iqbal"
+            className="input"
+          />
+          <p className="spec mt-1.5 text-muted">
+            This is the name buyers see on your public seller profile.
+          </p>
+        </label>
 
         <label className="block">
           <span className="eyebrow mb-1.5 block">Username</span>

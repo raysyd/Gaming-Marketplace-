@@ -61,7 +61,7 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("stripe_account_id, display_name, premium_status")
+    .select("stripe_account_id, display_name, username, premium_status")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
   // a bare "Seller" everywhere (cards, messages, reviews). Backfill from
   // the account's own email the first time, never overwriting a name set
   // some other way later.
-  const sellerName = profile?.display_name || nameFromEmail(user.email) || "Seller";
+  const sellerName = profile?.display_name || profile?.username || nameFromEmail(user.email) || "Seller";
   if (!profile?.display_name)
     await supabase.from("profiles").upsert({ id: user.id, display_name: sellerName });
 

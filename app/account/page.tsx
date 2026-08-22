@@ -9,7 +9,7 @@ export default async function AccountPage() {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) redirect("/login?next=/account");
 
-  const [{ data: profile }, plan] = await Promise.all([
+  const [{ data: profile, error: profileError }, plan] = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, username, avatar_url, bio, suburb, state, verified, premium_status")
@@ -17,6 +17,18 @@ export default async function AccountPage() {
       .maybeSingle(),
     getPremiumPlan(),
   ]);
+
+  // A real query error (bad column, RLS/grant mismatch, transient network
+  // failure) used to look identical to "no profile yet" below and silently
+  // bounced an existing user into onboarding instead of their own settings.
+  // Surface it instead — app/error.tsx turns this into a visible, logged,
+  // recoverable card rather than a page that quietly redirects or renders
+  // nothing.
+  if (profileError) {
+    console.error("Failed to load profile for /account", profileError);
+    throw new Error(`Couldn't load your profile: ${profileError.message}`);
+  }
+
   const premium = isPremiumActive(profile?.premium_status);
 
   // The onboarding step is what actually sets username — a signed-in

@@ -1,0 +1,23 @@
+-- Sidegrade — the real fix for "permission denied for table profiles" on
+-- every profile save. Paste into Supabase -> SQL Editor -> Run. Safe to
+-- run more than once.
+--
+-- 08-premium-seller.sql / 11-profile-extras.sql / 12-fix-profile-grants.sql
+-- all built the UPDATE column grant list without `id` in it — correctly,
+-- as a rule (you should never be able to update a primary key). But
+-- PostgREST's upsert (what every profile save uses) compiles to
+-- `INSERT ... ON CONFLICT (id) DO UPDATE SET id = excluded.id, ...` —
+-- it includes the conflict-target column in the SET list even though
+-- the value never actually changes. Postgres still requires UPDATE
+-- privilege on every column named in SET to even plan the statement,
+-- so without this, *every* upsert to profiles fails with "permission
+-- denied for table profiles" regardless of which other columns are
+-- correctly granted.
+--
+-- Safe: RLS's "own profile writable" policy (`using (auth.uid() = id)`)
+-- applies to the new row too when no separate WITH CHECK is given, and
+-- `id` is a foreign key into auth.users — between those two, a value
+-- other than auth.uid() can never actually land in this column, so this
+-- only unblocks the no-op `id = id` every upsert already does.
+
+grant update (id) on profiles to authenticated;

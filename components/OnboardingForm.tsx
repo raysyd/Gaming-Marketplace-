@@ -60,7 +60,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value.slice(0, 80))}
-            placeholder="Rayan Iqbal"
+            placeholder="e.g. Alex Chen"
             className="input"
           />
           <p className="spec mt-1.5 text-muted">
@@ -73,7 +73,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-            placeholder="e.g. rtx_rayan"
+            placeholder="e.g. rtx_alex"
             className="input"
             maxLength={20}
           />

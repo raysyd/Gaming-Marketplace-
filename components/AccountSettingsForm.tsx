@@ -96,7 +96,7 @@ export function AccountSettingsForm({
         <input
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value.slice(0, 80))}
-          placeholder="Rayan Iqbal"
+          placeholder="e.g. Alex Chen"
           className="input"
         />
       </label>

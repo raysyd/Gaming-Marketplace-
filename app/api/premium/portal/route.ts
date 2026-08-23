@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { siteUrlFrom } from "@/lib/site-url";
+import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 /**
  * Stripe's own Billing Portal — update payment method, view invoices,
@@ -10,6 +11,13 @@ import { siteUrlFrom } from "@/lib/site-url";
  * conditions) for a first implementation.
  */
 export async function POST(req: Request) {
+  const limited = rateLimit(`premium-portal:${clientKey(req)}`, { limit: 5 });
+  if (!limited.ok)
+    return NextResponse.json(
+      { error: "Too many requests. Slow down a moment." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
+    );
+
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ url: null });
 

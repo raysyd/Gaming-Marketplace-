@@ -28,17 +28,25 @@ backend exists. Adding keys progressively switches on the real thing.
    git push -u origin main
    ```
 2. **Vercel** → New Project → import the repo → Deploy. No settings to change.
-3. **Supabase** → new project → SQL Editor → paste `supabase/schema.sql` → Run.
-   Then Settings → API, and copy the URL, the anon key and the service role key.
+3. **Supabase** → new project → SQL Editor → paste the whole of
+   `supabase/setup.sql` → Run. Then paste each numbered migration in
+   `supabase/` in order (`01-...` through the highest number present) —
+   `setup.sql` is the complete baseline schema, the numbered files are
+   everything added since. Then Settings → API, and copy the URL, the
+   anon key and the service role key.
 4. In Vercel → Settings → Environment Variables, add everything from
    `.env.example`, then redeploy.
 5. **Stripe** (when you're ready to take money) → enable Connect (Settings →
    Connect → get started, Express accounts) → add `STRIPE_SECRET_KEY` and
    `STRIPE_WEBHOOK_SECRET`, and point a webhook at
    `https://yourdomain.com/api/webhooks/stripe` listening for
-   `checkout.session.completed` and `charge.refunded`. No new SQL — the
+   `checkout.session.completed`, `checkout.session.expired`,
+   `charge.refunded`, `customer.subscription.created`,
+   `customer.subscription.updated`, `customer.subscription.deleted`, and
+   `identity.verification_session.verified` (see the full handler in
+   `app/api/webhooks/stripe/route.ts`). No new SQL — the
    `profiles.stripe_account_id` and `orders.*` columns this uses were
-   already in `schema.sql`, just unwired until now.
+   already in `setup.sql`, just unwired until now.
 
 ### Production magic-link email
 
@@ -69,10 +77,9 @@ alongside the magic link and Google options — pick whichever suits your users.
   letter, a number, not a common password). Set a matching minimum under
   **Authentication → Providers → Email → Password Requirements** so the
   server doesn't reject something the client accepted.
-- Run `supabase/auth-security.sql` once (already folded into `setup.sql` as
-  Part 4 for fresh installs) to add per-account sign-in lockout: 5 failed
-  password attempts on one email locks it for 15 minutes, on top of — not
-  instead of — Supabase's own IP-based **Authentication → Rate Limits**.
+- `setup.sql`'s Part 4 adds per-account sign-in lockout: 5 failed password
+  attempts on one email locks it for 15 minutes, on top of — not instead
+  of — Supabase's own IP-based **Authentication → Rate Limits**.
 - If email confirmation is on (Supabase's default), new accounts see a
   "check your inbox" screen before they can sign in; turn it off in
   **Authentication → Providers → Email** if you'd rather they land straight
@@ -91,8 +98,8 @@ email client or security scanner that auto-opens links can't trigger a
 real deletion.
 
 The actual delete runs through `delete_own_account()`, a SECURITY DEFINER
-Postgres function (`supabase/account-deletion.sql`, folded into `setup.sql`
-as Part 5) — `auth.uid()` keeps it scoped to the caller's own account.
+Postgres function (`setup.sql`'s Part 5) — `auth.uid()` keeps it scoped to
+the caller's own account.
 profiles, listings, conversations, messages, offers and wishlist rows all
 cascade-delete via their existing foreign keys; accounts with order history
 are blocked from self-service deletion (financial/escrow record) and told
@@ -119,8 +126,8 @@ whether there are 60 listings or 600,000.
 - **Rate limiting** on the write endpoints (`lib/rate-limit.ts`), in-memory for
   now with a note on where to swap in Redis once you run more than one instance.
 
-Run `supabase/scaling.sql` after `schema.sql` to get the indexes, the search
-column, the facet-count function and the wishlist table.
+`setup.sql`'s Part 2 has the indexes, the search column, the facet-count
+function and the wishlist table.
 
 ### What to watch as you grow
 
@@ -201,13 +208,15 @@ specific transfer first (`stripe.transfers.createReversal`) before
 refunding if it already paid out. `PLATFORM_FEE_BPS` sets your cut
 (800 = 8%).
 
-Run `supabase/stripe-v2-migration.sql` (folded into `setup.sql` as Part 6)
-if you set up escrow before this — it adds the `orders.stripe_transfer_id`
-column the reversal-on-refund path needs.
+`setup.sql`'s Part 6 adds the `orders.stripe_transfer_id` column the
+reversal-on-refund path needs.
 
-Shipping/delivery tracking and disputes aren't built — `released` currently
-only means "the buyer clicked confirm," not that a carrier confirmed
-delivery.
+Shipping/tracking and buyer-side disputes are built (see
+`supabase/02-order-lifecycle.sql` and `app/api/orders/[id]/dispute`) —
+what isn't built is carrier-verified delivery: `released` (or a dispute
+window opening) currently follows the seller marking it shipped and the
+buyer confirming or reporting a problem, not a courier's own delivery
+signal.
 
 ## Renaming and re-regioning
 

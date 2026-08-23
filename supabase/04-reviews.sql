@@ -37,7 +37,7 @@ create policy "buyer reviews own released order" on reviews
 
 -- Batched review + real-sales stats for a page's worth of sellers in one
 -- round trip, rather than one query per card — same reasoning as
--- listing_counts_by_sub in scaling.sql. "Sales" here means completed
+-- listing_counts_by_sub in setup.sql. "Sales" here means completed
 -- (released) orders, not the old fabricated seller_sales column.
 create or replace function seller_stats(seller_ids uuid[])
 returns table (seller_id uuid, review_count bigint, avg_rating numeric, sales_count bigint)

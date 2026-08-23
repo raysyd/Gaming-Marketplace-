@@ -4,7 +4,7 @@
 -- into Supabase -> SQL Editor -> Run. Safe to run more than once.
 --
 -- No RLS or table-grant changes needed: "sellers manage own listings"
--- (schema.sql) already gives a seller full insert/update/delete on any
+-- (setup.sql) already gives a seller full insert/update/delete on any
 -- row where seller_id = auth.uid(), regardless of status, and "active
 -- listings readable" already restricts everyone else to status = 'active'
 -- — a draft is invisible to anyone but its owner for free. The only real

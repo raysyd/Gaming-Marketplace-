@@ -86,7 +86,7 @@ export function LoginForm() {
     try {
       if (action === "signin") {
         // Per-account lockout on top of Supabase's own IP-based auth rate
-        // limits (see supabase/auth-security.sql). Fails open — if the
+        // limits (see supabase/setup.sql's Part 4). Fails open — if the
         // migration hasn't been run yet, the RPC errors and sign-in
         // proceeds as normal rather than blocking everyone.
         const { data: blocked } = await withTimeout(

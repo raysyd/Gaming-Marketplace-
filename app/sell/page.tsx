@@ -1,4 +1,4 @@
-import { getSellerProfile, querySellerListings } from "@/lib/seller-data";
+import { getSellerProfile, querySellerListings, getOwnListing } from "@/lib/seller-data";
 import { getConnectAccountStatus } from "@/lib/stripe";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { SellForm } from "@/components/SellForm";
@@ -15,12 +15,18 @@ import { SellForm } from "@/components/SellForm";
  * "runs with no configuration" experience keeps working — there's nothing
  * to connect yet.
  */
-export default async function SellPage() {
+export default async function SellPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ draft?: string }>;
+}) {
+  const { draft: draftId } = await searchParams;
   const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
-  const [profile, plan, listings] = await Promise.all([
+  const [profile, plan, listings, draft] = await Promise.all([
     stripeConfigured ? getSellerProfile() : null,
     getPremiumPlan(),
     querySellerListings(),
+    draftId ? getOwnListing(draftId) : null,
   ]);
   const payoutStatus = profile?.stripeAccountId
     ? await getConnectAccountStatus(profile.stripeAccountId)
@@ -28,6 +34,11 @@ export default async function SellPage() {
   const premium = isPremiumActive(profile?.premiumStatus);
   const listingLimit = premium ? plan.premiumListingLimit : plan.freeListingLimit;
   const activeCount = listings.filter((l) => l.status === "active").length;
+  // Silently ignored if it's not actually a draft (already published, or
+  // doesn't exist/belong to someone else — getOwnListing already scopes
+  // to the signed-in seller) — the form just opens blank instead of
+  // erroring on a stale or tampered-with link.
+  const resumableDraft = draft?.status === "draft" ? draft : null;
 
   return (
     <SellForm
@@ -37,6 +48,7 @@ export default async function SellPage() {
       listingLimit={listingLimit}
       activeListingCount={activeCount}
       premium={premium}
+      initialDraft={resumableDraft ?? undefined}
     />
   );
 }

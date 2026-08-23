@@ -9,6 +9,7 @@ import { money, timeAgo, deadlineLabel } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { ProductImage } from "@/components/ProductImage";
 import { ListingActions } from "@/components/ListingActions";
+import { DraftListingActions } from "@/components/DraftListingActions";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
 import { SellerOrderActions } from "@/components/SellerOrderActions";
 import { ShipOrderForm } from "@/components/ShipOrderForm";
@@ -23,6 +24,7 @@ type Tab = {
 
 const TABS: Tab[] = [
   { key: "listings", label: "Active listings", listingMatch: (l) => l.status === "active" },
+  { key: "drafts", label: "Drafts", listingMatch: (l) => l.status === "draft" },
   { key: "to-post", label: "To post", orderMatch: (o) => o.status === "paid" },
   { key: "in-transit", label: "In transit", orderMatch: (o) => o.status === "shipped" },
   {
@@ -112,15 +114,22 @@ export default async function SellingPage({ searchParams }: { searchParams: Prom
               <ProductImage src={l.image} alt={l.title} category={l.category} seed={l.id} className="h-full w-full" />
             </div>
             <div className="min-w-0 flex-1">
-              <Link href={`/product/${l.id}/${l.slug}`} className="line-clamp-1 text-[14px] font-semibold hover:text-trust">
-                {l.title}
-              </Link>
+              {activeTab.key === "drafts" ? (
+                // A draft has no public page to link to (it's never
+                // status = "active", so /product/[id] can't resolve it) —
+                // "Continue editing" on the right is the only way in.
+                <p className="line-clamp-1 text-[14px] font-semibold">{l.title || "Untitled draft"}</p>
+              ) : (
+                <Link href={`/product/${l.id}/${l.slug}`} className="line-clamp-1 text-[14px] font-semibold hover:text-trust">
+                  {l.title}
+                </Link>
+              )}
               <p className="spec text-muted">
-                {l.category} · listed {timeAgo(l.createdAt)} · {l.condition}
+                {l.category} · {activeTab.key === "drafts" ? "started" : "listed"} {timeAgo(l.createdAt)} · {l.condition}
               </p>
             </div>
             <div className="text-right">
-              <p className="display text-[17px]">{money(l.price)}</p>
+              <p className="display text-[17px]">{l.price ? money(l.price) : "No price yet"}</p>
               {activeTab.key === "listings" && (
                 <div className="mt-1 flex items-center justify-end gap-2">
                   <p className="spec text-good">Active</p>
@@ -128,6 +137,11 @@ export default async function SellingPage({ searchParams }: { searchParams: Prom
                 </div>
               )}
               {activeTab.key === "sold" && <p className="spec mt-1 text-muted">Sold</p>}
+              {activeTab.key === "drafts" && (
+                <div className="mt-1">
+                  <DraftListingActions id={l.id} />
+                </div>
+              )}
             </div>
           </div>
         ))}

@@ -9,6 +9,7 @@ import { SUGGESTED_SPECS } from "@/lib/specs";
 import { attributesFor } from "@/lib/attributes";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
 import { ListingUsageBar } from "@/components/ListingUsageBar";
+import type { Listing } from "@/lib/types";
 
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const DEFAULT_TOP = "pc-parts-and-components";
@@ -34,6 +35,7 @@ export function SellForm({
   listingLimit = 10,
   activeListingCount = 0,
   premium = false,
+  initialDraft,
 }: {
   payoutsReady: boolean;
   payoutStatus?: "none" | "pending" | "active" | "unknown";
@@ -41,27 +43,40 @@ export function SellForm({
   listingLimit?: number;
   activeListingCount?: number;
   premium?: boolean;
+  /** Resuming an in-progress draft (app/sell/page.tsx?draft=<id>) — prefills
+   * everything below instead of a blank form. */
+  initialDraft?: Listing;
 }) {
   const atListingLimit = activeListingCount >= listingLimit;
   const [form, setForm] = useState({
-    title: "",
-    categorySlug: DEFAULT_TOP,
-    subcategorySlug: DEFAULT_SUB,
-    condition: "Used",
-    price: "",
-    quantity: "1",
-    location: "",
-    description: "",
-    shipsFree: true,
-    acceptsOffers: true,
+    title: initialDraft?.title ?? "",
+    categorySlug: initialDraft?.categorySlug ?? DEFAULT_TOP,
+    subcategorySlug: initialDraft?.subcategorySlug ?? DEFAULT_SUB,
+    condition: initialDraft?.condition ?? "Used",
+    price: initialDraft?.price ? String(initialDraft.price) : "",
+    quantity: initialDraft ? String(initialDraft.stock || 1) : "1",
+    location: initialDraft?.location ?? "",
+    description: initialDraft?.description ?? "",
+    shipsFree: initialDraft?.shipsFree ?? true,
+    acceptsOffers: initialDraft?.acceptsOffers ?? true,
   });
-  const [specs, setSpecs] = useState([{ label: "", value: "" }]);
+  const [specs, setSpecs] = useState(
+    initialDraft?.specs?.length ? initialDraft.specs : [{ label: "", value: "" }]
+  );
   const [attrs, setAttrs] = useState<Record<string, string>>({});
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<string[]>(
+    initialDraft ? [initialDraft.image, ...(initialDraft.images ?? [])].filter(Boolean) : []
+  );
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [error, setErrorMsg] = useState("");
   const [listingId, setListingId] = useState("");
   const [upgradeBusy, setUpgradeBusy] = useState(false);
+  // Set once this draft (or a brand new one) has a real row in the
+  // database — every subsequent "Save draft" updates that same row
+  // (PATCH) instead of creating a new one each time.
+  const [draftId, setDraftId] = useState(initialDraft?.id ?? "");
+  const [draftState, setDraftState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [draftError, setDraftError] = useState("");
 
   const upgrade = async () => {
     setUpgradeBusy(true);
@@ -117,6 +132,24 @@ export function SellForm({
     });
   };
 
+  // Shared by both a fresh submit and a draft save — the same shape
+  // either way, so a draft's fields and a published listing's fields
+  // never drift apart.
+  const buildPayload = () => {
+    const attrSpecs = subAttrs
+      .filter((a) => attrs[a.key]?.trim())
+      .map((a) => ({ label: a.label, value: attrs[a.key].trim() }));
+    return {
+      ...form,
+      category: findSub(form.subcategorySlug)?.name ?? "",
+      price,
+      quantity,
+      specs: [...attrSpecs, ...specs.filter((s) => s.label && s.value)],
+      image: photos[0] ?? "",
+      images: photos.slice(1),
+    };
+  };
+
   const submit = async () => {
     if (!payoutsReady) {
       setErrorMsg("Finish payout setup before publishing — see above.");
@@ -147,29 +180,62 @@ export function SellForm({
     }
     setState("saving");
     try {
-      const attrSpecs = subAttrs
-        .filter((a) => attrs[a.key]?.trim())
-        .map((a) => ({ label: a.label, value: attrs[a.key].trim() }));
-      const res = await fetch("/api/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          category: findSub(form.subcategorySlug)?.name ?? "",
-          price,
-          quantity,
-          specs: [...attrSpecs, ...specs.filter((s) => s.label && s.value)],
-          image: photos[0] ?? "",
-          images: photos.slice(1),
-        }),
-      });
+      // A draft being published updates its existing row and flips it to
+      // "active" (PATCH) rather than inserting a second, duplicate one.
+      const res = draftId
+        ? await fetch("/api/listings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: draftId, status: "active", ...buildPayload() }),
+          })
+        : await fetch("/api/listings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(buildPayload()),
+          });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setListingId(data.id ?? "");
+      setListingId(data.id ?? draftId ?? "");
       setState("done");
     } catch (e) {
       setErrorMsg(e instanceof Error && e.message ? e.message : "Couldn't publish. Try again.");
       setState("error");
+    }
+  };
+
+  /**
+   * Save whatever's filled in so far without publishing — the only real
+   * requirement is a title, the same low bar an email draft has. The
+   * first save creates the row and remembers its id; every save after
+   * that updates the same row instead of piling up duplicates.
+   */
+  const saveDraft = async () => {
+    if (!form.title.trim()) {
+      setDraftError("Add a title to save a draft.");
+      setDraftState("error");
+      return;
+    }
+    setDraftState("saving");
+    setDraftError("");
+    try {
+      const res = draftId
+        ? await fetch("/api/listings", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: draftId, ...buildPayload() }),
+          })
+        : await fetch("/api/listings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...buildPayload(), status: "draft" }),
+          });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.id) setDraftId(data.id);
+      setDraftState("saved");
+    } catch (e) {
+      setDraftError(e instanceof Error && e.message ? e.message : "Couldn't save the draft.");
+      setDraftState("error");
     }
   };
 
@@ -209,11 +275,12 @@ export function SellForm({
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
-      <p className="eyebrow">Sell</p>
+      <p className="eyebrow">Sell{draftId && " · editing draft"}</p>
       <h1 className="display mt-2 text-[32px]">List an item</h1>
       <p className="mt-2 max-w-lg text-[14px] text-muted">
         Listing is free. {BRAND.name} takes {BRAND.feePercent}% only when the item
         sells and the buyer confirms delivery.
+        {draftId && " Saved as a draft — it isn't visible to anyone until you publish it."}
       </p>
       <div className="max-w-xs">
         <ListingUsageBar count={activeListingCount} limit={listingLimit} />
@@ -438,28 +505,42 @@ export function SellForm({
           </div>
 
           {state === "error" && <p className="spec text-deal">{error}</p>}
+          {draftState === "error" && <p className="spec text-deal">{draftError}</p>}
+          {draftState === "saved" && (
+            <p className="spec font-semibold text-good">Draft saved — come back any time to finish it.</p>
+          )}
 
-          <button
-            onClick={submit}
-            disabled={
-              state === "saving" ||
-              photos.length < MIN_PHOTOS ||
-              !!missingAttr ||
-              !payoutsReady ||
-              atListingLimit
-            }
-            className="rgb-ring w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
-          >
-            {state === "saving"
-              ? "Publishing…"
-              : !payoutsReady
-                ? "Finish payout setup first"
-                : atListingLimit
-                  ? "Listing limit reached"
-                  : photos.length < MIN_PHOTOS
-                    ? `Add ${MIN_PHOTOS - photos.length} more photo${MIN_PHOTOS - photos.length === 1 ? "" : "s"}`
-                    : "Publish listing"}
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={saveDraft}
+              disabled={draftState === "saving" || !form.title.trim()}
+              className="rounded-md border border-line py-3 text-[14px] font-semibold transition hover:border-ink/40 disabled:opacity-50 sm:w-48"
+            >
+              {draftState === "saving" ? "Saving…" : "Save as draft"}
+            </button>
+            <button
+              onClick={submit}
+              disabled={
+                state === "saving" ||
+                photos.length < MIN_PHOTOS ||
+                !!missingAttr ||
+                !payoutsReady ||
+                atListingLimit
+              }
+              className="rgb-ring flex-1 rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            >
+              {state === "saving"
+                ? "Publishing…"
+                : !payoutsReady
+                  ? "Finish payout setup first"
+                  : atListingLimit
+                    ? "Listing limit reached"
+                    : photos.length < MIN_PHOTOS
+                      ? `Add ${MIN_PHOTOS - photos.length} more photo${MIN_PHOTOS - photos.length === 1 ? "" : "s"}`
+                      : "Publish listing"}
+            </button>
+          </div>
         </div>
 
         <aside className="h-fit space-y-4 rounded-[10px] border border-line bg-card p-5">

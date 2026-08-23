@@ -14,6 +14,26 @@ export async function querySellerListings(): Promise<Listing[]> {
   return data.map((r) => rowToListing(r));
 }
 
+/**
+ * A single listing owned by the signed-in seller — used for resuming a
+ * draft (app/sell/page.tsx?draft=<id>). Deliberately not routed through
+ * lib/data.ts's getListing(), which is the public read path and excludes
+ * anything but the owner would never legitimately need to see it since a
+ * draft has no public existence at all.
+ */
+export async function getOwnListing(id: string): Promise<Listing | null> {
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return null;
+  const { data, error } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("id", id)
+    .eq("seller_id", user.id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return rowToListing(data);
+}
+
 export type SellerProfile = {
   userId: string;
   stripeAccountId: string | null;

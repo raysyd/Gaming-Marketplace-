@@ -37,8 +37,11 @@ export default async function SellPage({
   // Silently ignored if it's not actually a draft (already published, or
   // doesn't exist/belong to someone else — getOwnListing already scopes
   // to the signed-in seller) — the form just opens blank instead of
-  // erroring on a stale or tampered-with link.
+  // erroring on a stale or tampered-with link. staleDraftParam tells the
+  // client (which may have supplied this id itself, from localStorage —
+  // see SellForm's auto-resume effect) to stop remembering it.
   const resumableDraft = draft?.status === "draft" ? draft : null;
+  const staleDraftParam = Boolean(draftId) && !resumableDraft;
 
   return (
     <SellForm
@@ -49,6 +52,7 @@ export default async function SellPage({
       activeListingCount={activeCount}
       premium={premium}
       initialDraft={resumableDraft ?? undefined}
+      staleDraftParam={staleDraftParam}
     />
   );
 }

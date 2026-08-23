@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
@@ -15,6 +16,13 @@ const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const DEFAULT_TOP = "pc-parts-and-components";
 const DEFAULT_SUB = "graphics-cards";
 const MIN_PHOTOS = 5;
+/** Which draft to come back to on a bare /sell visit — the "close the
+ * tab, come back later" case a URL alone can't cover. */
+const DRAFT_STORAGE_KEY = "sidegrade.sell.draftId";
+/** How long to let typing settle before autosaving — long enough that a
+ * fast typist doesn't trigger a save on every character, short enough
+ * that switching tabs mid-sentence rarely loses anything. */
+const AUTOSAVE_DEBOUNCE_MS = 1500;
 
 /**
  * `payoutsReady` comes from the server (app/sell/page.tsx) — true when
@@ -36,6 +44,7 @@ export function SellForm({
   activeListingCount = 0,
   premium = false,
   initialDraft,
+  staleDraftParam = false,
 }: {
   payoutsReady: boolean;
   payoutStatus?: "none" | "pending" | "active" | "unknown";
@@ -46,7 +55,11 @@ export function SellForm({
   /** Resuming an in-progress draft (app/sell/page.tsx?draft=<id>) — prefills
    * everything below instead of a blank form. */
   initialDraft?: Listing;
+  /** A ?draft= id was given but didn't resolve to a real, still-draft
+   * listing of this seller's — see the auto-resume effect below. */
+  staleDraftParam?: boolean;
 }) {
+  const router = useRouter();
   const atListingLimit = activeListingCount >= listingLimit;
   const [form, setForm] = useState({
     title: initialDraft?.title ?? "",
@@ -150,6 +163,112 @@ export function SellForm({
     };
   };
 
+  /**
+   * Save whatever's filled in so far without publishing — the only real
+   * requirement is a title, the same low bar an email draft has. Always
+   * POSTs with the draft's own id once it has one (server-side: an
+   * existing draft gets updated in place, never duplicated) — the same
+   * call whether a person clicked "Save as draft" or the autosave effect
+   * below fired on its own, so there's exactly one save path to reason
+   * about.
+   */
+  const persistDraft = async () => {
+    if (!form.title.trim()) return;
+    setDraftState("saving");
+    setDraftError("");
+    try {
+      const res = await fetch("/api/listings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...buildPayload(), status: "draft", id: draftId || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.id) setDraftId(data.id);
+      setDraftState("saved");
+    } catch (e) {
+      setDraftError(e instanceof Error && e.message ? e.message : "Couldn't save the draft.");
+      setDraftState("error");
+    }
+  };
+
+  // Auto-resume: a bare /sell visit (no ?draft= in the URL) with a draft
+  // id remembered from an earlier session picks up right where it left
+  // off — this is what makes "close the tab, come back later" actually
+  // work, not just "click Save as draft first." A stale id (already
+  // published or discarded elsewhere) gets forgotten instead of retried
+  // forever — see staleDraftParam's comment in app/sell/page.tsx.
+  useEffect(() => {
+    if (initialDraft) return;
+    try {
+      if (staleDraftParam) {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+        return;
+      }
+      const saved = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (saved) router.replace(`/sell?draft=${saved}`);
+    } catch {
+      // Storage can throw in a locked-down browser context — worst case,
+      // this visit just starts blank instead of resuming.
+    }
+    // Only ever meant to run once, on the very first render of this page
+    // load — re-running on every render would fight the redirect it just
+    // issued.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Remember (or forget) which row is this draft, so the effect above has
+  // something to come back to. Cleared once published — there's no draft
+  // left to resume at that point.
+  useEffect(() => {
+    try {
+      if (draftId && state !== "done") localStorage.setItem(DRAFT_STORAGE_KEY, draftId);
+      else if (state === "done") localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {}
+  }, [draftId, state]);
+
+  // The actual "automatic" part: save on a short debounce after any
+  // change, so there's rarely anything left un-persisted by the time a
+  // tab gets switched away from or closed. Skipped once published (state
+  // "done") or mid-publish ("saving") — nothing left to draft-save at
+  // that point.
+  useEffect(() => {
+    if (!form.title.trim() || state === "done" || state === "saving") return;
+    const timer = setTimeout(() => {
+      persistDraft();
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // Deliberately broad — any field on the listing should reset the
+    // debounce timer, not just title/price.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, specs, attrs, photos, state]);
+
+  // Last-resort save for the moment the tab is actually closed or
+  // navigated away from — a normal fetch() can be cancelled mid-flight
+  // when the page unloads, but sendBeacon is specifically designed to
+  // survive it. Fire-and-forget: there's no response to read, so this
+  // can't update draftId — if the debounced autosave above never got a
+  // chance to run even once (title typed and the tab closed within
+  // ~1.5s), the resulting draft still saves, it's just only discoverable
+  // from the Drafts tab rather than auto-resumed by this effect above.
+  useEffect(() => {
+    const flush = () => {
+      if (!form.title.trim() || state === "done") return;
+      const body = JSON.stringify({ ...buildPayload(), status: "draft", id: draftId || undefined });
+      navigator.sendBeacon?.("/api/listings", new Blob([body], { type: "application/json" }));
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flush);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, specs, attrs, photos, draftId, state]);
+
   const submit = async () => {
     if (!payoutsReady) {
       setErrorMsg("Finish payout setup before publishing — see above.");
@@ -200,42 +319,6 @@ export function SellForm({
     } catch (e) {
       setErrorMsg(e instanceof Error && e.message ? e.message : "Couldn't publish. Try again.");
       setState("error");
-    }
-  };
-
-  /**
-   * Save whatever's filled in so far without publishing — the only real
-   * requirement is a title, the same low bar an email draft has. The
-   * first save creates the row and remembers its id; every save after
-   * that updates the same row instead of piling up duplicates.
-   */
-  const saveDraft = async () => {
-    if (!form.title.trim()) {
-      setDraftError("Add a title to save a draft.");
-      setDraftState("error");
-      return;
-    }
-    setDraftState("saving");
-    setDraftError("");
-    try {
-      const res = draftId
-        ? await fetch("/api/listings", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: draftId, ...buildPayload() }),
-          })
-        : await fetch("/api/listings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...buildPayload(), status: "draft" }),
-          });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      if (data.id) setDraftId(data.id);
-      setDraftState("saved");
-    } catch (e) {
-      setDraftError(e instanceof Error && e.message ? e.message : "Couldn't save the draft.");
-      setDraftState("error");
     }
   };
 
@@ -506,18 +589,21 @@ export function SellForm({
 
           {state === "error" && <p className="spec text-deal">{error}</p>}
           {draftState === "error" && <p className="spec text-deal">{draftError}</p>}
+          {draftState === "saving" && <p className="spec text-muted">Saving draft…</p>}
           {draftState === "saved" && (
-            <p className="spec font-semibold text-good">Draft saved — come back any time to finish it.</p>
+            <p className="spec font-semibold text-good">
+              Draft saved — it keeps saving automatically, and closing the tab won&apos;t lose it.
+            </p>
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-              onClick={saveDraft}
+              onClick={persistDraft}
               disabled={draftState === "saving" || !form.title.trim()}
               className="rounded-md border border-line py-3 text-[14px] font-semibold transition hover:border-ink/40 disabled:opacity-50 sm:w-48"
             >
-              {draftState === "saving" ? "Saving…" : "Save as draft"}
+              {draftState === "saving" ? "Saving…" : "Save now"}
             </button>
             <button
               onClick={submit}

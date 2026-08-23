@@ -105,15 +105,24 @@ async function assertPublishable(
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
+  const payload = await req.json();
+  const asDraft = payload.status === "draft";
+  // An existing draft's id, present only for an autosave update (see
+  // components/SellForm.tsx) — a much lower-risk, much more frequent
+  // operation than creating a brand new row, so it gets its own, more
+  // generous rate limit rather than sharing the 10/min meant to bound
+  // actual listing creation.
+  const autosaveId = asDraft && typeof payload.id === "string" ? payload.id : null;
+
+  const limited = autosaveId
+    ? rateLimit(`listings-autosave:${clientKey(req)}`, { limit: 60 })
+    : rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
 
-  const payload = await req.json();
-  const asDraft = payload.status === "draft";
   const row = rowFromPayload(payload);
   const photoCount = (row.image ? 1 : 0) + ((row.images as string[])?.length ?? 0);
 
@@ -143,6 +152,28 @@ export async function POST(req: Request) {
       { error: "Sign in to publish a listing." },
       { status: 401 }
     );
+
+  // Autosave updating a draft it already created earlier in this same
+  // editing session — never publishes (status stays "draft" regardless
+  // of anything else in the payload), so this path never needs
+  // assertPublishable at all, and is safe to fire from a
+  // navigator.sendBeacon() call on tab-close that can't wait for or read
+  // a response.
+  if (autosaveId) {
+    const { data, error } = await supabase
+      .from("listings")
+      .update({ ...row, slug: row.title ? slugify(row.title) : null })
+      .eq("id", autosaveId)
+      .eq("seller_id", user.id)
+      .eq("status", "draft")
+      .select("id")
+      .maybeSingle();
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Not found isn't an error here — the draft may have already been
+    // published or discarded in another tab since this autosave was
+    // scheduled. Nothing to update, nothing to report as a failure.
+    return NextResponse.json({ ok: true, id: data?.id ?? autosaveId });
+  }
 
   if (!asDraft) {
     const publishError = await assertPublishable(supabase, user.id, row, photoCount);

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
 
-  const { items } = await req.json();
+  const { items, fulfillmentMethod: requestedFulfillment } = await req.json();
   if (!Array.isArray(items) || items.length === 0)
     return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
 
@@ -78,10 +78,16 @@ export async function POST(req: Request) {
   // `active` status is enforced by RLS on this table regardless.
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
-    .select("id, title, price, seller_id, status, ships_free, stock")
+    .select("id, title, price, seller_id, status, ships_free, stock, pickup_available")
     .in("id", ids);
   if (listingsError || !listings?.length)
     return NextResponse.json({ error: "Couldn't load those listings." }, { status: 400 });
+
+  // Never trust the client's fulfillment choice past "did they ask for
+  // pickup, and does every listing in this checkout actually offer it" —
+  // same re-derive-from-the-database pattern as price/title above.
+  const fulfillmentMethod =
+    requestedFulfillment === "pickup" && listings.every((l) => l.pickup_available) ? "pickup" : "shipping";
   if (listings.length !== ids.length || listings.some((l) => l.status !== "active"))
     return NextResponse.json(
       { error: "One or more items in your cart are no longer available." },
@@ -219,7 +225,8 @@ export async function POST(req: Request) {
   // fresh from lib/brand.ts rather than trusting anything the client sent;
   // this is the one number that ends up charged, shown, and stored (see
   // the webhook, which is the only place that writes it to `orders`).
-  const shippingFee = listings.some((l) => !l.ships_free) ? BRAND.shippingFlatRate : 0;
+  const shippingFee =
+    fulfillmentMethod === "pickup" ? 0 : listings.some((l) => !l.ships_free) ? BRAND.shippingFlatRate : 0;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -257,9 +264,9 @@ export async function POST(req: Request) {
       // and stored on the order row by the webhook below, then actually
       // applied as the transfer amount in /api/orders/[id]/release.
       payment_intent_data: {
-        metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee) },
+        metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee), fulfillmentMethod },
       },
-      metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee) },
+      metadata: { buyerId: user.id, sellerId, listingIds, listingQtys, shippingFee: String(shippingFee), fulfillmentMethod },
       // Bounds how long a reservation can hold stock hostage if the buyer
       // just closes the tab — checkout.session.expired (see the webhook)
       // restocks these listings when this passes.

@@ -138,11 +138,15 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
               <p className="line-clamp-1 text-[14px] font-semibold">{o.listingTitle ?? "Listing"}</p>
               <p className="spec mt-1 text-muted">
                 {money(o.amount - o.platformFee + (o.shippingFee ?? 0))} to you (of {money(o.amount + (o.shippingFee ?? 0))} held)
-                {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""} ·{" "}
+                {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""}
+                {o.fulfillmentMethod === "pickup" ? " · Local pickup" : ""} ·{" "}
                 {timeAgo(o.createdAt)}
               </p>
               {activeTab.key === "to-post" && (
-                <p className="spec mt-1 text-trust">Post within {BRAND.orderWindowHours}h — {deadlineLabel(o.createdAt)}</p>
+                <p className="spec mt-1 text-trust">
+                  {o.fulfillmentMethod === "pickup" ? "Ready for pickup within" : "Post within"}{" "}
+                  {BRAND.orderWindowHours}h — {deadlineLabel(o.createdAt)}
+                </p>
               )}
               {o.status === "disputed" && (
                 <p className="spec mt-1 font-semibold text-deal">
@@ -155,7 +159,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
                 </p>
               )}
             </div>
-            {activeTab.key === "to-post" && <ShipOrderForm id={o.id} />}
+            {activeTab.key === "to-post" && <ShipOrderForm id={o.id} fulfillmentMethod={o.fulfillmentMethod} />}
             {activeTab.key === "in-transit" && <SellerOrderActions id={o.id} showDeliver />}
             {activeTab.key === "awaiting-confirmation" && <SellerOrderActions id={o.id} />}
             {activeTab.key === "released" && <p className="spec shrink-0 font-semibold text-good">Paid out</p>}

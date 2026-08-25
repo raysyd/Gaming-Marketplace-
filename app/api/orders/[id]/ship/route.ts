@@ -18,11 +18,6 @@ export async function POST(
 
   const { id } = await params;
   const { trackingNumber } = await req.json();
-  if (!trackingNumber || !isValidAusPostTrackingNumber(String(trackingNumber)))
-    return NextResponse.json(
-      { error: "That doesn't look like a valid Australia Post tracking number." },
-      { status: 400 }
-    );
 
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: "Not configured." }, { status: 500 });
@@ -34,15 +29,26 @@ export async function POST(
 
   const { data: order, error } = await supabase
     .from("orders")
-    .select("id, seller_id, status")
+    .select("id, seller_id, status, fulfillment_method")
     .eq("id", id)
     .single();
   if (error || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   if (order.seller_id !== user.id)
-    return NextResponse.json({ error: "Only the seller can add tracking." }, { status: 403 });
+    return NextResponse.json({ error: "Only the seller can do this." }, { status: 403 });
   if (order.status !== "paid")
     return NextResponse.json(
       { error: `Can't mark an order in "${order.status}" status as shipped.` },
+      { status: 400 }
+    );
+
+  // A pickup order has nothing to track — the seller is just saying "come
+  // get it," not handing it to a carrier. Same status transition either
+  // way (see supabase/21-local-pickup.sql's comment for why), just no
+  // tracking-number requirement.
+  const isPickup = order.fulfillment_method === "pickup";
+  if (!isPickup && (!trackingNumber || !isValidAusPostTrackingNumber(String(trackingNumber))))
+    return NextResponse.json(
+      { error: "That doesn't look like a valid Australia Post tracking number." },
       { status: 400 }
     );
 
@@ -54,7 +60,7 @@ export async function POST(
     .from("orders")
     .update({
       status: "shipped",
-      tracking_number: normalizeTrackingNumber(String(trackingNumber)),
+      tracking_number: isPickup ? null : normalizeTrackingNumber(String(trackingNumber)),
       shipped_at: new Date().toISOString(),
     })
     .eq("id", id);

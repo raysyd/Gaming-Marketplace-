@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function BuyerOrderActions({ id }: { id: string }) {
+export function BuyerOrderActions({
+  id,
+  fulfillmentMethod = "shipping",
+}: {
+  id: string;
+  fulfillmentMethod?: "shipping" | "pickup";
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -13,7 +19,9 @@ export function BuyerOrderActions({ id }: { id: string }) {
   const release = async () => {
     if (
       !window.confirm(
-        "Release payment to the seller? Only do this once the item has actually arrived."
+        fulfillmentMethod === "pickup"
+          ? "Release payment to the seller? Only do this once you've actually collected the item."
+          : "Release payment to the seller? Only do this once the item has actually arrived."
       )
     )
       return;
@@ -115,7 +123,7 @@ export function BuyerOrderActions({ id }: { id: string }) {
           disabled={busy}
           className="rgb-ring rounded-md bg-good px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
         >
-          {busy ? "Releasing…" : "Confirm delivery & release"}
+          {busy ? "Releasing…" : fulfillmentMethod === "pickup" ? "Confirm collection & release" : "Confirm delivery & release"}
         </button>
       </div>
       {error && <p className="spec text-deal">{error}</p>}

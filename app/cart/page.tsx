@@ -10,8 +10,14 @@ export default function CartPage() {
   const { items, remove, setQty, subtotal, shipping, clear } = useCart();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [fulfillment, setFulfillment] = useState<"shipping" | "pickup">("shipping");
 
-  const total = subtotal + shipping;
+  // Only offered when *every* item in the cart supports it — a single
+  // checkout is one meeting with one seller, not "ship half, collect
+  // half." Re-validated server-side regardless (see /api/checkout).
+  const pickupOffered = items.length > 0 && items.every((i) => i.pickupAvailable);
+  const effectiveShipping = fulfillment === "pickup" ? 0 : shipping;
+  const total = subtotal + effectiveShipping;
   const compat = checkCompatibility(items);
 
   // /api/checkout creates one order row with one seller/fee/transfer
@@ -30,7 +36,7 @@ export default function CartPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items, fulfillmentMethod: pickupOffered ? fulfillment : "shipping" }),
       });
       const data = await res.json();
       if (data.url) {
@@ -138,15 +144,39 @@ export default function CartPage() {
 
         <aside className="h-fit rounded-[10px] border border-line bg-card p-5">
           <h2 className="eyebrow">Order summary</h2>
-          <div className="mt-3 space-y-2 text-[13.5px]">
+
+          {pickupOffered && (
+            <div className="mb-4 space-y-1.5">
+              <span className="eyebrow mb-1 block">Fulfillment</span>
+              {(["shipping", "pickup"] as const).map((f) => (
+                <label key={f} className="flex items-center gap-1.5 text-[13.5px]">
+                  <input
+                    type="radio"
+                    name="fulfillment"
+                    checked={fulfillment === f}
+                    onChange={() => setFulfillment(f)}
+                    className="accent-[var(--color-trust)]"
+                  />
+                  {f === "shipping" ? "Ship it to me" : "I'll pick it up"}
+                </label>
+              ))}
+              {fulfillment === "pickup" && (
+                <p className="spec text-muted">
+                  Payment still stays held until you confirm you&apos;ve collected it.
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2 text-[13.5px]">
             <div className="flex justify-between text-muted">
               <span>Subtotal</span>
               <span className="text-ink">{money(subtotal)}</span>
             </div>
             <div className="flex justify-between text-muted">
               <span>Shipping</span>
-              <span className={shipping === 0 ? "text-good" : "text-ink"}>
-                {shipping === 0 ? "Free" : money(shipping)}
+              <span className={effectiveShipping === 0 ? "text-good" : "text-ink"}>
+                {fulfillment === "pickup" ? "Local pickup" : effectiveShipping === 0 ? "Free" : money(effectiveShipping)}
               </span>
             </div>
             <div className="flex justify-between border-t border-line pt-2 font-semibold">

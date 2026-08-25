@@ -76,6 +76,7 @@ function rowToOrder(r: any): Order {
     deliveredAt: r.delivered_at,
     disputeReason: r.dispute_reason,
     status: r.status,
+    fulfillmentMethod: r.fulfillment_method === "pickup" ? "pickup" : "shipping",
     createdAt: r.created_at,
   };
 }

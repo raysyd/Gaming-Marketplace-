@@ -42,6 +42,7 @@ export function BuyBox({
       stock: listing.stock,
       subcategorySlug: listing.subcategorySlug,
       specs: listing.specs,
+      pickupAvailable: listing.pickupAvailable,
     });
     setAdded(true);
   };
@@ -88,6 +89,7 @@ export function BuyBox({
       <p className="spec mt-1 text-muted">
         {listing.shipsFree ? "Free shipping" : `+ ${money(BRAND.shippingFlatRate)} shipping`} ·{" "}
         {listing.location}
+        {listing.pickupAvailable && " · Local pickup available"}
       </p>
 
       {/* Built from real released sales in this subcategory over the last

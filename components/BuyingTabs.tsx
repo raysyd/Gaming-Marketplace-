@@ -110,7 +110,8 @@ export function BuyingTabs({
                 </Link>
                 <p className="spec mt-1 text-muted">
                   {money(o.amount + (o.shippingFee ?? 0))}
-                  {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""} · from {o.sellerName ?? "seller"} · ordered{" "}
+                  {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""} · from {o.sellerName ?? "seller"}
+                  {o.fulfillmentMethod === "pickup" ? " · Local pickup" : ""} · ordered{" "}
                   {timeAgo(o.createdAt)}
                 </p>
                 {o.status === "disputed" && (
@@ -118,13 +119,13 @@ export function BuyingTabs({
                 )}
                 {o.status === "awaiting_confirmation" && o.deliveredAt && (
                   <p className="spec mt-1 text-trust">
-                    Confirm within {BRAND.orderWindowHours}h of delivery — {deadlineLabel(o.deliveredAt)},
-                    then it auto-releases.
+                    Confirm within {BRAND.orderWindowHours}h of {o.fulfillmentMethod === "pickup" ? "the seller marking it ready" : "delivery"} —{" "}
+                    {deadlineLabel(o.deliveredAt)}, then it auto-releases.
                   </p>
                 )}
               </div>
               {(o.status === "shipped" || o.status === "awaiting_confirmation") && (
-                <BuyerOrderActions id={o.id} />
+                <BuyerOrderActions id={o.id} fulfillmentMethod={o.fulfillmentMethod} />
               )}
               {o.status === "released" && reviewableIds.includes(o.id) && (
                 <ReviewForm orderId={o.id} listingTitle={o.listingTitle ?? "this item"} />

@@ -74,6 +74,7 @@ export function SellForm({
     description: initialDraft?.description ?? "",
     shipsFree: initialDraft?.shipsFree ?? true,
     acceptsOffers: initialDraft?.acceptsOffers ?? true,
+    pickupAvailable: initialDraft?.pickupAvailable ?? false,
   });
   const [specs, setSpecs] = useState(
     initialDraft?.specs?.length ? initialDraft.specs : [{ label: "", value: "" }]
@@ -604,6 +605,12 @@ export function SellForm({
               hint="Lets buyers negotiate instead of scrolling past. Most sales here start with an offer."
               on={form.acceptsOffers}
               onChange={() => set("acceptsOffers", !form.acceptsOffers)}
+            />
+            <Toggle
+              label="Local pickup available"
+              hint="Buyer still pays through Sidegrade first — payment stays held until they confirm they've collected it, same protection as shipping."
+              on={form.pickupAvailable}
+              onChange={() => set("pickupAvailable", !form.pickupAvailable)}
             />
           </div>
 

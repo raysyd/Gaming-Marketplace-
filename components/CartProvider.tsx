@@ -15,6 +15,8 @@ export type CartItem = {
   /** For the compatibility checker (lib/compatibility.ts) only — never trusted for anything price/stock-related, same as the rest of this display-only cart state. */
   subcategorySlug?: string;
   specs?: { label: string; value: string }[];
+  /** Whether *this listing* offers pickup — checkout only offers it when every item in the cart does (see app/cart/page.tsx), re-verified server-side regardless. */
+  pickupAvailable?: boolean;
 };
 
 type Ctx = {

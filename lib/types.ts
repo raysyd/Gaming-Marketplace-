@@ -41,6 +41,7 @@ export type Listing = {
   state: string;
   shipsFree: boolean;
   acceptsOffers: boolean;
+  pickupAvailable: boolean;
   watchers: number;
   stock: number;
   createdAt: string;
@@ -153,5 +154,7 @@ export type Order = {
   deliveredAt: string | null;
   disputeReason: string | null;
   status: OrderStatus;
+  /** "pickup" reuses every existing status transition unchanged — only what the seller needs to reach "shipped" (a tracking number, or not) and the buyer's confirm-action label differ. */
+  fulfillmentMethod: "shipping" | "pickup";
   createdAt: string;
 };

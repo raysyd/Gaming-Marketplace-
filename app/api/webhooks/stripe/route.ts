@@ -77,6 +77,7 @@ export async function POST(req: Request) {
       // lands on the first row only — see the shippingFee comment in
       // lib/types.ts — so summing shipping_fee across an order's sibling
       // rows never double-counts it.
+      const fulfillmentMethod = meta.fulfillmentMethod === "pickup" ? "pickup" : "shipping";
       const rows = listingIds.map((listingId, i) => {
         const amountCents = lineItems.data[i]?.amount_total ?? 0;
         const feeCents = Math.round((amountCents * feeBps) / 10000);
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
           amount: amountCents / 100,
           platform_fee: feeCents / 100,
           shipping_fee: i === 0 ? shippingFee : 0,
+          fulfillment_method: fulfillmentMethod,
           // Stripe's own line item quantity, not re-derived from metadata
           // — it's the actual number of units this line item charged for.
           quantity: lineItems.data[i]?.quantity ?? 1,

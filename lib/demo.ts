@@ -70,7 +70,7 @@ function make(
     Listing,
     | "id" | "slug" | "sellerId" | "sellerName" | "sellerRating" | "sellerReviewCount" | "sellerSales"
     | "sellerVerified" | "location" | "state" | "createdAt" | "watchers"
-    | "image" | "images" | "stock" | "category"
+    | "image" | "images" | "stock" | "category" | "pickupAvailable"
   > & { category?: Category }
 ): Listing {
   const s = pick(SELLERS);
@@ -105,6 +105,7 @@ function make(
     // than one on hand, and even then usually just a couple.
     stock:
       partial.condition === "New" && rand() > 0.6 ? 1 + Math.floor(rand() * 4) : 1,
+    pickupAvailable: rand() > 0.6,
     createdAt: iso(age),
     ...partial,
   };

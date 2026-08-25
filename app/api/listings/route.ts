@@ -42,6 +42,7 @@ function rowFromPayload(payload: Record<string, unknown>) {
     benchmark_images: payload.benchmarkImages ?? [],
     ships_free: Boolean(payload.shipsFree),
     accepts_offers: payload.acceptsOffers !== false,
+    pickup_available: Boolean(payload.pickupAvailable),
     stock: isValidQuantity(quantity) ? quantity : 1,
   };
 }

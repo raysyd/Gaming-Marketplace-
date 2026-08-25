@@ -4,12 +4,22 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Listing } from "@/lib/types";
 import type { PriceStats } from "@/lib/market-data";
+import type { PricePoint } from "@/lib/price-history-data";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { useCart } from "./CartProvider";
 import { useAuth } from "./AuthProvider";
+import { PriceHistoryChart } from "./PriceHistoryChart";
 
-export function BuyBox({ listing, priceStats }: { listing: Listing; priceStats?: PriceStats | null }) {
+export function BuyBox({
+  listing,
+  priceStats,
+  priceHistory,
+}: {
+  listing: Listing;
+  priceStats?: PriceStats | null;
+  priceHistory?: PricePoint[];
+}) {
   const { add } = useCart();
   const { user } = useAuth();
   const router = useRouter();
@@ -91,6 +101,8 @@ export function BuyBox({ listing, priceStats }: { listing: Listing; priceStats?:
           )}
         </p>
       )}
+
+      {priceHistory && <PriceHistoryChart points={priceHistory} />}
 
       {/* Only worth saying anything when it's informative: quiet for a
           normal single unit, a nudge when stock is getting low, and the

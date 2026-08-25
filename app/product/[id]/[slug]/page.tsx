@@ -6,6 +6,7 @@ import { money, timeAgo } from "@/lib/format";
 import { findSub, findTop } from "@/lib/taxonomy";
 import { BRAND } from "@/lib/brand";
 import { getSubcategoryPriceStats, getRecentlySold } from "@/lib/market-data";
+import { getPriceHistory } from "@/lib/price-history-data";
 import { FpsBar } from "@/components/SpecStrip";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
@@ -49,10 +50,11 @@ export default async function ProductPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  const [related, priceStats, recentlySold] = await Promise.all([
+  const [related, priceStats, recentlySold, priceHistory] = await Promise.all([
     getRelated(listing),
     getSubcategoryPriceStats(listing.subcategorySlug),
     getRecentlySold({ subcategorySlug: listing.subcategorySlug, limit: 5 }),
+    getPriceHistory(listing.id),
   ]);
   const sub = findSub(listing.subcategorySlug);
   const top = findTop(listing.categorySlug);
@@ -180,7 +182,7 @@ export default async function ProductPage({
           )}
 
           <div className="order-4">
-            <BuyBox listing={listing} priceStats={priceStats} />
+            <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
           </div>
 
           <div className="order-5 rounded-[10px] border border-line bg-card p-5">

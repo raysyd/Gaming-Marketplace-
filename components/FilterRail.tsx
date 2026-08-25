@@ -3,6 +3,7 @@ import { TAXONOMY } from "@/lib/taxonomy";
 import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
 import { attributesFor, attrParam } from "@/lib/attributes";
+import { AU_STATES } from "@/lib/au-states";
 
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const PRICE_BANDS: [string, number | undefined, number | undefined][] = [
@@ -132,6 +133,17 @@ export function FilterRail({
             {c}
           </Row>
         ))}
+      </Block>
+
+      <Block title="Ships from">
+        {AU_STATES.map((s) => (
+          <Row key={s} href={href({ state: sp.state === s ? undefined : s })} on={sp.state === s}>
+            {s}
+          </Row>
+        ))}
+        <p className="spec mt-1.5 text-muted">
+          Only listings created after this filter shipped have a state set.
+        </p>
       </Block>
 
       <Block title="Seller & shipping">

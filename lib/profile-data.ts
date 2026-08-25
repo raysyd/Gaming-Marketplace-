@@ -15,6 +15,8 @@ export type Profile = {
   /** "active" is the only value that means anything is granted — see lib/premium.ts. */
   premiumStatus: string | null;
   createdAt: string;
+  /** Self-declared, not a tax/legal determination — see the caption next to this field in AccountSettingsForm.tsx. */
+  sellerType: "private" | "business";
 };
 
 function rowToProfile(r: Record<string, unknown>): Profile {
@@ -32,6 +34,7 @@ function rowToProfile(r: Record<string, unknown>): Profile {
     verified: Boolean(r.verified),
     premiumStatus: (r.premium_status as string) ?? null,
     createdAt: (r.created_at as string) ?? new Date(0).toISOString(),
+    sellerType: r.seller_type === "business" ? "business" : "private",
   };
 }
 
@@ -42,7 +45,7 @@ export async function getProfile(id: string): Promise<Profile | null> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status, created_at"
+      "id, display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status, created_at, seller_type"
     )
     .eq("id", id)
     .maybeSingle();

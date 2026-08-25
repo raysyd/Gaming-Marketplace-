@@ -10,6 +10,7 @@ import { SUGGESTED_SPECS } from "@/lib/specs";
 import { attributesFor } from "@/lib/attributes";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
 import { ListingUsageBar } from "@/components/ListingUsageBar";
+import { AU_STATES } from "@/lib/au-states";
 import type { Listing } from "@/lib/types";
 
 const CONDITIONS = ["New", "Like new", "Used", "For parts"];
@@ -69,6 +70,7 @@ export function SellForm({
     price: initialDraft?.price ? String(initialDraft.price) : "",
     quantity: initialDraft ? String(initialDraft.stock || 1) : "1",
     location: initialDraft?.location ?? "",
+    stateCode: initialDraft?.state ?? "",
     description: initialDraft?.description ?? "",
     shipsFree: initialDraft?.shipsFree ?? true,
     acceptsOffers: initialDraft?.acceptsOffers ?? true,
@@ -485,7 +487,7 @@ export function SellForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Field label={`Asking price (${BRAND.currency})`}>
               <input
                 value={form.price}
@@ -508,9 +510,17 @@ export function SellForm({
               <input
                 value={form.location}
                 onChange={(e) => set("location", e.target.value)}
-                placeholder="Adelaide, SA"
+                placeholder="Adelaide"
                 className="input"
               />
+            </Field>
+            <Field label="State">
+              <select value={form.stateCode} onChange={(e) => set("stateCode", e.target.value)} className="input">
+                <option value="">Select…</option>
+                {AU_STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
             </Field>
           </div>
 

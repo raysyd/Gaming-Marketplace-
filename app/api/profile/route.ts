@@ -81,6 +81,8 @@ export async function POST(req: Request) {
       );
     else update.contact_link = link.slice(0, 300);
   }
+  if (payload.sellerType !== undefined)
+    update.seller_type = payload.sellerType === "business" ? "business" : "private";
 
   const { error } = await supabase.from("profiles").upsert(update);
   if (error) {

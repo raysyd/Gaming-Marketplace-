@@ -3,8 +3,7 @@ import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { AvatarUploader } from "@/components/AvatarUploader";
 import { isValidUsername } from "@/lib/validation";
-
-const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
+import { AU_STATES } from "@/lib/au-states";
 
 export function OnboardingForm({ next, email }: { next: string; email: string }) {
   const [displayName, setDisplayName] = useState("");

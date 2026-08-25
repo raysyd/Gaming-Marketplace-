@@ -39,6 +39,7 @@ export default async function ShopPage({
     freeShipping: sp.free === "1",
     verifiedOnly: sp.verified === "1",
     dealsOnly: sp.deals === "1",
+    state: sp.state,
     status: sp.status === "sold" ? "sold" : undefined,
     attrs: attrsFromSearchParams(sp.sub, sp),
     sort: (sp.sort as ListingQuery["sort"]) ?? "new",
@@ -60,7 +61,7 @@ export default async function ShopPage({
   const activeFilterCount =
     [
       sp.category, sp.sub, sp.condition, sp.min, sp.max,
-      sp.free, sp.verified, sp.deals, sp.status,
+      sp.free, sp.verified, sp.deals, sp.status, sp.state,
     ].filter(Boolean).length +
     Object.keys(sp).filter((k) => k.startsWith("attr_") && sp[k]).length;
 

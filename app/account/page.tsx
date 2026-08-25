@@ -13,7 +13,7 @@ export default async function AccountPage() {
     supabase
       .from("profiles")
       .select(
-        "display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status"
+        "display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status, seller_type"
       )
       .eq("id", user.id)
       .maybeSingle(),
@@ -61,6 +61,7 @@ export default async function AccountPage() {
         state={profile.state ?? ""}
         contactLink={profile.contact_link ?? ""}
         policyNote={profile.policy_note ?? ""}
+        sellerType={profile.seller_type === "business" ? "business" : "private"}
         verified={Boolean(profile.verified)}
         email={user.email ?? ""}
       />

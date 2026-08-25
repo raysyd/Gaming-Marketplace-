@@ -82,6 +82,11 @@ export default async function SellerProfilePage({
                 {plan.badgeLabel}
               </span>
             )}
+            {profile?.sellerType === "business" && (
+              <span className="spec rounded border border-line px-1.5 py-0.5 font-medium text-muted">
+                Business seller
+              </span>
+            )}
           </h1>
           <p className="spec mt-1 text-muted">
             {stats.reviewCount > 0

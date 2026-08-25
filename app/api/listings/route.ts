@@ -30,6 +30,7 @@ function rowFromPayload(payload: Record<string, unknown>) {
     category_slug: categorySlug,
     subcategory_slug: subcategorySlug,
     condition: (payload.condition as string) || null,
+    state: (payload.stateCode as string) || null,
     // A draft's price is optional (supabase/14-draft-listings.sql makes
     // the column nullable) — 0/empty/NaN all mean "not set yet", not $0.
     price: Number(payload.price) > 0 ? Number(payload.price) : null,

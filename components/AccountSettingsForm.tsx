@@ -3,8 +3,7 @@ import { useState } from "react";
 import { AvatarUploader } from "@/components/AvatarUploader";
 import { BannerUploader } from "@/components/BannerUploader";
 import { IdentityVerificationButton } from "@/components/IdentityVerificationButton";
-
-const AU_STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
+import { AU_STATES } from "@/lib/au-states";
 
 /**
  * Everything here is editable at any time except username — there's no
@@ -21,6 +20,7 @@ export function AccountSettingsForm({
   state: initialState,
   contactLink: initialContactLink,
   policyNote: initialPolicyNote,
+  sellerType: initialSellerType,
   verified,
   email,
 }: {
@@ -32,6 +32,7 @@ export function AccountSettingsForm({
   state: string;
   contactLink: string;
   policyNote: string;
+  sellerType: "private" | "business";
   verified: boolean;
   email: string;
 }) {
@@ -43,6 +44,7 @@ export function AccountSettingsForm({
   const [state, setState] = useState(initialState);
   const [contactLink, setContactLink] = useState(initialContactLink);
   const [policyNote, setPolicyNote] = useState(initialPolicyNote);
+  const [sellerType, setSellerType] = useState(initialSellerType);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState("");
 
@@ -62,6 +64,7 @@ export function AccountSettingsForm({
           state,
           contactLink,
           policyNote,
+          sellerType,
         }),
       });
       const data = await res.json();
@@ -131,6 +134,28 @@ export function AccountSettingsForm({
             ))}
           </select>
         </label>
+      </div>
+
+      <div>
+        <span className="eyebrow mb-1.5 block">Seller type</span>
+        <div className="flex gap-4">
+          {(["private", "business"] as const).map((t) => (
+            <label key={t} className="flex items-center gap-1.5 text-[13.5px]">
+              <input
+                type="radio"
+                name="sellerType"
+                checked={sellerType === t}
+                onChange={() => setSellerType(t)}
+                className="accent-[var(--color-trust)]"
+              />
+              {t === "private" ? "Private seller" : "Business seller"}
+            </label>
+          ))}
+        </div>
+        <p className="spec mt-1.5 text-muted">
+          Just tells buyers who they're dealing with — not tax advice, and not a
+          verification of anything.
+        </p>
       </div>
 
       <label className="block">

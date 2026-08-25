@@ -37,6 +37,7 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
   if (q.conditions?.length) sel = sel.in("condition", q.conditions);
   if (q.minPrice != null) sel = sel.gte("price", q.minPrice);
   if (q.maxPrice != null) sel = sel.lte("price", q.maxPrice);
+  if (q.state) sel = sel.eq("state", q.state);
   if (q.freeShipping) sel = sel.eq("ships_free", true);
   if (q.verifiedOnly) sel = sel.eq("seller_verified", true);
   if (q.dealsOnly) sel = sel.not("compare_at", "is", null);
@@ -166,6 +167,7 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
     if (q.conditions?.length && !q.conditions.includes(l.condition)) return false;
     if (q.minPrice != null && l.price < q.minPrice) return false;
     if (q.maxPrice != null && l.price > q.maxPrice) return false;
+    if (q.state && l.state !== q.state) return false;
     if (q.freeShipping && !l.shipsFree) return false;
     if (q.verifiedOnly && !l.sellerVerified) return false;
     if (q.dealsOnly && !l.compareAt) return false;

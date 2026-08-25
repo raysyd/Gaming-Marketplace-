@@ -58,6 +58,8 @@ export type ListingQuery = {
   freeShipping?: boolean;
   verifiedOnly?: boolean;
   dealsOnly?: boolean;
+  /** AU state the listing ships from — see lib/au-states.ts. Only ever populated for listings created after this filter shipped. */
+  state?: string;
   /** `{ "Type": "NVMe SSD" }` — matched against `specs` via JSONB containment. */
   attrs?: Record<string, string>;
   sort?: "new" | "low" | "high" | "save" | "watched";

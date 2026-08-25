@@ -107,6 +107,13 @@ export default async function AccountPage() {
           <p className="text-[14px] font-semibold">Security</p>
           <p className="spec mt-1 text-muted">Two-factor authentication.</p>
         </Link>
+        <Link
+          href="/account/searches"
+          className="rounded-[10px] border border-line bg-card p-4 transition hover:border-ink/30"
+        >
+          <p className="text-[14px] font-semibold">Saved searches</p>
+          <p className="spec mt-1 text-muted">Get emailed when a new listing matches.</p>
+        </Link>
       </div>
 
       <Link

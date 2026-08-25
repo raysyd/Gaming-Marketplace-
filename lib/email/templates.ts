@@ -72,3 +72,31 @@ export function saleNotificationEmail(params: {
     ),
   };
 }
+
+export function savedSearchAlertEmail(params: {
+  to: string;
+  searchLabel: string;
+  searchUrl: string;
+  listings: { title: string; price: number; url: string }[];
+}): EmailMessage {
+  const rows = params.listings
+    .map(
+      (l) =>
+        `<tr><td style="padding:6px 0;font-size:14px;"><a href="${l.url}" style="color:#111;text-decoration:none;font-weight:600;">${l.title}</a></td><td style="padding:6px 0;font-size:14px;color:#555;text-align:right;">${money(l.price)}</td></tr>`
+    )
+    .join("");
+  const textLines = params.listings.map((l) => `${l.title} — ${money(l.price)} (${l.url})`).join("\n");
+  const count = params.listings.length;
+  return {
+    to: params.to,
+    subject: `${count} new listing${count === 1 ? "" : "s"} for "${params.searchLabel}"`,
+    text: `New matches for your saved search "${params.searchLabel}":\n\n${textLines}\n\nSee all: ${params.searchUrl}`,
+    html: wrap(
+      `${count} new listing${count === 1 ? "" : "s"} match "${params.searchLabel}".`,
+      `<p style="font-size:15px;">New since you saved <strong>${params.searchLabel}</strong>:</p>
+       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${rows}</table>
+       <p style="margin-top:20px;"><a href="${params.searchUrl}" style="background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-size:14px;">See all matches</a></p>
+       <p style="font-size:12px;color:#999;margin-top:16px;">Manage or remove this saved search any time from your account.</p>`
+    ),
+  };
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { queryListings, countBySub, PER_PAGE } from "@/lib/data";
 import { findSub, findTop } from "@/lib/taxonomy";
 import { ProductCard } from "@/components/ProductCard";
@@ -6,6 +7,7 @@ import { FilterRail } from "@/components/FilterRail";
 import { Pagination } from "@/components/Pagination";
 import { MobileFilters } from "@/components/MobileFilters";
 import { DemoBanner } from "@/components/DemoBanner";
+import { SaveSearchButton } from "@/components/SaveSearchButton";
 import type { ListingQuery } from "@/lib/types";
 import { attrsFromSearchParams } from "@/lib/attributes";
 
@@ -93,6 +95,13 @@ export default async function ShopPage({
             {total.toLocaleString()} {total === 1 ? "listing" : "listings"}
             {pages > 1 && ` · page ${page} of ${pages}`}
           </p>
+          {(activeFilterCount > 0 || sp.q) && (
+            <div className="mt-2">
+              <Suspense fallback={null}>
+                <SaveSearchButton defaultLabel={heading} />
+              </Suspense>
+            </div>
+          )}
         </div>
 
         <div className="no-scrollbar -mx-4 flex w-screen gap-1 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:overflow-visible">

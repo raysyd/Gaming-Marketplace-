@@ -5,6 +5,7 @@ import { getSellerReviews, getOneSellerStats } from "@/lib/reviews-data";
 import { getProfile } from "@/lib/profile-data";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { getSellerResponseMinutes, getRepeatBuyerIds, getRecentlySold } from "@/lib/market-data";
+import { listBuildsByUser } from "@/lib/builds-data";
 import { timeAgo, responseTimeLabel } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 import { RecentlySold } from "@/components/RecentlySold";
@@ -29,10 +30,11 @@ export default async function SellerProfilePage({
 
   // Depend on `id` and `reviews` (for the reviewer ids), so these run
   // after the batch above rather than joining it.
-  const [responseMinutes, repeatBuyerIds, recentlySold] = await Promise.all([
+  const [responseMinutes, repeatBuyerIds, recentlySold, builds] = await Promise.all([
     getSellerResponseMinutes(id),
     getRepeatBuyerIds(id, reviews.map((r) => r.reviewerId)),
     getRecentlySold({ sellerId: id }),
+    listBuildsByUser(id),
   ]);
 
   if (!listings.length && !reviews.length && !stats.salesCount && !profile) notFound();
@@ -160,6 +162,18 @@ export default async function SellerProfilePage({
       )}
 
       <RecentlySold items={recentlySold} title="Recently sold by this seller" />
+
+      {builds.length > 0 && (
+        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
+          <p className="text-[14px] font-semibold">Build showcase</p>
+          <p className="spec mt-1 text-muted">
+            {sellerName} has posted {builds.length} build{builds.length === 1 ? "" : "s"}.
+          </p>
+          <Link href={`/builds/${builds[0].id}`} className="spec mt-2 inline-block font-semibold text-trust hover:underline">
+            View {builds.length === 1 ? "it" : "their builds"} →
+          </Link>
+        </div>
+      )}
 
       <Link href="/shop" className="mt-8 inline-block text-[13px] font-semibold text-trust hover:underline">
         ← Back to marketplace

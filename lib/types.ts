@@ -42,6 +42,8 @@ export type Listing = {
   shipsFree: boolean;
   acceptsOffers: boolean;
   pickupAvailable: boolean;
+  /** Seller-entered, optional — see lib/shipping/estimate.ts, which falls back to a per-subcategory default when this is unset. */
+  weightGrams?: number;
   watchers: number;
   stock: number;
   createdAt: string;

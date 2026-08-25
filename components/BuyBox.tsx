@@ -7,6 +7,7 @@ import type { PriceStats } from "@/lib/market-data";
 import type { PricePoint } from "@/lib/price-history-data";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
+import { estimateShippingCentsForListing } from "@/lib/shipping/estimate";
 import { useCart } from "./CartProvider";
 import { useAuth } from "./AuthProvider";
 import { PriceHistoryChart } from "./PriceHistoryChart";
@@ -91,6 +92,13 @@ export function BuyBox({
         {listing.location}
         {listing.pickupAvailable && " · Local pickup available"}
       </p>
+      {!listing.shipsFree && (
+        <p className="spec mt-1 text-muted">
+          Australia Post's own posted rate for something this size is about{" "}
+          {money(estimateShippingCentsForListing(listing.subcategorySlug, listing.weightGrams) / 100)} —
+          an estimate, not what's charged above.
+        </p>
+      )}
 
       {/* Built from real released sales in this subcategory over the last
           90 days — omitted entirely (not "0 sales") below ~5 comparable

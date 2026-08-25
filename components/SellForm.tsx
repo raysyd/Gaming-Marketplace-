@@ -71,6 +71,7 @@ export function SellForm({
     quantity: initialDraft ? String(initialDraft.stock || 1) : "1",
     location: initialDraft?.location ?? "",
     stateCode: initialDraft?.state ?? "",
+    weightGrams: initialDraft?.weightGrams ? String(initialDraft.weightGrams) : "",
     description: initialDraft?.description ?? "",
     shipsFree: initialDraft?.shipsFree ?? true,
     acceptsOffers: initialDraft?.acceptsOffers ?? true,
@@ -488,7 +489,7 @@ export function SellForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Field label={`Asking price (${BRAND.currency})`}>
               <input
                 value={form.price}
@@ -522,6 +523,16 @@ export function SellForm({
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
+            </Field>
+            <Field label="Weight in grams (optional)">
+              <input
+                value={form.weightGrams}
+                onChange={(e) => set("weightGrams", e.target.value.replace(/[^0-9]/g, ""))}
+                inputMode="numeric"
+                placeholder="e.g. 1500"
+                className="input"
+              />
+              <p className="spec mt-1.5 text-muted">Powers the estimated-shipping figure buyers see.</p>
             </Field>
           </div>
 

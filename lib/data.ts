@@ -239,6 +239,7 @@ export function rowToListing(r: any, stats?: SellerStats): Listing {
     shipsFree: Boolean(r.ships_free),
     acceptsOffers: Boolean(r.accepts_offers),
     pickupAvailable: Boolean(r.pickup_available),
+    weightGrams: r.weight_grams ? Number(r.weight_grams) : undefined,
     watchers: Number(r.watchers ?? 0),
     stock: Number(r.stock ?? 1),
     createdAt: r.created_at,

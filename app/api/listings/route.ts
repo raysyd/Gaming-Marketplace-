@@ -43,6 +43,7 @@ function rowFromPayload(payload: Record<string, unknown>) {
     ships_free: Boolean(payload.shipsFree),
     accepts_offers: payload.acceptsOffers !== false,
     pickup_available: Boolean(payload.pickupAvailable),
+    weight_grams: Number(payload.weightGrams) > 0 ? Math.round(Number(payload.weightGrams)) : null,
     stock: isValidQuantity(quantity) ? quantity : 1,
   };
 }

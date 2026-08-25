@@ -80,6 +80,7 @@ export function SellForm({
   const [photos, setPhotos] = useState<string[]>(
     initialDraft ? [initialDraft.image, ...(initialDraft.images ?? [])].filter(Boolean) : []
   );
+  const [benchmarkPhotos, setBenchmarkPhotos] = useState<string[]>(initialDraft?.benchmarkImages ?? []);
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [error, setErrorMsg] = useState("");
   const [listingId, setListingId] = useState("");
@@ -160,6 +161,7 @@ export function SellForm({
       specs: [...attrSpecs, ...specs.filter((s) => s.label && s.value)],
       image: photos[0] ?? "",
       images: photos.slice(1),
+      benchmarkImages: benchmarkPhotos,
     };
   };
 
@@ -241,7 +243,7 @@ export function SellForm({
     // Deliberately broad — any field on the listing should reset the
     // debounce timer, not just title/price.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, specs, attrs, photos, state]);
+  }, [form, specs, attrs, photos, benchmarkPhotos, state]);
 
   // Last-resort save for the moment the tab is actually closed or
   // navigated away from — a normal fetch() can be cancelled mid-flight
@@ -267,7 +269,7 @@ export function SellForm({
       window.removeEventListener("pagehide", flush);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, specs, attrs, photos, draftId, state]);
+  }, [form, specs, attrs, photos, benchmarkPhotos, draftId, state]);
 
   const submit = async () => {
     if (!payoutsReady) {
@@ -514,6 +516,14 @@ export function SellForm({
 
           <Field label={`Photos — ${photos.length} of ${MIN_PHOTOS} minimum (up to ${maxPhotos})`}>
             <PhotoUploader photos={photos} onChange={setPhotos} min={MIN_PHOTOS} max={maxPhotos} />
+          </Field>
+
+          <Field label={`Benchmark screenshots (optional) — ${benchmarkPhotos.length} of 6`}>
+            <PhotoUploader photos={benchmarkPhotos} onChange={setBenchmarkPhotos} min={0} max={6} />
+            <p className="spec mt-1.5 text-muted">
+              GPU-Z, CPU-Z, 3DMark, Cinebench, CrystalDiskInfo — real proof beats a
+              claim. Adds a "Performance Verified" badge to your listing.
+            </p>
           </Field>
 
           <Field label="Specs — these are what buyers actually filter on">

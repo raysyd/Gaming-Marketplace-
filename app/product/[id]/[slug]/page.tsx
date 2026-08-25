@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { getListing, getRelated, queryListings } from "@/lib/data";
 import { money, timeAgo } from "@/lib/format";
 import { findSub, findTop } from "@/lib/taxonomy";
+import { BRAND } from "@/lib/brand";
 import { getSubcategoryPriceStats, getRecentlySold } from "@/lib/market-data";
 import { FpsBar } from "@/components/SpecStrip";
 import { ProductCard } from "@/components/ProductCard";
@@ -120,6 +121,31 @@ export default async function ProductPage({
                 <dd className="spec font-semibold">{listing.location}</dd>
               </div>
             </dl>
+
+            {(listing.benchmarkImages?.length ?? 0) > 0 && (
+              <div className="mt-4">
+                <p className="spec inline-block rounded bg-good/10 px-2 py-1 font-semibold text-good">
+                  ✓ Performance Verified
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {listing.benchmarkImages!.map((src, i) => (
+                    <a
+                      key={src + i}
+                      href={src}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block h-24 w-32 overflow-hidden rounded border border-line bg-ink"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="Benchmark screenshot" className="h-full w-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+                <p className="spec mt-1.5 text-muted">
+                  Seller-provided benchmark screenshots — not independently verified by {BRAND.name}.
+                </p>
+              </div>
+            )}
           </section>
 
           <section className="order-7 lg:mt-8">

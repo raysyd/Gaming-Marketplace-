@@ -26,6 +26,8 @@ export type Listing = {
   fps1080p?: number;
   image: string;
   images?: string[];
+  /** GPU-Z/CPU-Z/3DMark/Cinebench/CrystalDiskInfo screenshots — presence of any means the "Performance Verified" badge shows. */
+  benchmarkImages?: string[];
   description: string;
   sellerId: string;
   sellerName: string;

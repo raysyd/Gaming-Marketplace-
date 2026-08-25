@@ -221,6 +221,7 @@ export function rowToListing(r: any, stats?: SellerStats): Listing {
     fps1080p: r.fps_1080p ?? undefined,
     image: r.image ?? "",
     images: r.images ?? [],
+    benchmarkImages: r.benchmark_images ?? [],
     description: r.description ?? "",
     sellerId: r.seller_id,
     sellerName: r.seller_name ?? "Seller",

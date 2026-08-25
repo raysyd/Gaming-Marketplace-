@@ -38,6 +38,7 @@ function rowFromPayload(payload: Record<string, unknown>) {
     specs: payload.specs ?? [],
     image: (payload.image as string) || null,
     images: payload.images ?? [],
+    benchmark_images: payload.benchmarkImages ?? [],
     ships_free: Boolean(payload.shipsFree),
     accepts_offers: payload.acceptsOffers !== false,
     stock: isValidQuantity(quantity) ? quantity : 1,

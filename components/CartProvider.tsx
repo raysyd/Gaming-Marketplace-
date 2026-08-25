@@ -12,6 +12,9 @@ export type CartItem = {
   stock: number;
   sellerId: string;
   shipsFree: boolean;
+  /** For the compatibility checker (lib/compatibility.ts) only — never trusted for anything price/stock-related, same as the rest of this display-only cart state. */
+  subcategorySlug?: string;
+  specs?: { label: string; value: string }[];
 };
 
 type Ctx = {

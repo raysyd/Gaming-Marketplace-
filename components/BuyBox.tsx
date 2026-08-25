@@ -30,6 +30,8 @@ export function BuyBox({ listing, priceStats }: { listing: Listing; priceStats?:
       sellerId: listing.sellerId,
       shipsFree: listing.shipsFree,
       stock: listing.stock,
+      subcategorySlug: listing.subcategorySlug,
+      specs: listing.specs,
     });
     setAdded(true);
   };

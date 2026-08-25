@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
+import { checkCompatibility } from "@/lib/compatibility";
 
 export default function CartPage() {
   const { items, remove, setQty, subtotal, shipping, clear } = useCart();
@@ -11,6 +12,7 @@ export default function CartPage() {
   const [note, setNote] = useState("");
 
   const total = subtotal + shipping;
+  const compat = checkCompatibility(items);
 
   // /api/checkout creates one order row with one seller/fee/transfer
   // relationship per checkout, so a cart has to belong to one seller to
@@ -64,6 +66,23 @@ export default function CartPage() {
   return (
     <div className="mx-auto max-w-[900px] px-4 py-10">
       <h1 className="display text-[30px]">Cart</h1>
+
+      {compat.status === "conflict" && (
+        <div className="mt-4 rounded-[10px] border border-deal bg-deal-soft px-4 py-3.5 text-[13.5px] leading-relaxed">
+          <p className="font-semibold text-deal">⚠ Possible compatibility issue</p>
+          <ul className="mt-1.5 list-disc space-y-1 pl-5 text-ink">
+            {compat.warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+          <p className="spec mt-2 text-muted">
+            Based on what each seller listed — worth double-checking with them before you buy.
+          </p>
+        </div>
+      )}
+      {compat.status === "ok" && (
+        <p className="spec mt-4 font-semibold text-good">✓ These components look compatible.</p>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
         <ul className="space-y-2">

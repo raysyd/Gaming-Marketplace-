@@ -22,6 +22,44 @@ export type AttributeDef = {
 };
 
 export const SUBCATEGORY_ATTRIBUTES: Record<string, AttributeDef[]> = {
+  processors: [
+    {
+      key: "socket",
+      label: "Socket",
+      kind: "select",
+      options: ["AM5", "AM4", "LGA1700", "LGA1200", "LGA1851", "Other"],
+      required: true,
+      filterable: true,
+    },
+  ],
+  motherboards: [
+    {
+      key: "socket",
+      label: "Socket",
+      kind: "select",
+      options: ["AM5", "AM4", "LGA1700", "LGA1200", "LGA1851", "Other"],
+      required: true,
+      filterable: true,
+    },
+    {
+      key: "ramType",
+      label: "RAM type",
+      kind: "select",
+      options: ["DDR5", "DDR4", "DDR3"],
+      required: true,
+      filterable: true,
+    },
+  ],
+  memory: [
+    {
+      key: "ramType",
+      label: "RAM type",
+      kind: "select",
+      options: ["DDR5", "DDR4", "DDR3"],
+      required: true,
+      filterable: true,
+    },
+  ],
   storage: [
     {
       key: "type",

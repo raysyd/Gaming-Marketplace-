@@ -3,12 +3,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Listing } from "@/lib/types";
+import type { PriceStats } from "@/lib/market-data";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { useCart } from "./CartProvider";
 import { useAuth } from "./AuthProvider";
 
-export function BuyBox({ listing }: { listing: Listing }) {
+export function BuyBox({ listing, priceStats }: { listing: Listing; priceStats?: PriceStats | null }) {
   const { add } = useCart();
   const { user } = useAuth();
   const router = useRouter();
@@ -76,6 +77,18 @@ export function BuyBox({ listing }: { listing: Listing }) {
         {listing.shipsFree ? "Free shipping" : `+ ${money(BRAND.shippingFlatRate)} shipping`} ·{" "}
         {listing.location}
       </p>
+
+      {/* Built from real released sales in this subcategory over the last
+          90 days — omitted entirely (not "0 sales") below ~5 comparable
+          sales, since a range built on noise is worse than no range. */}
+      {priceStats && (
+        <p className="spec mt-2 rounded-md border border-line bg-paper px-3 py-2 text-muted">
+          {BRAND.name} market value: {money(priceStats.low)}–{money(priceStats.high)}
+          {listing.price <= priceStats.low && (
+            <span className="ml-1.5 font-semibold text-good">Good deal ✓</span>
+          )}
+        </p>
+      )}
 
       {/* Only worth saying anything when it's informative: quiet for a
           normal single unit, a nudge when stock is getting low, and the

@@ -14,6 +14,7 @@ export type Profile = {
   verified: boolean;
   /** "active" is the only value that means anything is granted — see lib/premium.ts. */
   premiumStatus: string | null;
+  createdAt: string;
 };
 
 function rowToProfile(r: Record<string, unknown>): Profile {
@@ -30,6 +31,7 @@ function rowToProfile(r: Record<string, unknown>): Profile {
     policyNote: (r.policy_note as string) ?? null,
     verified: Boolean(r.verified),
     premiumStatus: (r.premium_status as string) ?? null,
+    createdAt: (r.created_at as string) ?? new Date(0).toISOString(),
   };
 }
 
@@ -40,7 +42,7 @@ export async function getProfile(id: string): Promise<Profile | null> {
   const { data } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status"
+      "id, display_name, username, avatar_url, banner_url, bio, suburb, state, contact_link, policy_note, verified, premium_status, created_at"
     )
     .eq("id", id)
     .maybeSingle();

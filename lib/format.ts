@@ -22,6 +22,14 @@ export const timeAgo = (iso: string) => {
   });
 };
 
+/** "Responds within 2 hours" — rounds up to the nearest sensible unit, never claims more precision than the underlying median really has. */
+export const responseTimeLabel = (minutes: number) => {
+  if (minutes < 60) return `${Math.max(1, Math.round(minutes))} minutes`;
+  const hours = minutes / 60;
+  if (hours < 24) return `${Math.ceil(hours)} hour${hours >= 2 ? "s" : ""}`;
+  return `${Math.ceil(hours / 24)} day${hours >= 48 ? "s" : ""}`;
+};
+
 export const clockTime = (iso: string) =>
   new Date(iso).toLocaleTimeString(BRAND.locale, {
     hour: "numeric",

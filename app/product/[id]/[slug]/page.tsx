@@ -4,11 +4,13 @@ import type { Metadata } from "next";
 import { getListing, getRelated, queryListings } from "@/lib/data";
 import { money, timeAgo } from "@/lib/format";
 import { findSub, findTop } from "@/lib/taxonomy";
+import { getSubcategoryPriceStats, getRecentlySold } from "@/lib/market-data";
 import { FpsBar } from "@/components/SpecStrip";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
 import { BuyBox } from "@/components/BuyBox";
 import { WishlistButton } from "@/components/WishlistButton";
+import { RecentlySold } from "@/components/RecentlySold";
 
 export const revalidate = 120;
 export const dynamicParams = true;
@@ -46,7 +48,11 @@ export default async function ProductPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  const related = await getRelated(listing);
+  const [related, priceStats, recentlySold] = await Promise.all([
+    getRelated(listing),
+    getSubcategoryPriceStats(listing.subcategorySlug),
+    getRecentlySold({ subcategorySlug: listing.subcategorySlug, limit: 5 }),
+  ]);
   const sub = findSub(listing.subcategorySlug);
   const top = findTop(listing.categorySlug);
 
@@ -148,7 +154,7 @@ export default async function ProductPage({
           )}
 
           <div className="order-4">
-            <BuyBox listing={listing} />
+            <BuyBox listing={listing} priceStats={priceStats} />
           </div>
 
           <div className="order-5 rounded-[10px] border border-line bg-card p-5">
@@ -188,6 +194,8 @@ export default async function ProductPage({
           </div>
         </section>
       )}
+
+      <RecentlySold items={recentlySold} title={`Recently sold — ${sub?.name ?? "this category"}`} />
     </div>
   );
 }

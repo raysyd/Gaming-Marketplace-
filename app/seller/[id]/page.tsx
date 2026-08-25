@@ -4,8 +4,10 @@ import { queryListings } from "@/lib/data";
 import { getSellerReviews, getOneSellerStats } from "@/lib/reviews-data";
 import { getProfile } from "@/lib/profile-data";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
-import { timeAgo } from "@/lib/format";
+import { getSellerResponseMinutes, getRepeatBuyerIds, getRecentlySold } from "@/lib/market-data";
+import { timeAgo, responseTimeLabel } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
+import { RecentlySold } from "@/components/RecentlySold";
 
 export const revalidate = 60;
 
@@ -24,6 +26,14 @@ export default async function SellerProfilePage({
     getPremiumPlan(),
   ]);
   const premium = isPremiumActive(profile?.premiumStatus);
+
+  // Depend on `id` and `reviews` (for the reviewer ids), so these run
+  // after the batch above rather than joining it.
+  const [responseMinutes, repeatBuyerIds, recentlySold] = await Promise.all([
+    getSellerResponseMinutes(id),
+    getRepeatBuyerIds(id, reviews.map((r) => r.reviewerId)),
+    getRecentlySold({ sellerId: id }),
+  ]);
 
   if (!listings.length && !reviews.length && !stats.salesCount && !profile) notFound();
 
@@ -79,7 +89,11 @@ export default async function SellerProfilePage({
               : "No reviews yet"}{" "}
             · {stats.salesCount} sale{stats.salesCount === 1 ? "" : "s"}
             {location && ` · ${location}`}
+            {profile?.createdAt && ` · Member since ${new Date(profile.createdAt).getFullYear()}`}
           </p>
+          {responseMinutes != null && (
+            <p className="spec mt-1 text-trust">Usually responds within {responseTimeLabel(responseMinutes)}</p>
+          )}
           {profile?.bio && <p className="mt-2 max-w-lg text-[13.5px] text-muted">{profile.bio}</p>}
           {profile?.contactLink && (
             <a
@@ -120,7 +134,14 @@ export default async function SellerProfilePage({
           {reviews.map((r) => (
             <li key={r.id} className="rounded-[10px] border border-line bg-card p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[13.5px] font-semibold">{r.reviewerName}</p>
+                <p className="flex items-center gap-1.5 text-[13.5px] font-semibold">
+                  {r.reviewerName}
+                  {repeatBuyerIds.has(r.reviewerId) && (
+                    <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
+                      Repeat buyer
+                    </span>
+                  )}
+                </p>
                 <p className="spec text-muted">{timeAgo(r.createdAt)}</p>
               </div>
               <p className="spec mt-1 font-medium text-good">
@@ -132,6 +153,8 @@ export default async function SellerProfilePage({
           ))}
         </ul>
       )}
+
+      <RecentlySold items={recentlySold} title="Recently sold by this seller" />
 
       <Link href="/shop" className="mt-8 inline-block text-[13px] font-semibold text-trust hover:underline">
         ← Back to marketplace

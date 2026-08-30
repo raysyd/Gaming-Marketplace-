@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { queryListings } from "@/lib/data";
 import { getSellerReviews, getOneSellerStats } from "@/lib/reviews-data";
@@ -49,16 +50,14 @@ export default async function SellerProfilePage({
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10">
       {profile?.bannerUrl && (
-        <div className="-mt-2 mb-6 h-32 w-full overflow-hidden rounded-[10px] bg-trust-soft sm:h-44">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={profile.bannerUrl} alt="" className="h-full w-full object-cover" />
+        <div className="relative -mt-2 mb-6 h-32 w-full overflow-hidden rounded-[10px] bg-trust-soft sm:h-44">
+          <Image src={profile.bannerUrl} alt="" fill sizes="(max-width: 1240px) 100vw, 1240px" className="object-cover" />
         </div>
       )}
       <div className="flex items-center gap-4">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust">
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust">
           {profile?.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover" />
+            <Image src={profile.avatarUrl} alt="" fill sizes="56px" className="object-cover" />
           ) : (
             <span className="grid h-full w-full place-items-center text-[20px] font-semibold text-white">
               {sellerName[0]}

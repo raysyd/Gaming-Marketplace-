@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
 
@@ -58,10 +59,9 @@ export function AvatarUploader({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-trust">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-trust">
         {value ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-full w-full object-cover" />
+          <Image src={value} alt="" fill sizes="64px" className="object-cover" />
         ) : (
           <span className="grid h-full w-full place-items-center text-[20px] font-semibold text-white">
             {fallback}

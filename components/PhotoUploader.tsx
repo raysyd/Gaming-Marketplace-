@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
 
@@ -84,8 +85,7 @@ export function PhotoUploader({
             key={src + i}
             className="relative h-20 w-24 overflow-hidden rounded border border-line bg-ink"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" className="h-full w-full object-cover" />
+            <Image src={src} alt="" fill sizes="96px" className="object-cover" />
             <button
               onClick={() => onChange(photos.filter((_, j) => j !== i))}
               aria-label="Remove photo"

@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
 
@@ -50,11 +51,8 @@ export function BannerUploader({ value, onChange }: { value: string; onChange: (
 
   return (
     <div>
-      <div className="h-28 w-full overflow-hidden rounded-md bg-trust-soft sm:h-36">
-        {value && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="" className="h-full w-full object-cover" />
-        )}
+      <div className="relative h-28 w-full overflow-hidden rounded-md bg-trust-soft sm:h-36">
+        {value && <Image src={value} alt="" fill sizes="(max-width: 640px) 100vw, 640px" className="object-cover" />}
       </div>
       <div className="mt-2 flex items-center gap-2">
         <button

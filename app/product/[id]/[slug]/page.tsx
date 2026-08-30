@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getListing, getRelated, queryListings } from "@/lib/data";
@@ -144,10 +145,9 @@ export default async function ProductPage({
                       href={src}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block h-24 w-32 overflow-hidden rounded border border-line bg-ink"
+                      className="relative block h-24 w-32 overflow-hidden rounded border border-line bg-ink"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="Benchmark screenshot" className="h-full w-full object-cover" />
+                      <Image src={src} alt="Benchmark screenshot" fill sizes="128px" className="object-cover" />
                     </a>
                   ))}
                 </div>

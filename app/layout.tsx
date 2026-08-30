@@ -8,12 +8,22 @@ import { WishlistProvider } from "@/components/WishlistProvider";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { organizationSchema, websiteSchema } from "@/lib/structured-data";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   // No maximum-scale: pinch-zoom must stay available.
   viewportFit: "cover",
+  // Matches app/globals.css's --color-paper light/dark values — the
+  // browser reads this independently of the html.dark class ThemeToggle
+  // sets, so it follows system preference rather than a manual override;
+  // a minor, purely cosmetic imprecision for anyone who's toggled
+  // against their system setting, not a functional one.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f6f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#050505" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -45,6 +55,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <ServiceWorkerRegistration />
         <AuthProvider>
         <CartProvider>
           <WishlistProvider>

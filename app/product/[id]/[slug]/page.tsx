@@ -7,6 +7,7 @@ import { findSub, findTop } from "@/lib/taxonomy";
 import { BRAND } from "@/lib/brand";
 import { getSubcategoryPriceStats, getRecentlySold } from "@/lib/market-data";
 import { getPriceHistory } from "@/lib/price-history-data";
+import { productSchema } from "@/lib/structured-data";
 import { FpsBar } from "@/components/SpecStrip";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
@@ -61,6 +62,12 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productSchema(listing, `/product/${listing.id}/${listing.slug}`)),
+        }}
+      />
       <nav className="spec mb-5 text-muted">
         <Link href="/shop" className="hover:text-ink">
           Marketplace

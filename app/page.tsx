@@ -9,6 +9,8 @@ import { ProductImage } from "@/components/ProductImage";
 import { SpecStrip, FpsBar } from "@/components/SpecStrip";
 import { CATEGORY_PHOTOS } from "@/lib/category-photos";
 import { DemoBanner } from "@/components/DemoBanner";
+import { SoldTicker } from "@/components/SoldTicker";
+import { getRecentlySold } from "@/lib/market-data";
 import type { Category } from "@/lib/types";
 
 // artKindFor(top.children[0].slug) would pick whichever subcategory
@@ -25,12 +27,13 @@ const TILE_CATEGORY: Record<string, Category> = {
 export const revalidate = 60;
 
 export default async function Home() {
-  const [deals, watched, fresh, prebuilts, sold] = await Promise.all([
+  const [deals, watched, fresh, prebuilts, sold, justSold] = await Promise.all([
     queryListings({ dealsOnly: true, sort: "save", perPage: 6 }),
     queryListings({ sort: "watched", perPage: 6 }),
     queryListings({ sort: "new", perPage: 8 }),
     queryListings({ sub: "gaming-pcs", sort: "new", perPage: 1 }),
     queryListings({ status: "sold", sort: "new", perPage: 8 }),
+    getRecentlySold({ limit: 8 }),
   ]);
 
   const hero = deals.items[0] ?? fresh.items[0];
@@ -42,6 +45,7 @@ export default async function Home() {
           <DemoBanner />
         </div>
       )}
+      <SoldTicker initial={justSold} />
       <section className="border-b border-line bg-card">
         <div className="mx-auto grid max-w-[1240px] items-center gap-10 px-4 py-12 lg:grid-cols-[1.05fr_1fr] lg:py-16">
           <div className="rise">

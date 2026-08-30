@@ -8,6 +8,7 @@ import { BRAND } from "@/lib/brand";
 import { getSubcategoryPriceStats, getRecentlySold } from "@/lib/market-data";
 import { getPriceHistory } from "@/lib/price-history-data";
 import { productSchema } from "@/lib/structured-data";
+import { ViewerCount } from "@/components/ViewerCount";
 import { FpsBar } from "@/components/SpecStrip";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
@@ -177,6 +178,7 @@ export default async function ProductPage({
             <h1 className="display mt-2 text-[26px] leading-tight">
               {listing.title}
             </h1>
+            <ViewerCount listingId={listing.id} />
           </div>
 
           {listing.fps1080p && (

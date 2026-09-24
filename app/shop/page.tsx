@@ -73,7 +73,7 @@ export default async function ShopPage({
   };
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-8">
+    <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6">
       {isDemo && <DemoBanner />}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -126,7 +126,7 @@ export default async function ShopPage({
         <FilterRail sp={sp} counts={counts} />
       </MobileFilters>
 
-      <div className="mt-4 grid gap-6 lg:mt-0 lg:grid-cols-[236px_1fr]">
+      <div className="mt-4 grid gap-6 lg:mt-0 lg:grid-cols-[210px_1fr]">
         <div className="hidden lg:block">
           <FilterRail sp={sp} counts={counts} />
         </div>
@@ -147,7 +147,16 @@ export default async function ShopPage({
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+              {/* Full systems (gaming PCs, laptops, workstations, mini PCs) get 3
+                  bigger cards per row so the specs and performance bars have
+                  room; everything else stays at 4. */}
+              <div
+                className={`grid ${
+                  (sp.category === "full-systems" || ["gaming-pcs", "gaming-laptops", "workstations", "mini-pcs"].includes(sp.sub ?? ""))
+                    ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    : "grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+                }`}
+              >
                 {items.map((l) => (
                   <ProductCard key={l.id} listing={l} />
                 ))}

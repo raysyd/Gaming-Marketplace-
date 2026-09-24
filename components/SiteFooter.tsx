@@ -4,7 +4,7 @@ import { BRAND } from "@/lib/brand";
 export function SiteFooter() {
   return (
     <footer className="mt-16 bg-chrome text-white/70">
-      <div className="mx-auto grid max-w-[1240px] gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mx-auto grid max-w-[1560px] gap-8 px-4 py-12 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <span className="display text-[20px] text-white">{BRAND.name}</span>
           <span className="rgb-text display text-[20px]">.</span>
@@ -50,7 +50,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <p className="spec mx-auto max-w-[1240px] px-4 py-4">
+        <p className="spec mx-auto max-w-[1560px] px-4 lg:px-6 py-4">
           © {new Date().getFullYear()} {BRAND.name} ·{" "}
           <a href={`mailto:${BRAND.supportEmail}`} className="hover:text-deal">
             {BRAND.supportEmail}

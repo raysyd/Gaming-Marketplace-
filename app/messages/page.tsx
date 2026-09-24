@@ -18,7 +18,7 @@ export default async function MessagesPage() {
 
   return (
     <Suspense
-      fallback={<div className="mx-auto max-w-[1240px] px-4 py-16">Loading…</div>}
+      fallback={<div className="mx-auto max-w-[1560px] px-4 py-16 lg:px-6">Loading…</div>}
     >
       <Messenger
         initialConversations={conversations}

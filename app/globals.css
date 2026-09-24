@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./motion.css";
 
 @theme {
   --color-ink: #111111;
@@ -10,13 +11,18 @@
   --color-muted: #656e7e;
   --color-deal: #d86f00;
   --color-deal-soft: #fff1df;
-  --color-trust: #5a39d6;
-  --color-trust-soft: #eeeaff;
+  /* Accent for text, links, prices, numbers and performance bars. */
+  --color-trust: #1f6feb;
+  --color-trust-soft: #e7f0ff;
+  /* Icons keep the original purple (SpecIcon, verified tick, trust page). */
+  --color-icon: #5a39d6;
   --color-good: #0d8055;
 
   --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Labels, specs and small print use the same face as the nav (Inter),
+     not a code font. Kept as --font-mono so every existing usage follows. */
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 10px;
 }
@@ -31,8 +37,9 @@ html.dark {
   --color-muted: #a8a8a8;
   --color-deal: #ff8b18;
   --color-deal-soft: #302011;
-  --color-trust: #9674ff;
-  --color-trust-soft: #241d3e;
+  --color-trust: #5aa2ff;
+  --color-trust-soft: #16263f;
+  --color-icon: #9674ff;
 }
 
 html {
@@ -65,15 +72,17 @@ body {
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-muted);
 }
 
 .spec {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: -0.01em;
+  font-size: 11.5px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 :focus-visible {
@@ -302,7 +311,11 @@ textarea {
 html,
 body {
   max-width: 100%;
-  overflow-x: hidden;
+  /* clip, not hidden: hidden turns body into a scroll container, which
+     silently breaks position: sticky for everything inside it (the header
+     and the shop's filter sidebar). clip stops sideways scroll the same way
+     without that side effect. */
+  overflow-x: clip;
 }
 
 img,
@@ -336,3 +349,290 @@ dt {
     min-height: 0;
   }
 }
+
+/* Listing card: Jawa-style spec grid + performance bars (components/ProductCard.tsx) */
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 12px 0 0;
+}
+/* Only a cross through the middle: a vertical line between the columns and
+   a horizontal line between the rows. Padding is equal on both sides of
+   each line so all four cells sit symmetrically. */
+.spec-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  font-size: 11.5px;
+}
+.spec-grid > div:nth-child(odd) { padding-left: 0; border-right: 1px solid var(--color-line); }
+.spec-grid > div:nth-child(even) { padding-right: 0; }
+.spec-grid:has(> :nth-child(3)) > div:nth-child(-n + 2) { border-bottom: 1px solid var(--color-line); }
+.spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
+.spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
+.spec-grid:not(:has(> :nth-child(3))) > div { padding-bottom: 0; }
+.spec-grid dd { margin: 0; }
+.perf-bar { height: 7px; border-radius: 99px; background: var(--color-trust-soft); overflow: hidden; }
+.perf-fill { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: perf-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.perf-score { background: linear-gradient(90deg, #1f6feb, #4fa3ff); }
+.perf-value { background: linear-gradient(90deg, #f28a8a, #f7b0a4); }
+.perf-bar:has(.perf-value) { background: #fdecea; }
+html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
+@keyframes perf-grow { from { transform: scaleX(0); } }
+
+/* Listing page full specification (app/product/[id]/[slug]/page.tsx):
+   a spec list, not a table. Grouped rows with icon, label, value and a
+   plain-English note, separated by hairlines only. */
+.spec-list {
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: var(--color-card);
+  padding: 4px 22px;
+  margin-bottom: 0;
+}
+.spec-item {
+  display: grid;
+  grid-template-columns: 40px 130px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 14px 0;
+}
+.spec-item + .spec-item { border-top: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent); }
+/* Rainbow tile that slowly cycles through the site's RGB gradient. Every
+   tile runs the same animation in step, so they're always the same colour. */
+.spec-item-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  color: #fff;
+  background: var(--rgb-gradient);
+  background-size: 400% 400%;
+  animation: spec-rainbow 6s ease-in-out infinite alternate;
+  box-shadow: 0 6px 14px -8px rgba(90, 57, 214, 0.55);
+}
+.spec-item-icon svg { color: #fff; stroke: #fff; }
+@keyframes spec-rainbow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.spec-item-label {
+  padding-top: 11px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+.spec-item-body { margin: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+.spec-item-value { font-size: 16px; font-weight: 600; line-height: 1.35; }
+.spec-item-note { font-size: 13.5px; line-height: 1.5; color: var(--color-muted); max-width: 52ch; }
+@media (max-width: 640px) {
+  .spec-list { padding: 4px 16px 8px; }
+  .spec-item { grid-template-columns: 36px minmax(0, 1fr); gap: 4px 12px; }
+  .spec-item-icon { width: 36px; height: 36px; grid-row: span 2; }
+  .spec-item-label { padding-top: 0; font-size: 12px; }
+  .spec-item-body { grid-column: 2; padding-top: 0; }
+  .spec-item-value { font-size: 15px; }
+}
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+  font-size: 12.5px;
+}
+
+/* Narrow cards (two-per-row on phones): stack the parts grid and shorten labels. */
+.tilt-card { container-type: inline-size; }
+.p2p-short { display: none; }
+@container (max-width: 200px) {
+  /* Stay 2x2 like Jawa; just tighten so both columns fit. */
+  .spec-grid > div { gap: 4px; font-size: 10.5px; }
+  .spec-grid > div:nth-child(odd) { padding-right: 5px; }
+  .spec-grid > div:nth-child(even) { padding-left: 5px; }
+  .spec-grid > div:nth-child(-n + 2) { padding-bottom: 6px; }
+  .spec-grid > div:nth-child(n + 3) { padding-top: 6px; }
+  .spec-grid svg { width: 11px; height: 11px; }
+  .p2p-long { display: none; }
+  .p2p-short { display: inline; }
+}
+
+/* ---------------------------------------------------------------------
+   Rainbow hover, site-wide. Cards, tiles and tag pills get the same
+   moving RGB gradient as the header links instead of a flat purple ring.
+   The frame is a masked ::after drawn *inside* the element, so it also
+   works on cards with overflow-hidden (ProductCard).
+--------------------------------------------------------------------- */
+.tilt-card,
+.card-hover,
+.deal-card,
+.rgb-frame {
+  position: relative;
+}
+.tilt-card::after,
+.card-hover::after,
+.deal-card::after,
+.rgb-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--rgb-gradient);
+  background-size: 200% 100%;
+  animation: rgb-cycle 3s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.tilt-card:hover::after,
+.card-hover:hover::after,
+.deal-stage:hover .deal-card::after,
+.rgb-frame:hover::after,
+.group:hover > .rgb-frame::after {
+  opacity: 1;
+}
+.tilt-card:hover,
+.card-hover:hover {
+  border-color: transparent;
+  box-shadow:
+    -10px 10px 28px -18px rgba(255, 95, 109, 0.55),
+    0 16px 30px -18px rgba(74, 222, 128, 0.45),
+    10px 10px 28px -18px rgba(56, 189, 248, 0.55),
+    0 22px 40px -24px rgba(167, 139, 250, 0.6);
+}
+.deal-stage:hover .deal-card {
+  box-shadow:
+    -14px 18px 40px -26px rgba(255, 95, 109, 0.55),
+    14px 18px 40px -26px rgba(56, 189, 248, 0.55),
+    0 30px 60px -32px rgba(167, 139, 250, 0.6);
+}
+
+/* Tag pills (category subcategories, hero quick picks): same masked rainbow
+   frame, 1px, so it doesn't fight the pills' own entrance animation. */
+.cat-subs a,
+.chip {
+  position: relative;
+}
+.cat-subs a::after,
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  padding: 1.5px;
+  background: var(--rgb-gradient);
+  background-size: 200% 100%;
+  animation: rgb-cycle 3s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.cat-subs a:hover::after,
+.chip:hover::after {
+  opacity: 1;
+}
+.cat-subs a:hover,
+.chip:hover {
+  color: var(--color-ink);
+  border-color: transparent;
+  background: var(--color-card);
+}
+
+/* Listing card photo arrows + dots (components/ProductCard.tsx). Arrows
+   fade in on hover with a mouse; always visible on touch screens. */
+.card-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.card-slide { flex: 0 0 100%; height: 100%; overflow: hidden; }
+.card-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-height: 30px !important;
+  margin-top: -15px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s;
+}
+.card-arrow:hover { background: #fff; transform: scale(1.08); }
+.tilt-card:hover .card-arrow,
+.card-arrow:focus-visible { opacity: 1; transform: scale(1); }
+@media (hover: none) { .card-arrow { opacity: 0.9; transform: none; } }
+.card-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.card-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
+  transition: width 0.25s ease, background 0.25s;
+}
+.card-dots span.is-on { width: 14px; background: #fff; }
+
+/* Wide cards (3-per-row full systems on a big screen, ~350px+): scale the
+   text up a touch so it reads like Jawa's larger cards. */
+@container (min-width: 340px) {
+  .tilt-card h3 { font-size: 15.5px; }
+  .tilt-card .display { font-size: 22px; }
+  .spec-grid > div { font-size: 13px; padding-top: 10px; padding-bottom: 10px; }
+  .spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
+  .spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
+  .spec-grid svg { width: 15px; height: 15px; }
+  .perf-bar { height: 9px; }
+}
+
+/* Sign-in page backdrop (app/login/page.tsx): blurred wall of listings. */
+.login-wall-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 18px;
+  width: 130%;
+  margin-left: -15%;
+  padding-top: 20px;
+  filter: blur(6px) saturate(1.1);
+  opacity: 0.55;
+  transform: rotate(-4deg) scale(1.08);
+  animation: login-drift 40s ease-in-out infinite alternate;
+}
+@keyframes login-drift { to { transform: rotate(-4deg) scale(1.08) translateY(-120px); } }
+.login-wall-fade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 70% at 50% 45%, color-mix(in srgb, var(--color-paper) 55%, transparent), var(--color-paper) 85%);
+}
+@media (max-width: 640px) { .login-wall-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); } }

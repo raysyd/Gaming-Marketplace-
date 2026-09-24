@@ -46,6 +46,7 @@ export function Messenger({
   const [sending, setSending] = useState(false);
   const [showListOnMobile, setShowListOnMobile] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     activeIdRef.current = activeId;
@@ -257,7 +258,10 @@ export function Messenger({
   const activeListing = listings.find((l) => l.id === active?.listingId) ?? null;
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll the thread itself, never the page: scrollIntoView would also
+    // scroll the window and push the header off the top on load.
+    const el = threadRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [thread.length, activeId]);
 
   const send = async () => {
@@ -403,12 +407,12 @@ export function Messenger({
   // to show every message — including the viewer's own — as if it were
   // the other person's. A brief loading state beats a wrong one.
   if (hasSupabase && authLoading) {
-    return <div className="mx-auto max-w-[1240px] px-4 py-16 text-muted">Loading messages…</div>;
+    return <div className="mx-auto max-w-[1560px] px-4 py-16 text-muted lg:px-6">Loading messages…</div>;
   }
 
   if (conversations.length === 0) {
     return (
-      <div className="mx-auto max-w-[1240px] px-4 py-20 text-center">
+      <div className="mx-auto max-w-[1560px] px-4 py-20 text-center lg:px-6">
         <h1 className="display text-[26px]">No conversations yet</h1>
         <p className="mt-2 text-[14px] text-muted">
           Message a seller from any listing and the thread shows up here.
@@ -424,15 +428,17 @@ export function Messenger({
   }
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-6">
-      <h1 className="display mb-4 text-[26px]">Messages</h1>
+    <div className="mx-auto max-w-[1560px] px-4 py-6 lg:px-6">
+      <h1 className="display mb-4 text-[30px]">Messages</h1>
 
-      <div className="grid overflow-hidden rounded-[10px] border border-line bg-card lg:grid-cols-[300px_1fr]">
+      {/* Fixed-height app shell on desktop: the conversation list and the
+          thread each scroll inside themselves instead of growing the page. */}
+      <div className="grid overflow-hidden rounded-[14px] border border-line bg-card lg:h-[calc(100vh-var(--header-offset,140px)-120px)] lg:min-h-[520px] lg:grid-cols-[340px_1fr]">
         {/* Conversation list */}
         <aside
-          className={`${showListOnMobile ? "block" : "hidden"} border-line lg:block lg:border-r`}
+          className={`${showListOnMobile ? "block" : "hidden"} border-line lg:flex lg:min-h-0 lg:flex-col lg:border-r`}
         >
-          <ul className="max-h-[70vh] overflow-y-auto sm:max-h-[560px]">
+          <ul className="max-h-[70vh] overflow-y-auto sm:max-h-[560px] lg:max-h-none lg:flex-1">
             {conversations
               .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
               .map((c) => {
@@ -460,6 +466,7 @@ export function Messenger({
                           category={l.category}
                           seed={l.id}
                           className="h-full w-full"
+                          showStockBadge={false}
                         />
                       )}
                     </div>
@@ -491,7 +498,7 @@ export function Messenger({
 
         {/* Thread */}
         <section
-          className={`${showListOnMobile ? "hidden" : "flex"} min-h-[70vh] flex-col sm:min-h-[560px] lg:flex`}
+          className={`${showListOnMobile ? "hidden" : "flex"} min-h-[70vh] flex-col sm:min-h-[560px] lg:flex lg:min-h-0`}
         >
           {active && (
             <header className="flex items-center gap-3 border-b border-line p-3">
@@ -509,6 +516,7 @@ export function Messenger({
                     category={activeListing.category}
                     seed={activeListing.id}
                     className="h-full w-full"
+                    showStockBadge={false}
                   />
                 )}
               </div>
@@ -531,7 +539,7 @@ export function Messenger({
             </header>
           )}
 
-          <div className="flex-1 space-y-3 overflow-y-auto bg-paper p-4">
+          <div ref={threadRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-paper p-4 sm:p-5">
             {thread.length === 0 && (
               <p className="spec py-10 text-center text-muted">
                 Say hello — ask about condition, age, or what&apos;s included.
@@ -668,15 +676,15 @@ export function Messenger({
                   className={`flex ${mine ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[78%] rounded-lg px-3.5 py-2.5 text-[13.5px] leading-relaxed ${
+                    className={`max-w-[70%] px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ${
                       mine
-                        ? "bg-ink text-white"
-                        : "border border-line bg-card text-ink"
+                        ? "rounded-[18px] rounded-br-[6px] bg-trust text-white"
+                        : "rounded-[18px] rounded-bl-[6px] border border-line bg-card text-ink"
                     }`}
                   >
                     {m.body}
                     <span
-                      className={`spec mt-1 block ${mine ? "text-white/50" : "text-muted"}`}
+                      className={`spec mt-1 block ${mine ? "text-white/70" : "text-muted"}`}
                     >
                       {clockTime(m.createdAt)}
                     </span>

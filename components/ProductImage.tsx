@@ -28,6 +28,7 @@ export function ProductImage({
   className = "",
   showStockBadge = true,
   onFallback,
+  eager = false,
 }: {
   src?: string;
   alt: string;
@@ -48,6 +49,8 @@ export function ProductImage({
    * its own "Stock photo" notice honest instead of guessing from `src`.
    */
   onFallback?: (isFallback: boolean) => void;
+  /** Load now instead of lazily — for photos about to slide into view in ProductCard. */
+  eager?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -86,6 +89,7 @@ export function ProductImage({
           alt={`${category} — stock photo, not the actual item`}
           fill
           sizes={SIZES}
+          loading={eager ? "eager" : "lazy"}
           className="object-cover"
         />
         {showStockBadge && (
@@ -104,7 +108,7 @@ export function ProductImage({
         alt={alt}
         fill
         sizes={SIZES}
-        loading="lazy"
+        loading={eager ? "eager" : "lazy"}
         onError={() => setFailed(true)}
         className="object-cover"
       />

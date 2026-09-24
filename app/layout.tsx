@@ -42,7 +42,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400..700&family=JetBrains+Mono:wght@400..600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400..700&display=swap"
           rel="stylesheet"
         />
         <script
@@ -54,7 +54,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema()) }}
         />
       </head>
-      <body>
+      {/* Browser extensions (currency converters, password managers, Grammarly…)
+          add their own attributes to <body> before React loads. That's not a
+          real mismatch, so don't warn about it. Only affects this one element. */}
+      <body suppressHydrationWarning>
         <ServiceWorkerRegistration />
         <AuthProvider>
         <CartProvider>

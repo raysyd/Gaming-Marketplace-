@@ -48,7 +48,7 @@ export default async function SellerProfilePage({
   const location = [profile?.suburb, profile?.state].filter(Boolean).join(", ");
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-10">
+    <div className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
       {profile?.bannerUrl && (
         <div className="relative -mt-2 mb-6 h-32 w-full overflow-hidden rounded-[10px] bg-trust-soft sm:h-44">
           <Image src={profile.bannerUrl} alt="" fill sizes="(max-width: 1240px) 100vw, 1240px" className="object-cover" />

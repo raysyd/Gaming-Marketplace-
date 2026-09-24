@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { TAXONOMY } from "@/lib/taxonomy";
-import { useCart } from "./CartProvider";
 import { useWishlist } from "./WishlistProvider";
 import { AccountMenu } from "./AccountMenu";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
+import { CartDrawer } from "./CartDrawer";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -15,16 +16,65 @@ export function SiteHeader() {
   const activeCategory = params.get("category");
   const [q, setQ] = useState("");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const { count } = useCart();
+  const [hidden, setHidden] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Scroll behaviour: the header follows you down the page until the shop's
+  // filter sidebar ("‹ All categories") reaches it, then slides away so the
+  // sidebar can take the top of the screen. Scrolling up brings it back.
+  // Pages without the sidebar use a fixed threshold instead. The current
+  // header height is published as --header-offset so sticky things (the
+  // sidebar) sit just below it, or at the very top while it's hidden.
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let isHidden = false;
+    const apply = (h: boolean) => {
+      isHidden = h;
+      setHidden(h);
+      const height = headerRef.current?.offsetHeight ?? 0;
+      document.documentElement.style.setProperty("--header-offset", h ? "0px" : `${height}px`);
+    };
+    apply(false);
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY;
+      if (Math.abs(dy) < 4) return;
+      const height = headerRef.current?.offsetHeight ?? 0;
+      const rail = document.querySelector<HTMLElement>("[data-sticky-rail]");
+      // Measure the rail's column, not the rail: once the rail is stuck its
+      // own position no longer says where it started on the page.
+      const anchor = rail?.parentElement ?? rail;
+      const threshold = anchor
+        ? anchor.getBoundingClientRect().top + y - height - 16
+        : height + 240;
+      if (dy > 0 && y > threshold && !isHidden) apply(true);
+      else if ((dy < 0 || y <= threshold) && isHidden) apply(false);
+      lastY = y;
+    };
+    const onResize = () => apply(isHidden);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+  useEffect(() => {
+    if (hidden) setOpenMenu(null);
+  }, [hidden]);
   const { count: saved } = useWishlist();
 
   const search = () =>
     router.push(q.trim() ? `/shop?q=${encodeURIComponent(q.trim())}` : "/shop");
 
   return (
-    <header className="sticky top-0 z-50">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-50 transition-transform duration-300 ease-out"
+      style={{ transform: hidden ? "translateY(-100%)" : undefined }}
+    >
       <div className="bg-chrome text-white">
-        <div className="mx-auto flex max-w-[1240px] items-center gap-2 px-4 py-3 sm:gap-3">
+        <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
           <Link href="/" className="shrink-0">
             <span className="display text-[21px] text-white">{BRAND.name}</span>
             <span className="rgb-text display text-[21px]">.</span>
@@ -57,6 +107,7 @@ export function SiteHeader() {
             <Link href="/messages" className="hidden rounded px-2.5 py-2 hover:bg-chrome-2 sm:block">
               Messages
             </Link>
+            <NotificationBell />
             <Link
               href="/wishlist"
               aria-label="Saved items"
@@ -71,18 +122,7 @@ export function SiteHeader() {
                 </span>
               )}
             </Link>
-            <Link
-              href="/cart"
-              aria-label={`Cart, ${count} items`}
-              title="Cart"
-              className="ml-0.5 flex shrink-0 items-center gap-1.5 rounded bg-chrome-2 px-2.5 py-2 sm:ml-1 sm:px-3"
-            >
-              <span className="text-[17px] leading-none" aria-hidden="true">🛒</span>
-              <span className="sr-only">Cart</span>
-              <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
-                {count}
-              </span>
-            </Link>
+            <CartDrawer />
             <div className="ml-1 border-l border-white/15 pl-1 sm:ml-2 sm:pl-2">
               <AccountMenu />
             </div>
@@ -91,7 +131,7 @@ export function SiteHeader() {
 
         {/* Two-level category navigation with hover menus */}
         <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-[1240px] flex-col px-4 md:flex-row md:items-center">
+          <div className="mx-auto flex max-w-[1560px] flex-col px-4 md:flex-row lg:px-6 md:items-center">
             <div className="no-scrollbar flex min-w-0 gap-1 overflow-x-auto md:flex-1">
               {TAXONOMY.map((top) => (
                 <div
@@ -127,13 +167,13 @@ export function SiteHeader() {
               ))}
               <Link
                 href="/shop?deals=1"
-                className="shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] font-semibold text-deal"
+                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 transition hover:text-white"
               >
                 Price drops
               </Link>
               <Link
                 href="/shop?sort=watched"
-                className="shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 hover:text-deal"
+                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 transition hover:text-white"
               >
                 Most watched
               </Link>
@@ -146,7 +186,7 @@ export function SiteHeader() {
       </div>
 
       <div className="border-b border-line bg-trust-soft">
-        <p className="spec mx-auto max-w-[1240px] px-4 py-1.5 leading-relaxed text-trust">
+        <p className="spec mx-auto max-w-[1560px] px-4 py-1.5 lg:px-6 leading-relaxed text-trust">
           Payment is held until you confirm the item arrived ·{" "}
           <Link href="/trust" className="underline">
             How it works

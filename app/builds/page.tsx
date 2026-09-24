@@ -9,7 +9,7 @@ export default async function BuildsPage() {
   const builds = await listBuilds();
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-10">
+    <div className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="eyebrow">Community</p>

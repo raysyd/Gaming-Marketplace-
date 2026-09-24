@@ -45,12 +45,22 @@ export default async function AccountPage() {
   if (!profile?.username) redirect("/account/onboarding?next=/account");
 
   return (
-    <main className="mx-auto max-w-[640px] px-4 py-12">
-      <p className="eyebrow">Account</p>
-      <h1 className="display mt-2 text-[28px]">Settings</h1>
-      <p className="mt-2 text-[14px] text-muted">
-        @{profile.username} · {user.email}
-      </p>
+    <main className="mx-auto max-w-[1100px] px-4 py-12 lg:px-6">
+      <div className="flex items-center gap-4">
+        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-trust text-[22px] font-bold text-white">
+          {(profile.display_name || profile.username || "?")[0].toUpperCase()}
+        </span>
+        <div>
+          <p className="eyebrow">Account</p>
+          <h1 className="display mt-1 text-[34px]">Settings</h1>
+          <p className="mt-1 text-[14px] text-muted">
+            @{profile.username} · {user.email}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_300px]">
+      <div className="min-w-0">
 
       <AccountSettingsForm
         displayName={profile.display_name ?? ""}
@@ -90,10 +100,12 @@ export default async function AccountPage() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      </div>
+
+      <nav aria-label="Account sections" className="grid gap-3 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
         <Link
           href="/selling#payouts"
-          className="rounded-[10px] border border-line bg-card p-4 transition hover:border-ink/30"
+          className="card-hover rounded-[14px] border border-line bg-card p-5"
         >
           <p className="text-[14px] font-semibold">Payout settings</p>
           <p className="spec mt-1 text-muted">
@@ -103,26 +115,26 @@ export default async function AccountPage() {
         </Link>
         <Link
           href="/account/security"
-          className="rounded-[10px] border border-line bg-card p-4 transition hover:border-ink/30"
+          className="card-hover rounded-[14px] border border-line bg-card p-5"
         >
           <p className="text-[14px] font-semibold">Security</p>
           <p className="spec mt-1 text-muted">Two-factor authentication.</p>
         </Link>
         <Link
           href="/account/searches"
-          className="rounded-[10px] border border-line bg-card p-4 transition hover:border-ink/30"
+          className="card-hover rounded-[14px] border border-line bg-card p-5"
         >
           <p className="text-[14px] font-semibold">Saved searches</p>
           <p className="spec mt-1 text-muted">Get emailed when a new listing matches.</p>
         </Link>
+        <Link
+          href="/account/delete"
+          className="rounded-[14px] border border-dashed border-line p-4 text-[13.5px] font-semibold text-[#e11d48] transition hover:border-[#e11d48]/50 hover:bg-[#e11d48]/5"
+        >
+          Delete account
+        </Link>
+      </nav>
       </div>
-
-      <Link
-        href="/account/delete"
-        className="spec mt-6 block text-deal hover:underline"
-      >
-        Delete account
-      </Link>
     </main>
   );
 }

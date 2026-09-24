@@ -1,4 +1,5 @@
 import type { Listing } from "@/lib/types";
+import { SpecIcon } from "./SpecIcon";
 
 /** The signature element: a listing's specs read like a spec sheet, not a blurb. */
 export function SpecStrip({
@@ -15,6 +16,7 @@ export function SpecStrip({
           key={s.label}
           className="spec flex items-center gap-1 rounded border border-line bg-paper px-1.5 py-0.5"
         >
+          <SpecIcon label={s.label} size={12} />
           <dt className="text-muted">{s.label}</dt>
           <dd className="font-medium text-ink">{s.value}</dd>
         </div>

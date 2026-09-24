@@ -59,7 +59,9 @@ export function MobileFilters({
                 Done
               </button>
             </div>
-            <div onClick={() => setOpen(false)}>{children}</div>
+            {/* Close after picking a filter link, but not when typing in the
+                price or search boxes (those submit their own form). */}
+            <div onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)} onSubmit={() => setOpen(false)}>{children}</div>
           </div>
         </div>
       )}

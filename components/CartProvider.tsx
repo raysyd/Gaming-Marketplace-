@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
+import type { Category } from "@/lib/types";
 
 export type CartItem = {
   id: string;
@@ -17,6 +18,9 @@ export type CartItem = {
   specs?: { label: string; value: string }[];
   /** Whether *this listing* offers pickup — checkout only offers it when every item in the cart does (see app/cart/page.tsx), re-verified server-side regardless. */
   pickupAvailable?: boolean;
+  /** Display-only, for the cart side panel's thumbnail. Older saved carts won't have these. */
+  image?: string;
+  category?: Category;
 };
 
 type Ctx = {
@@ -37,6 +41,10 @@ type Ctx = {
    * drift from what's actually charged.
    */
   shipping: number;
+  /** The slide-in cart panel (components/CartDrawer.tsx). */
+  drawerOpen: boolean;
+  openDrawer: () => void;
+  closeDrawer: () => void;
 };
 
 const CartCtx = createContext<Ctx | null>(null);
@@ -44,6 +52,7 @@ const KEY = "sidegrade.cart";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -84,6 +93,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     count: items.reduce((n, i) => n + i.qty, 0),
     subtotal: items.reduce((n, i) => n + i.price * i.qty, 0),
     shipping: items.some((i) => !i.shipsFree) ? BRAND.shippingFlatRate : 0,
+    drawerOpen,
+    openDrawer: () => setDrawerOpen(true),
+    closeDrawer: () => setDrawerOpen(false),
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

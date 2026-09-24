@@ -95,7 +95,7 @@ const ICON_PROPS = {
 
 function LockIcon() {
   return (
-    <svg {...ICON_PROPS} className="h-9 w-9 shrink-0 text-trust" aria-hidden="true">
+    <svg {...ICON_PROPS} className="h-9 w-9 shrink-0 text-icon" aria-hidden="true">
       <rect x="5" y="11" width="14" height="9" rx="2" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>

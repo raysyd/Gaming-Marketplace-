@@ -286,7 +286,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[420px] px-4 py-12 sm:py-24">
+    <div className="mx-auto w-full max-w-[460px] px-6 py-9 sm:px-9 sm:py-11">
       <h1 className="display text-[28px]">
         {mode === "password" && action === "signup" ? `Create your ${BRAND.name} account` : `Sign in to ${BRAND.name}`}
       </h1>

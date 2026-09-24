@@ -21,7 +21,7 @@ export function BuyBox({
   priceStats?: PriceStats | null;
   priceHistory?: PricePoint[];
 }) {
-  const { add } = useCart();
+  const { add, openDrawer } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const [added, setAdded] = useState(false);
@@ -44,8 +44,11 @@ export function BuyBox({
       subcategorySlug: listing.subcategorySlug,
       specs: listing.specs,
       pickupAvailable: listing.pickupAvailable,
+      image: listing.image,
+      category: listing.category,
     });
     setAdded(true);
+    openDrawer();
   };
 
   const sendOffer = async () => {

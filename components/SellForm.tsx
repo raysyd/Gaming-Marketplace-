@@ -363,10 +363,10 @@ export function SellForm({
     );
 
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-10">
+    <div className="mx-auto max-w-[1240px] px-4 py-10 lg:px-6">
       <p className="eyebrow">Sell{draftId && " · editing draft"}</p>
-      <h1 className="display mt-2 text-[32px]">List an item</h1>
-      <p className="mt-2 max-w-lg text-[14px] text-muted">
+      <h1 className="display mt-2 text-[36px]">List an item</h1>
+      <p className="mt-2 max-w-lg text-[15px] text-muted">
         Listing is free. {BRAND.name} takes {BRAND.feePercent}% only when the item
         sells and the buyer confirms delivery.
         {draftId && " Saved as a draft — it isn't visible to anyone until you publish it."}
@@ -409,8 +409,9 @@ export function SellForm({
         </div>
       )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-5 rounded-[10px] border border-line bg-card p-6">
+      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
+        <div className="space-y-5">
+        <Step n={1} title="The item" hint="What you're selling and what condition it's in.">
           <Field label="Title">
             <input
               value={form.title}
@@ -489,7 +490,9 @@ export function SellForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        </Step>
+        <Step n={2} title="Price & shipping" hint="Buyers see the price first. Free shipping listings get a badge.">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Field label={`Asking price (${BRAND.currency})`}>
               <input
                 value={form.price}
@@ -536,6 +539,8 @@ export function SellForm({
             </Field>
           </div>
 
+        </Step>
+        <Step n={3} title="Photos" hint="Real photos of the actual item. Listings with 5+ photos sell faster.">
           <Field label={`Photos — ${photos.length} of ${MIN_PHOTOS} minimum (up to ${maxPhotos})`}>
             <PhotoUploader photos={photos} onChange={setPhotos} min={MIN_PHOTOS} max={maxPhotos} />
           </Field>
@@ -548,6 +553,8 @@ export function SellForm({
             </p>
           </Field>
 
+        </Step>
+        <Step n={4} title="Specs & description" hint="Specs power the performance scores and filters buyers use.">
           <Field label="Specs — these are what buyers actually filter on">
             <div className="space-y-2">
               {specs.map((s, i) => (
@@ -624,7 +631,9 @@ export function SellForm({
               onChange={() => set("pickupAvailable", !form.pickupAvailable)}
             />
           </div>
+        </Step>
 
+        <div className="space-y-3 rounded-[14px] border border-line bg-card p-5">
           {state === "error" && <p className="spec text-deal">{error}</p>}
           {draftState === "error" && <p className="spec text-deal">{draftError}</p>}
           {draftState === "saving" && <p className="spec text-muted">Saving draft…</p>}
@@ -639,7 +648,7 @@ export function SellForm({
               type="button"
               onClick={persistDraft}
               disabled={draftState === "saving" || !form.title.trim()}
-              className="rounded-md border border-line py-3 text-[14px] font-semibold transition hover:border-ink/40 disabled:opacity-50 sm:w-48"
+              className="h-[50px] rounded-[10px] border border-line text-[14px] font-semibold transition hover:border-ink/40 disabled:opacity-50 sm:w-48"
             >
               {draftState === "saving" ? "Saving…" : "Save now"}
             </button>
@@ -652,7 +661,7 @@ export function SellForm({
                 !payoutsReady ||
                 atListingLimit
               }
-              className="rgb-ring flex-1 rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+              className="rgb-ring h-[50px] flex-1 rounded-[10px] bg-deal text-[15px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
             >
               {state === "saving"
                 ? "Publishing…"
@@ -666,9 +675,10 @@ export function SellForm({
             </button>
           </div>
         </div>
+        </div>
 
-        <aside className="h-fit space-y-4 rounded-[10px] border border-line bg-card p-5">
-          <h2 className="eyebrow">What you take home</h2>
+        <aside className="h-fit space-y-4 rounded-[14px] border border-line bg-card p-6 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
+          <h2 className="text-[18px] font-bold">What you take home</h2>
           <div className="space-y-2 text-[13.5px]">
             <Row label="Buyer pays" value={money(price)} />
             <Row
@@ -677,7 +687,7 @@ export function SellForm({
             />
             <div className="flex justify-between border-t border-line pt-2 font-semibold">
               <span>You receive</span>
-              <span className="display text-[18px]">{money(price - fee)}</span>
+              <span className="display text-[28px] text-trust">{money(price - fee)}</span>
             </div>
           </div>
           <p className="spec text-muted">
@@ -688,6 +698,22 @@ export function SellForm({
       </div>
 
     </div>
+  );
+}
+
+/** Numbered section card for the listing form. */
+function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-[14px] border border-line bg-card p-6">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-trust-soft text-[14px] font-bold text-trust">{n}</span>
+        <div>
+          <h2 className="text-[17px] font-bold leading-tight">{title}</h2>
+          <p className="mt-0.5 text-[13px] text-muted">{hint}</p>
+        </div>
+      </div>
+      <div className="space-y-5">{children}</div>
+    </section>
   );
 }
 

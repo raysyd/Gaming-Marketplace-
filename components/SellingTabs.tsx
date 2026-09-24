@@ -54,7 +54,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
 
   return (
     <>
-      <div className="no-scrollbar mt-8 flex gap-1 overflow-x-auto">
+      <div className="no-scrollbar mt-8 flex gap-1 overflow-x-auto border-b border-line">
         {TABS.map((t) => {
           const count = t.listingMatch
             ? listings.filter(t.listingMatch).length
@@ -64,20 +64,20 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
               key={t.key}
               type="button"
               onClick={() => setActiveKey(t.key)}
-              className={`shrink-0 whitespace-nowrap rounded px-3 py-1.5 text-[12.5px] transition ${
+              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-[14px] transition ${
                 activeTab.key === t.key
-                  ? "bg-ink font-semibold text-white"
-                  : "border border-line hover:border-ink/40"
+                  ? "border-trust font-semibold text-trust"
+                  : "border-transparent text-muted hover:text-ink"
               }`}
             >
               {t.label}
-              {count > 0 && ` (${count})`}
+              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-[11.5px] font-semibold text-trust">{count}</span>}
             </button>
           );
         })}
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-[10px] border border-line bg-card">
+      <div className="mt-4 overflow-hidden rounded-[14px] border border-line bg-card">
         {tabListings.length === 0 && tabOrders.length === 0 && (
           <div className="p-12 text-center">
             <p className="text-[14px] text-muted">Nothing in this tab yet.</p>
@@ -86,8 +86,8 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
 
         {tabListings.map((l) => (
           <div key={l.id} className="flex items-center gap-4 border-b border-line p-3 last:border-0">
-            <div className="h-14 w-20 shrink-0 overflow-hidden rounded bg-ink">
-              <ProductImage src={l.image} alt={l.title} category={l.category} seed={l.id} className="h-full w-full" />
+            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
+              <ProductImage src={l.image} alt={l.title} category={l.category} seed={l.id} className="h-full w-full" showStockBadge={false} />
             </div>
             <div className="min-w-0 flex-1">
               {activeTab.key === "drafts" ? (
@@ -124,7 +124,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
 
         {tabOrders.map((o) => (
           <div key={o.id} className="flex flex-wrap items-center gap-4 border-b border-line p-3 last:border-0">
-            <div className="h-14 w-20 shrink-0 overflow-hidden rounded bg-ink">
+            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
               <ProductImage
                 src={o.listingImage}
                 alt={o.listingTitle ?? "Listing"}

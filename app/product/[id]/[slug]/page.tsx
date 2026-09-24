@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { Listing } from "@/lib/types";
 import { getListing, getRelated, queryListings } from "@/lib/data";
 import { money, timeAgo } from "@/lib/format";
 import { findSub, findTop } from "@/lib/taxonomy";
@@ -11,6 +12,9 @@ import { getPriceHistory } from "@/lib/price-history-data";
 import { productSchema } from "@/lib/structured-data";
 import { ViewerCount } from "@/components/ViewerCount";
 import { FpsBar } from "@/components/SpecStrip";
+import { SpecIcon } from "@/components/SpecIcon";
+import { specNote, goodFor, pairingNote } from "@/lib/spec-notes";
+import { estimatePerformance, SCORE_MAX, VALUE_MAX } from "@/lib/performance";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
 import { BuyBox } from "@/components/BuyBox";
@@ -54,7 +58,7 @@ export default async function ProductPage({
   if (!listing) notFound();
 
   const [related, priceStats, recentlySold, priceHistory] = await Promise.all([
-    getRelated(listing),
+    getRelated(listing, listing.categorySlug === "full-systems" ? 6 : 8),
     getSubcategoryPriceStats(listing.subcategorySlug),
     getRecentlySold({ subcategorySlug: listing.subcategorySlug, limit: 5 }),
     getPriceHistory(listing.id),
@@ -62,8 +66,22 @@ export default async function ProductPage({
   const sub = findSub(listing.subcategorySlug);
   const top = findTop(listing.categorySlug);
 
+  const perf = estimatePerformance(listing);
+  // Jawa-style 2x2: GPU | CPU on top, RAM | Storage below, whatever order the
+  // seller entered them in. Anything else (PSU, VRAM…) goes in a second table.
+  const KEY_ORDER = ["gpu", "cpu", "ram", "ssd", "storage"];
+  const keySpecs = KEY_ORDER.map((k) => listing.specs.find((s) => s.label.toLowerCase() === k))
+    .filter((s): s is Listing["specs"][number] => Boolean(s))
+    .slice(0, 4);
+  const otherSpecs = keySpecs.length >= 2 ? listing.specs.filter((s) => !keySpecs.includes(s)) : [];
+  if (keySpecs.length < 2) keySpecs.splice(0, keySpecs.length, ...listing.specs);
+  const gpuSpec = listing.specs.find((s) => ["gpu", "model"].includes(s.label.toLowerCase()))?.value ?? "";
+  const res = perf && perf.kind !== "cpu" ? goodFor(gpuSpec || listing.title) : [];
+  const cpuSpec = listing.specs.find((s) => s.label.toLowerCase() === "cpu")?.value ?? "";
+  const pairing = perf?.kind === "system" ? pairingNote(gpuSpec, cpuSpec) : null;
+
   return (
-    <div className="mx-auto max-w-[1240px] px-4 py-8">
+    <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -113,25 +131,35 @@ export default async function ProductPage({
 
           <section className="order-6 lg:mt-8">
             <h2 className="eyebrow">Full specification</h2>
-            <dl className="mt-3 overflow-hidden rounded-[10px] border border-line bg-card">
-              {listing.specs.map((s, i) => (
-                <div
-                  key={s.label}
-                  className={`flex justify-between px-4 py-2.5 ${i % 2 ? "bg-paper" : ""}`}
-                >
-                  <dt className="spec text-muted">{s.label}</dt>
-                  <dd className="spec font-semibold">{s.value}</dd>
-                </div>
-              ))}
-              <div className="flex justify-between border-t border-line px-4 py-2.5">
-                <dt className="spec text-muted">Condition</dt>
-                <dd className="spec font-semibold">{listing.condition}</dd>
-              </div>
-              <div className="flex justify-between px-4 py-2.5">
-                <dt className="spec text-muted">Ships from</dt>
-                <dd className="spec font-semibold">{listing.location}</dd>
-              </div>
+            <dl className="spec-list mt-3">
+              {[...keySpecs, ...otherSpecs].map((s) => {
+                const note = specNote(s.label, s.value);
+                return (
+                  <div key={s.label} className="spec-item">
+                    <span className="spec-item-icon">
+                      <SpecIcon label={s.label} size={18} />
+                    </span>
+                    <dt className="spec-item-label">{s.label}</dt>
+                    <dd className="spec-item-body">
+                      <span className="spec-item-value">{s.value}</span>
+                      {note && <span className="spec-item-note">{note}</span>}
+                    </dd>
+                  </div>
+                );
+              })}
             </dl>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[
+                ["Condition", listing.condition],
+                ["Ships from", listing.location],
+              ].map(([k, v]) => (
+                <span key={k} className="detail-chip">
+                  <SpecIcon label={k} />
+                  <span className="text-muted">{k}</span>
+                  <b className="font-semibold">{v}</b>
+                </span>
+              ))}
+            </div>
 
             {(listing.benchmarkImages?.length ?? 0) > 0 && (
               <div className="mt-4">
@@ -218,13 +246,49 @@ export default async function ProductPage({
               </div>
             </Link>
           </div>
+
+          {perf && (
+            <div className="order-5 rounded-[10px] border border-line bg-card p-5">
+              <h2 className="eyebrow">Performance</h2>
+              <div className="mt-3 flex items-baseline justify-between text-[13.5px]">
+                <span className="text-muted">{perf.kind === "system" ? "Total Performance" : perf.kind === "gpu" ? "GPU Performance" : "CPU Performance"}</span>
+                <span className="font-semibold tabular-nums">{perf.score.toLocaleString()}</span>
+              </div>
+              <div className="perf-bar mt-1.5"><span className="perf-fill perf-score" style={{ width: `${Math.min(100, (perf.score / SCORE_MAX) * 100)}%` }} /></div>
+              <div className="mt-3 flex items-baseline justify-between text-[13.5px]">
+                <span className="text-muted">Price-to-Performance</span>
+                <span className="font-semibold tabular-nums">{perf.value.toFixed(1)}</span>
+              </div>
+              <div className="perf-bar mt-1.5"><span className="perf-fill perf-value" style={{ width: `${Math.min(100, (perf.value / VALUE_MAX) * 100)}%` }} /></div>
+              {res.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-[12.5px]">
+                  <span className="text-muted">Comfortable at</span>
+                  {res.map((r) => (
+                    <span key={r} className="rounded-full bg-trust-soft px-2.5 py-1 font-semibold text-trust">{r}</span>
+                  ))}
+                </div>
+              )}
+              {pairing && (
+                <p className="mt-3 rounded-md bg-deal-soft px-3 py-2 text-[12.5px] leading-snug text-ink">{pairing}</p>
+              )}
+              <p className="mt-3 text-[12px] leading-snug text-muted">
+                Estimates from the listed parts using typical benchmark results. Higher Price-to-Performance means more performance per dollar.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       {related.length > 0 && (
         <section className="mt-14">
           <h2 className="display mb-4 text-[24px]">More {sub?.name}</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div
+            className={`grid ${
+              listing.categorySlug === "full-systems"
+                ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+            }`}
+          >
             {related.map((l) => (
               <ProductCard key={l.id} listing={l} />
             ))}

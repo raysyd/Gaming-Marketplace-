@@ -9,9 +9,9 @@ export default async function BuyingPage() {
   const [orders, reviewableIds] = await Promise.all([queryBuyerOrders(), getReviewableOrderIds()]);
 
   return (
-    <div className="mx-auto max-w-[900px] px-4 py-10">
+    <div className="mx-auto max-w-[1100px] px-4 py-10 lg:px-6">
       <p className="eyebrow">Buying</p>
-      <h1 className="display mt-2 text-[30px]">Your orders</h1>
+      <h1 className="display mt-2 text-[34px]">Your orders</h1>
 
       {/* useSearchParams (reading the initial ?tab=) requires a Suspense
           boundary — see BuyingTabs's own comment for why tab switching

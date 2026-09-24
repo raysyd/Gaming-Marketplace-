@@ -48,7 +48,7 @@ export function BuyingTabs({
 
   return (
     <>
-      <div className="no-scrollbar mt-6 flex gap-1 overflow-x-auto">
+      <div className="no-scrollbar mt-6 flex gap-1 overflow-x-auto border-b border-line">
         {TABS.map((t) => {
           const count = orders.filter(t.match).length;
           return (
@@ -56,21 +56,21 @@ export function BuyingTabs({
               key={t.key}
               type="button"
               onClick={() => setActiveKey(t.key)}
-              className={`shrink-0 whitespace-nowrap rounded px-3 py-1.5 text-[12.5px] transition ${
+              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-[14px] transition ${
                 activeTab.key === t.key
-                  ? "bg-ink font-semibold text-white"
-                  : "border border-line hover:border-ink/40"
+                  ? "border-trust font-semibold text-trust"
+                  : "border-transparent text-muted hover:text-ink"
               }`}
             >
               {t.label}
-              {count > 0 && ` (${count})`}
+              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-[11.5px] font-semibold text-trust">{count}</span>}
             </button>
           );
         })}
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-[10px] border border-dashed border-line bg-card p-12 text-center">
+        <div className="mt-6 rounded-[14px] border border-dashed border-line bg-card p-14 text-center">
           <h2 className="display text-[20px]">Nothing here</h2>
           <p className="mt-2 text-[14px] text-muted">
             {activeTab.key === "to-pay"
@@ -89,9 +89,9 @@ export function BuyingTabs({
           {items.map((o) => (
             <li
               key={o.id}
-              className="flex flex-wrap items-center gap-4 rounded-[10px] border border-line bg-card p-4"
+              className="flex flex-wrap items-center gap-4 rounded-[14px] border border-line bg-card p-4 transition hover:border-ink/25"
             >
-              <div className="h-14 w-20 shrink-0 overflow-hidden rounded bg-ink">
+              <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
                 <ProductImage
                   src={o.listingImage}
                   alt={o.listingTitle ?? "Listing"}

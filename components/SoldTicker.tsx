@@ -31,19 +31,28 @@ export function SoldTicker({ initial }: { initial: SoldListing[] }) {
 
   if (!items.length) return null;
 
+  // Rendered twice back to back so the CSS marquee can loop seamlessly;
+  // the second copy is hidden from screen readers.
+  const row = (hidden: boolean) =>
+    items.map((s) => (
+      <Link
+        key={`${hidden ? "b" : "a"}-${s.listingId}`}
+        href={`/product/${s.listingId}/${s.slug}`}
+        tabIndex={hidden ? -1 : undefined}
+        aria-hidden={hidden || undefined}
+        className="spec shrink-0 whitespace-nowrap text-muted transition hover:text-ink"
+      >
+        <span className="live-dot mr-2 align-middle" aria-hidden="true" />
+        <span className="text-ink">{s.title}</span> sold for{" "}
+        <span className="font-semibold text-good">{money(s.price)}</span>
+      </Link>
+    ));
+
   return (
-    <div className="no-scrollbar overflow-x-auto border-y border-line bg-paper py-2.5">
-      <div className="flex w-max gap-6 px-4">
-        {items.map((s) => (
-          <Link
-            key={s.listingId}
-            href={`/product/${s.listingId}/${s.slug}`}
-            className="spec shrink-0 whitespace-nowrap text-muted transition hover:text-ink"
-          >
-            🔥 <span className="text-ink">{s.title}</span> sold for{" "}
-            <span className="font-semibold text-good">{money(s.price)}</span>
-          </Link>
-        ))}
+    <div className="ticker border-y border-line bg-paper py-2.5">
+      <div className="ticker-track flex w-max gap-10 px-4">
+        {row(false)}
+        {row(true)}
       </div>
     </div>
   );

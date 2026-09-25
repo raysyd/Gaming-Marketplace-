@@ -26,7 +26,10 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const guarded = ["/sell", "/dashboard", "/account", "/orders", "/buying", "/selling", "/builds/new"];
+  // /cart included: a guest can still fill the side panel, but opening the
+  // cart signs them in first — CartProvider then merges that guest cart
+  // into the account's own.
+  const guarded = ["/sell", "/dashboard", "/account", "/orders", "/buying", "/selling", "/builds/new", "/cart"];
 
   if (!user && guarded.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();

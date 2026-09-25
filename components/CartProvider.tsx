@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthProvider";
 import { BRAND } from "@/lib/brand";
 import type { Category } from "@/lib/types";
 
@@ -48,24 +49,74 @@ type Ctx = {
 };
 
 const CartCtx = createContext<Ctx | null>(null);
+/** The signed-out cart. Each account gets its own under `${KEY}.${userId}`. */
 const KEY = "sidegrade.cart";
 
+function readCart(key: string): CartItem[] {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Folds `extra` into `base`. The same listing in both keeps the larger
+ * quantity rather than the sum — most listings are one unit, and adding it
+ * as a guest after adding it signed-in is the same intent, not two.
+ */
+export function mergeCarts(base: CartItem[], extra: CartItem[]): CartItem[] {
+  const out = [...base];
+  for (const item of extra) {
+    const i = out.findIndex((o) => o.id === item.id);
+    if (i === -1) out.push(item);
+    else out[i] = { ...out[i], qty: Math.min(Math.max(out[i].qty, item.qty), Math.max(1, out[i].stock)) };
+  }
+  return out;
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(KEY);
-      if (raw) setItems(JSON.parse(raw));
-    } catch {}
-  }, []);
+  // One saved cart per account on this device, so signing out (or someone
+  // else signing in) never shows the last person's cart. Null while auth
+  // is still resolving — nothing is read or written until we know whose it is.
+  const storageKey = loading ? null : user ? `${KEY}.${user.id}` : KEY;
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const firstLoad = useRef(true);
 
   useEffect(() => {
+    if (!storageKey) return;
+    let saved = readCart(storageKey);
+    // Signing in carries the guest cart over into the account's cart, then
+    // empties it, so it doesn't come back after signing out.
+    if (storageKey !== KEY) {
+      const guest = readCart(KEY);
+      if (guest.length) {
+        saved = mergeCarts(saved, guest);
+        try {
+          window.localStorage.removeItem(KEY);
+        } catch {}
+      }
+    }
+    // Anything added in the moment before auth resolved belongs to this
+    // cart too. On later switches (sign-out) the old in-memory items are
+    // the previous account's, so they're dropped rather than merged.
+    const keepPending = firstLoad.current;
+    firstLoad.current = false;
+    setItems((prev) => (keepPending ? mergeCarts(saved, prev) : saved));
+    setLoadedKey(storageKey);
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!loadedKey || loadedKey !== storageKey) return;
     try {
-      window.localStorage.setItem(KEY, JSON.stringify(items));
+      window.localStorage.setItem(loadedKey, JSON.stringify(items));
     } catch {}
-  }, [items]);
+  }, [items, loadedKey, storageKey]);
 
   // Already-in-cart + "Add to cart" again bumps quantity by one (capped at
   // stock) instead of doing nothing — that's the only UI path to more than

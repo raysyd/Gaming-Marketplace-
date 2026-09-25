@@ -298,6 +298,12 @@ export function LoginForm() {
           : "We'll email you a one-time link. Open it on the device you want to sign in."}
       </p>
 
+      {next === "/cart" && (
+        <p className="mt-4 rounded-[10px] border border-trust/30 bg-trust/5 px-3 py-2 text-[13.5px] text-ink">
+          Sign in to check out. Everything in your cart comes with you.
+        </p>
+      )}
+
       {urlError && (
         <p className="spec mt-4 rounded border border-deal bg-deal-soft px-3 py-2 text-deal">
           Sign-in didn&apos;t complete: {urlError.replace(/_/g, " ")}. Try

@@ -24,23 +24,25 @@ export default async function SellerProfilePage({
   await connection();
   const { id } = await params;
 
-  const [{ items: listings }, reviews, stats, profile, plan] = await Promise.all([
+  // One round of queries, not two: only the repeat-buyer lookup needs the
+  // reviews (for the reviewer ids), so it chains off that one promise
+  // instead of holding everything else back until the first batch is done.
+  const reviewsPromise = getSellerReviews(id);
+  const [
+    { items: listings }, reviews, stats, profile, plan,
+    responseMinutes, repeatBuyerIds, recentlySold, builds,
+  ] = await Promise.all([
     queryListings({ sellerId: id, perPage: 48 }),
-    getSellerReviews(id),
+    reviewsPromise,
     getOneSellerStats(id),
     getProfile(id),
     getPremiumPlan(),
-  ]);
-  const premium = isPremiumActive(profile?.premiumStatus);
-
-  // Depend on `id` and `reviews` (for the reviewer ids), so these run
-  // after the batch above rather than joining it.
-  const [responseMinutes, repeatBuyerIds, recentlySold, builds] = await Promise.all([
     getSellerResponseMinutes(id),
-    getRepeatBuyerIds(id, reviews.map((r) => r.reviewerId)),
+    reviewsPromise.then((r) => getRepeatBuyerIds(id, r.map((x) => x.reviewerId))),
     getRecentlySold({ sellerId: id }),
     listBuildsByUser(id),
   ]);
+  const premium = isPremiumActive(profile?.premiumStatus);
 
   if (!listings.length && !reviews.length && !stats.salesCount && !profile) notFound();
 

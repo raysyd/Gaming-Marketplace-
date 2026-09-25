@@ -24,7 +24,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getClaims() verifies the session JWT locally (falling back to a network
+  // check only for legacy symmetric keys) and still refreshes an expired
+  // session. getUser() here cost a round trip to Supabase Auth before every
+  // single page rendered. Pages and API routes keep their own getUser()
+  // calls — this is only routing, not the authorization boundary.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? { id: claimsData.claims.sub } : null;
   const path = request.nextUrl.pathname;
   // /cart included: a guest can still fill the side panel, but opening the
   // cart signs them in first — CartProvider then merges that guest cart

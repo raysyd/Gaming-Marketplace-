@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { loadSupabase } from "@/lib/supabase/lazy-client";
 import { hasSupabase } from "@/lib/supabase/config";
 
 type AuthUser = { id: string; email: string } | null;
@@ -21,28 +21,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-    const supabase = createClient();
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    let alive = true;
+    let unsubscribe = () => {};
+    loadSupabase().then((supabase) => {
+      if (!alive) return;
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+      supabase.auth.getUser().then(({ data }) => {
+        if (!alive) return;
+        setUser(
+          data.user ? { id: data.user.id, email: data.user.email ?? "" } : null
+        );
+        setLoading(false);
+      });
 
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(
-        data.user ? { id: data.user.id, email: data.user.email ?? "" } : null
-      );
-      setLoading(false);
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+        setUser(
+          session?.user
+            ? { id: session.user.id, email: session.user.email ?? "" }
+            : null
+        );
+      });
+      unsubscribe = () => sub.subscription.unsubscribe();
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(
-        session?.user
-          ? { id: session.user.id, email: session.user.email ?? "" }
-          : null
-      );
-    });
-
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      alive = false;
+      unsubscribe();
+    };
   }, []);
 
   return (

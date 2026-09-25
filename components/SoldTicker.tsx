@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { money } from "@/lib/format";
-import { getRecentlySold, type SoldListing } from "@/lib/market-data";
+import type { SoldListing } from "@/lib/market-data";
 
 const POLL_MS = 25_000;
 
 /**
  * Homepage "just sold" ticker. Server-rendered from the same
  * getRecentlySold() (lib/market-data.ts) for the first paint — `initial`
- * — then polls that same public, security-definer RPC client-side to
- * pick up new sales. Deliberately not a raw postgres_changes
+ * — then polls /api/recently-sold (the same cached query) to pick up new
+ * sales. Deliberately not a raw postgres_changes
  * subscription on `orders`: that table's RLS restricts reads to the
  * buyer/seller, so a public homepage listener would receive nothing.
  * Polling is what actually works here, and stays honest about being
@@ -22,8 +22,13 @@ export function SoldTicker({ initial }: { initial: SoldListing[] }) {
 
   useEffect(() => {
     const poll = async () => {
-      const fresh = await getRecentlySold({ limit: 8 });
-      if (fresh.length) setItems(fresh);
+      try {
+        const res = await fetch("/api/recently-sold");
+        const fresh: SoldListing[] = res.ok ? await res.json() : [];
+        if (fresh.length) setItems(fresh);
+      } catch {
+        // Keep showing what's there; the next poll tries again.
+      }
     };
     const id = setInterval(poll, POLL_MS);
     return () => clearInterval(id);

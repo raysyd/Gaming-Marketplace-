@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
-import { createClient } from "@/lib/supabase/client";
+import { loadSupabase } from "@/lib/supabase/lazy-client";
 import { hasSupabase } from "@/lib/supabase/config";
 import {
   NOTIFICATION_COLUMNS,
@@ -50,9 +50,10 @@ export function NotificationBell() {
       setItems([]);
       return;
     }
-    const supabase = createClient();
-    if (!supabase) return;
     let alive = true;
+    let cleanup = () => {};
+    loadSupabase().then((supabase) => {
+    if (!supabase || !alive) return;
     supabase
       .from("notifications")
       .select(NOTIFICATION_COLUMNS)
@@ -77,9 +78,13 @@ export function NotificationBell() {
         }
       )
       .subscribe();
+    cleanup = () => {
+      supabase.removeChannel(channel);
+    };
+    });
     return () => {
       alive = false;
-      supabase.removeChannel(channel);
+      cleanup();
     };
   }, [demo, user]);
 
@@ -107,7 +112,7 @@ export function NotificationBell() {
       const now = new Date().toISOString();
       setItems((prev) => prev.map((n) => (ids.includes(n.id) ? { ...n, read_at: n.read_at ?? now } : n)));
       if (demo) return;
-      const supabase = createClient();
+      const supabase = await loadSupabase();
       await supabase?.from("notifications").update({ read_at: now }).in("id", ids);
     },
     [demo]

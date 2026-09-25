@@ -33,7 +33,14 @@ export type PriceStats = { saleCount: number; low: number; high: number };
 const MIN_COMPARABLE_SALES = 5;
 
 /** Market-value range for a subcategory — omitted (null) below MIN_COMPARABLE_SALES, so a range is never shown built on noise. */
-export async function getSubcategoryPriceStats(subcategorySlug: string): Promise<PriceStats | null> {
+/** Built from released sales, so it only moves when something sells —
+ * cached under the catalogue tag that sales already invalidate. */
+export const getSubcategoryPriceStats = unstable_cache(getSubcategoryPriceStatsUncached, ["subcategory-price-stats"], {
+  revalidate: 300,
+  tags: ["listings"],
+});
+
+async function getSubcategoryPriceStatsUncached(subcategorySlug: string): Promise<PriceStats | null> {
   const supabase = createPublicClient();
   if (!supabase) return null;
   const { data } = await supabase.rpc("subcategory_price_stats", { subcategory_slugs: [subcategorySlug] });

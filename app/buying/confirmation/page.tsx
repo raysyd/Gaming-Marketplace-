@@ -58,7 +58,7 @@ export default async function OrderConfirmationPage({
   return (
     <div className="mx-auto max-w-[640px] px-4 py-16">
       <p className="eyebrow text-good">Order confirmed</p>
-      <h1 className="display mt-2 text-[30px]">Thanks — it&apos;s on its way to being shipped.</h1>
+      <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Thanks — it&apos;s on its way to being shipped.</h1>
       <p className="spec mt-2 text-muted">
         Order {session.payment_intent ? String(session.payment_intent).slice(-8).toUpperCase() : session.id.slice(-8).toUpperCase()}
       </p>
@@ -91,7 +91,7 @@ export default async function OrderConfirmationPage({
           <li>2. The seller posts within {BRAND.orderWindowHours} hours and adds tracking.</li>
           <li>
             3. Once it arrives, confirm it from{" "}
-            <Link href="/buying" className="font-semibold text-trust hover:underline">
+            <Link href="/buying" className="inline-link">
               your orders
             </Link>{" "}
             and payment releases to the seller.

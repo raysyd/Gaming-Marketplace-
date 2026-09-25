@@ -59,11 +59,11 @@ export function AvatarUploader({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-trust">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[18px] bg-chrome-2 ring-2 ring-line ring-offset-2 ring-offset-card">
         {value ? (
           <Image src={value} alt="" fill sizes="64px" className="object-cover" />
         ) : (
-          <span className="grid h-full w-full place-items-center text-[20px] font-semibold text-white">
+          <span className="grid h-full w-full place-items-center font-[family-name:var(--font-display)] text-[24px] font-bold text-[#f3efe6]">
             {fallback}
           </span>
         )}
@@ -73,7 +73,7 @@ export function AvatarUploader({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="rounded-md border border-line px-3.5 py-2 text-[13px] font-semibold transition hover:border-ink/40 disabled:opacity-50"
+          className="btn btn-outline btn-sm"
         >
           {busy ? "Uploading…" : value ? "Change photo" : "Add photo"}
         </button>

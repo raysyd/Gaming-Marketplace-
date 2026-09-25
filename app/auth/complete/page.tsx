@@ -37,7 +37,7 @@ function CompleteAuthContent() {
         {error ? (
           <>
             <p className="eyebrow text-danger">Sign-in link unavailable</p>
-            <h1 className="display mt-2 text-[32px]">Request a fresh link</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Request a fresh link</h1>
             <p className="mt-3 text-[14px] text-muted">{error}</p>
             <p className="spec mt-3 text-muted">
               Magic links are single-use and sign in the device that opens the
@@ -53,7 +53,7 @@ function CompleteAuthContent() {
         ) : (
           <>
             <p className="eyebrow text-good">Signing you in</p>
-            <h1 className="display mt-2 text-[32px]">One moment</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">One moment</h1>
             <p className="mt-3 text-[14px] text-muted">Your account is being connected on this device.</p>
           </>
         )}

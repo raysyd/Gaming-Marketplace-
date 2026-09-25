@@ -68,11 +68,11 @@ export default function PrivacyPage() {
           <h2 className="text-[17px] font-semibold">Your account, your choices</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             You can edit or delete most of your profile at any time from{" "}
-            <Link href="/account" className="text-trust hover:underline">
+            <Link href="/account" className="inline-link">
               Account settings
             </Link>
             , and delete your account and its data from{" "}
-            <Link href="/account/delete" className="text-trust hover:underline">
+            <Link href="/account/delete" className="inline-link">
               Account → Delete account
             </Link>
             . Accounts with order history are retained for those
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
           <h2 className="text-[17px] font-semibold">Contact</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             Questions about this policy — see{" "}
-            <Link href="/contact" className="text-trust hover:underline">
+            <Link href="/contact" className="inline-link">
               Contact
             </Link>{" "}
             or email {BRAND.supportEmail}.

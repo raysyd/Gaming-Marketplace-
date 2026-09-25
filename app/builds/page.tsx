@@ -13,7 +13,7 @@ export default async function BuildsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="eyebrow">Community</p>
-          <h1 className="display mt-2 text-[30px]">Build showcase</h1>
+          <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Build showcase</h1>
           <p className="mt-1 text-[14px] text-muted">
             Real setups from real Sidegrade members — not for sale, just for showing off.
           </p>

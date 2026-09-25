@@ -11,7 +11,7 @@ export default async function BuyingPage() {
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-10 lg:px-6">
       <p className="eyebrow">Buying</p>
-      <h1 className="display mt-2 text-[34px]">Your orders</h1>
+      <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Your orders</h1>
 
       {/* useSearchParams (reading the initial ?tab=) requires a Suspense
           boundary — see BuyingTabs's own comment for why tab switching
@@ -22,7 +22,7 @@ export default async function BuyingPage() {
 
       <p className="spec mt-6 text-muted">
         {BRAND.name} holds payment until you confirm delivery — see{" "}
-        <Link href="/trust" className="font-semibold text-trust hover:underline">
+        <Link href="/trust" className="inline-link">
           how buyer protection works
         </Link>
         .

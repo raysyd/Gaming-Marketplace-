@@ -413,7 +413,7 @@ export function Messenger({
   if (conversations.length === 0) {
     return (
       <div className="mx-auto max-w-[1560px] px-4 py-20 text-center lg:px-6">
-        <h1 className="display text-[26px]">No conversations yet</h1>
+        <h1 className="display text-[clamp(30px,4vw,42px)]">No conversations yet</h1>
         <p className="mt-2 text-[14px] text-muted">
           Message a seller from any listing and the thread shows up here.
         </p>
@@ -721,7 +721,7 @@ export function Messenger({
             </div>
             <p className="spec mt-2 text-muted">
               Keep payment on {""}
-              <Link href="/cart" className="text-trust hover:underline">
+              <Link href="/cart" className="inline-link">
                 the platform
               </Link>{" "}
               — off-site payments aren&apos;t covered if something goes wrong.

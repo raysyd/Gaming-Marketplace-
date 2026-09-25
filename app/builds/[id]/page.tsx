@@ -20,7 +20,7 @@ export default async function BuildPage({ params }: { params: Promise<{ id: stri
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="display text-[28px]">{build.title}</h1>
+          <h1 className="display text-[clamp(30px,4vw,42px)]">{build.title}</h1>
           <p className="spec mt-1 text-muted">
             {build.authorName} · {timeAgo(build.createdAt)}
           </p>

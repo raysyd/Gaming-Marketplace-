@@ -64,7 +64,7 @@ export default function DeleteAccountPage() {
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
       <div className="w-full panel p-6 sm:p-8">
         <p className="eyebrow text-danger">Danger zone</p>
-        <h1 className="display mt-2 text-[26px]">Delete your account</h1>
+        <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Delete your account</h1>
         <p className="mt-3 text-[14px] text-muted">
           This permanently deletes your {BRAND.name} account — your profile,
           listings, messages, offers and saved items. It can&apos;t be undone.

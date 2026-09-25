@@ -9,17 +9,15 @@ export function ListingUsageBar({ count, limit }: { count: number; limit: number
   const pct = limit > 0 ? Math.min(100, Math.round((count / limit) * 100)) : 0;
   const atLimit = count >= limit;
   return (
-    <div className="mt-3">
-      <div className="flex items-baseline justify-between">
-        <span className="spec text-muted">
-          {count} of {limit} listings used
+    <div className="relative mt-4 max-w-md">
+      <div className="flex items-baseline justify-between text-[12.5px]">
+        <span className="text-muted">Listings used</span>
+        <span className={`font-semibold tabular-nums ${atLimit ? "text-deal" : "text-ink"}`}>
+          {count} / {limit}
         </span>
       </div>
-      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-line">
-        <div
-          className={`h-full rounded-full ${atLimit ? "bg-deal" : "bg-trust"}`}
-          style={{ width: `${pct}%` }}
-        />
+      <div className="perf-bar mt-1.5">
+        <span className={`perf-fill ${atLimit ? "perf-value" : "perf-score"}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

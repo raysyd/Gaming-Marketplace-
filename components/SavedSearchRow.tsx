@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Icon } from "./ui/Icon";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -16,8 +17,9 @@ export function SavedSearchRow({ id, label, href }: { id: string; label: string;
   };
 
   return (
-    <li className="flex items-center justify-between gap-3 panel p-4">
-      <Link href={href} className="text-[14px] font-semibold hover:text-trust">
+    <li className="card-lift flex items-center justify-between gap-3 panel p-4">
+      <Link href={href} className="inline-flex items-center gap-2.5 text-[14.5px] font-semibold transition hover:text-deal">
+        <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-trust-soft text-trust"><Icon name="bell" size={16} /></span>
         {label}
       </Link>
       <button

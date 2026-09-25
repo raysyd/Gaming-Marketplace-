@@ -18,7 +18,7 @@ export default function ContactPage() {
 
       <div className="mt-10 max-w-2xl">
         <p className="eyebrow">Contact</p>
-        <h1 className="display mt-2 text-[32px]">Get in touch</h1>
+        <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Get in touch</h1>
         <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
           Most things are faster to resolve from inside your account — a few
           common ones are below. For anything else, email us directly.

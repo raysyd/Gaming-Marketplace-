@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Icon } from "./ui/Icon";
 import { money } from "@/lib/format";
 import { ListingUsageBar } from "./ListingUsageBar";
 
@@ -39,21 +40,25 @@ export function PremiumCard({
   };
 
   return (
-    <div className="mt-6 panel p-5">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="eyebrow">{badgeLabel}</h2>
-        {active && (
-          <span className="spec rounded bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">Active</span>
-        )}
+    <section className="panel relative overflow-hidden p-6 sm:p-8">
+      <span className="perfboard pointer-events-none absolute inset-y-0 right-0 w-1/2 opacity-60 [mask-image:linear-gradient(90deg,transparent,#000)]" aria-hidden="true" />
+      <div className="relative flex items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2.5">
+          <span className="grid h-9 w-9 place-items-center rounded-[10px] bg-gold-soft text-gold">
+            <Icon name="sparkle" size={18} />
+          </span>
+          <span className="display text-[24px]">{badgeLabel}</span>
+        </h2>
+        {active && <span className="badge badge-gold">Active</span>}
       </div>
-      <p className="mt-2 max-w-md text-[13.5px] text-muted">
+      <p className="relative mt-3 max-w-md text-[14px] leading-relaxed text-muted">
         {active
           ? `You have up to ${listingLimit} active listings and ${maxPhotos} photos per listing, plus the ${badgeLabel} badge on your profile.`
           : `Up to ${listingLimit} active listings, ${maxPhotos} photos per listing, and the ${badgeLabel} badge — ${money(
               monthlyPriceCents / 100
             )}/month.`}
       </p>
-      <p className="spec mt-1 text-muted">
+      <p className="relative mt-1 text-[12.5px] text-muted">
         A paid badge, not an identity check — separate from Verified.
       </p>
       <ListingUsageBar count={activeListingCount} limit={listingLimit} />
@@ -61,10 +66,10 @@ export function PremiumCard({
       <button
         onClick={() => go(active ? "/api/premium/portal" : "/api/premium/checkout")}
         disabled={busy}
-        className="mt-3 rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+        className={`btn relative mt-5 ${active ? "btn-outline" : "btn-dark"}`}
       >
         {busy ? "Loading…" : active ? "Manage subscription" : `Upgrade to ${badgeLabel}`}
       </button>
-    </div>
+    </section>
   );
 }

@@ -332,7 +332,7 @@ export function SellForm({
     return (
       <div className="mx-auto max-w-[560px] px-4 py-24 text-center">
         <p className="eyebrow text-good">Listing live</p>
-        <h1 className="display mt-2 text-[30px]">{form.title} is on the market.</h1>
+        <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">{form.title} is on the market.</h1>
         <p className="mt-3 text-[14px] text-muted">
           Buyers can message you from the listing. You&apos;ll get{" "}
           {money(price - fee)} once delivery is confirmed.
@@ -535,7 +535,7 @@ export function SellForm({
                 placeholder="e.g. 1500"
                 className="input"
               />
-              <p className="spec mt-1.5 text-muted">Powers the estimated-shipping figure buyers see.</p>
+              <p className="hint">Powers the estimated-shipping figure buyers see.</p>
             </Field>
           </div>
 
@@ -547,7 +547,7 @@ export function SellForm({
 
           <Field label={`Benchmark screenshots (optional) — ${benchmarkPhotos.length} of 6`}>
             <PhotoUploader photos={benchmarkPhotos} onChange={setBenchmarkPhotos} min={0} max={6} />
-            <p className="spec mt-1.5 text-muted">
+            <p className="hint">
               GPU-Z, CPU-Z, 3DMark, Cinebench, CrystalDiskInfo — real proof beats a
               claim. Adds a "Performance Verified" badge to your listing.
             </p>
@@ -720,7 +720,7 @@ function Step({ n, title, hint, children }: { n: number; title: string; hint: st
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="eyebrow mb-1.5 block">{label}</span>
+      <span className="label">{label}</span>
       {children}
     </label>
   );

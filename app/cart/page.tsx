@@ -61,7 +61,7 @@ export default function CartPage() {
           <path d="M3 4h2l2.4 11.2a2 2 0 002 1.6h7.9a2 2 0 002-1.5L21 8H6.2" />
           <circle cx="10" cy="20.5" r="1.3" /><circle cx="17" cy="20.5" r="1.3" />
         </svg>
-        <h1 className="display mt-4 text-[30px]">Your cart is empty</h1>
+        <h1 className="display mt-4 text-[clamp(30px,4vw,42px)]">Your cart is empty</h1>
         <p className="mt-2 text-[14.5px] text-muted">
           Find a card, a rig or a monitor and it&apos;ll show up here.
         </p>
@@ -76,7 +76,7 @@ export default function CartPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Checkout</p>
-          <h1 className="display mt-1 text-[34px]">
+          <h1 className="display mt-1 text-[clamp(30px,4vw,42px)]">
             Your cart <span className="text-[18px] font-medium text-muted">{items.reduce((n, i) => n + i.qty, 0)} items</span>
           </h1>
         </div>
@@ -162,7 +162,7 @@ export default function CartPage() {
 
           {pickupOffered && (
             <div className="mt-4">
-              <span className="eyebrow mb-2 block">Delivery</span>
+              <span className="label">Delivery</span>
               <div className="grid grid-cols-2 gap-2">
                 {(["shipping", "pickup"] as const).map((f) => (
                   <label

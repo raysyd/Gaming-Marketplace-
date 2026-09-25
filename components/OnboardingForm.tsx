@@ -43,32 +43,32 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
   };
 
   return (
-    <main className="mx-auto max-w-[560px] px-4 py-16">
+    <main className="mx-auto max-w-[600px] px-4 py-12 lg:py-16">
       <p className="eyebrow">Welcome to {BRAND.name}</p>
-      <h1 className="display mt-2 text-[28px]">Set up your profile</h1>
+      <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Set up your profile</h1>
       <p className="mt-2 text-[14px] text-muted">
         Signed in as {email}. This is what buyers and sellers see when they
         deal with you — it takes a minute.
       </p>
 
-      <div className="mt-8 space-y-5 panel p-6">
+      <div className="mt-8 space-y-5 panel p-6 sm:p-8">
         <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />
 
         <label className="block">
-          <span className="eyebrow mb-1.5 block">Display name</span>
+          <span className="label">Display name</span>
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value.slice(0, 80))}
             placeholder="e.g. Alex Chen"
             className="input"
           />
-          <p className="spec mt-1.5 text-muted">
+          <p className="hint">
             This is the name buyers see on your public seller profile.
           </p>
         </label>
 
         <label className="block">
-          <span className="eyebrow mb-1.5 block">Username</span>
+          <span className="label">Username</span>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
@@ -76,7 +76,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
             className="input"
             maxLength={20}
           />
-          <p className="spec mt-1.5 text-muted">
+          <p className="hint">
             Permanent — this can&apos;t be changed later, so it stays a reliable way to
             find your history on the platform. Lowercase letters, numbers and
             underscores, 3-20 characters.
@@ -84,7 +84,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
         </label>
 
         <label className="block">
-          <span className="eyebrow mb-1.5 block">Bio (optional)</span>
+          <span className="label">Bio (optional)</span>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value.slice(0, 500))}
@@ -96,7 +96,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="eyebrow mb-1.5 block">Suburb (optional)</span>
+            <span className="label">Suburb (optional)</span>
             <input
               value={suburb}
               onChange={(e) => setSuburb(e.target.value)}
@@ -105,7 +105,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
             />
           </label>
           <label className="block">
-            <span className="eyebrow mb-1.5 block">State (optional)</span>
+            <span className="label">State (optional)</span>
             <select value={state} onChange={(e) => setState(e.target.value)} className="input">
               <option value="">Select…</option>
               {AU_STATES.map((s) => (

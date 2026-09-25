@@ -35,7 +35,7 @@ export default function AboutPage() {
             Payment is held by {BRAND.name} the moment a buyer checks out, and
             only released to the seller once the buyer confirms the item
             arrived — minus a {BRAND.feePercent}% fee. Full detail on{" "}
-            <Link href="/trust" className="text-trust hover:underline">
+            <Link href="/trust" className="inline-link">
               Trust &amp; Safety
             </Link>
             .
@@ -46,11 +46,11 @@ export default function AboutPage() {
           <h2 className="text-[17px] font-semibold">Questions</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             See{" "}
-            <Link href="/contact" className="text-trust hover:underline">
+            <Link href="/contact" className="inline-link">
               Contact
             </Link>{" "}
             for the fastest way to reach us, or email{" "}
-            <a href={`mailto:${BRAND.supportEmail}`} className="text-trust hover:underline">
+            <a href={`mailto:${BRAND.supportEmail}`} className="inline-link">
               {BRAND.supportEmail}
             </a>{" "}
             directly.

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/ui/Icon";
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
@@ -123,24 +124,24 @@ export default function SecuritySettingsPage() {
   const verifiedFactor = factors?.find((f) => f.status === "verified") ?? null;
 
   return (
-    <main className="mx-auto max-w-[560px] px-4 py-16">
+    <main className="mx-auto max-w-[620px] px-4 py-12 lg:py-16">
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-2 text-[28px]">Two-factor authentication</h1>
+      <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Two-factor authentication</h1>
       <p className="mt-2 text-[14px] text-muted">
         Optional for buyers. Required before connecting a payout account as a
         seller — see{" "}
-        <Link href="/selling#payouts" className="text-trust hover:underline">
+        <Link href="/selling#payouts" className="inline-link">
           Payouts
         </Link>
         .
       </p>
 
-      {notice && <p className="spec mt-4 font-semibold text-good">{notice}</p>}
-      {error && <p className="text-[13px] font-medium text-danger mt-4">{error}</p>}
+      {notice && <p className="alert alert-success mt-5"><Icon name="check-circle" size={16} />{notice}</p>}
+      {error && <p className="alert alert-danger mt-5"><Icon name="warning" size={16} />{error}</p>}
 
       {factors === null ? null : verifiedFactor ? (
-        <div className="mt-6 rounded-[10px] border border-good/40 bg-card p-5">
-          <p className="text-[14px] font-semibold text-good">✓ Enabled</p>
+        <div className="panel mt-6 border-good/40 p-6">
+          <p className="flex items-center gap-2 text-[15px] font-semibold text-good"><Icon name="shield" size={18} /> Enabled</p>
           <p className="mt-1 text-[13.5px] text-muted">
             {verifiedFactor.friendly_name ?? "Authenticator app"} is protecting sign-in.
           </p>
@@ -148,21 +149,21 @@ export default function SecuritySettingsPage() {
             type="button"
             onClick={() => removeFactor(verifiedFactor.id)}
             disabled={busy}
-            className="mt-4 rounded-md border border-deal px-4 py-2 text-[13px] font-semibold text-deal transition hover:bg-deal-soft disabled:opacity-50"
+            className="btn btn-outline btn-sm mt-4 !text-danger hover:!border-danger"
           >
             Turn off
           </button>
         </div>
       ) : enrolling ? (
-        <div className="mt-6 panel p-5">
-          <p className="text-[14px] font-semibold">Scan this in your authenticator app</p>
+        <div className="mt-6 panel p-6">
+          <p className="text-[15px] font-semibold">Scan this in your authenticator app</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={enrolling.qrCode} alt="TOTP QR code" className="mt-3 h-44 w-44" />
+          <img src={enrolling.qrCode} alt="TOTP QR code" className="mt-4 h-44 w-44 rounded-[12px] border border-line bg-white p-2" />
           <p className="spec mt-2 text-muted">
             Can&apos;t scan it? Enter this key manually:{" "}
             <code className="rounded bg-paper px-1.5 py-0.5">{enrolling.secret}</code>
           </p>
-          <label htmlFor="totp-code" className="eyebrow mt-4 block">
+          <label htmlFor="totp-code" className="label mt-5">
             6-digit code
           </label>
           <div className="mt-1.5 flex gap-2">
@@ -172,7 +173,7 @@ export default function SecuritySettingsPage() {
               onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
               inputMode="numeric"
               placeholder="123456"
-              className="input w-32"
+              className="input w-36 text-center font-[family-name:var(--font-tag)] tracking-[0.3em]"
             />
             <button
               type="button"
@@ -186,7 +187,7 @@ export default function SecuritySettingsPage() {
           <button
             type="button"
             onClick={() => setEnrolling(null)}
-            className="spec mt-3 text-muted underline"
+            className="btn btn-ghost btn-sm mt-3 text-muted"
           >
             Cancel
           </button>
@@ -202,7 +203,7 @@ export default function SecuritySettingsPage() {
         </button>
       )}
 
-      <p className="spec mt-8 border-t border-line pt-4 text-muted">
+      <p className="mt-10 border-t border-dashed border-line-strong pt-5 text-[13px] text-muted">
         No separate recovery codes — if you lose access to your authenticator,
         contact {BRAND.supportEmail} to verify your identity and reset it.
         Enrolling a second device as backup is the more reliable option.

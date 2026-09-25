@@ -65,7 +65,7 @@ function ConfirmDeleteContent() {
         ) : linkError ? (
           <>
             <p className="eyebrow text-deal">Link unavailable</p>
-            <h1 className="display mt-2 text-[26px]">Request a fresh link</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Request a fresh link</h1>
             <p className="mt-3 text-[14px] text-muted">{linkError}</p>
             <a
               href="/account/delete"
@@ -77,7 +77,7 @@ function ConfirmDeleteContent() {
         ) : status === "done" ? (
           <>
             <p className="eyebrow text-good">Account deleted</p>
-            <h1 className="display mt-2 text-[26px]">Sorry to see you go</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Sorry to see you go</h1>
             <p className="mt-3 text-[14px] text-muted">
               Your {BRAND.name} account has been permanently deleted. Taking you home…
             </p>
@@ -85,7 +85,7 @@ function ConfirmDeleteContent() {
         ) : (
           <>
             <p className="eyebrow text-deal">Last step</p>
-            <h1 className="display mt-2 text-[26px]">Permanently delete this account?</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Permanently delete this account?</h1>
             <p className="mt-3 text-[14px] text-muted">
               This can&apos;t be undone. Your profile, listings, messages, offers
               and saved items will all be removed.

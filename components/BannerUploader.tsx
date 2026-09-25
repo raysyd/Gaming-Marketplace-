@@ -51,7 +51,7 @@ export function BannerUploader({ value, onChange }: { value: string; onChange: (
 
   return (
     <div>
-      <div className="relative h-28 w-full overflow-hidden rounded-md bg-trust-soft sm:h-36">
+      <div className="perfboard relative h-28 w-full overflow-hidden rounded-[12px] border border-dashed border-line-strong bg-paper sm:h-36">
         {value && <Image src={value} alt="" fill sizes="(max-width: 640px) 100vw, 640px" className="object-cover" />}
       </div>
       <div className="mt-2 flex items-center gap-2">
@@ -59,7 +59,7 @@ export function BannerUploader({ value, onChange }: { value: string; onChange: (
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="rounded-md border border-line px-3.5 py-2 text-[13px] font-semibold transition hover:border-ink/40 disabled:opacity-50"
+          className="btn btn-outline btn-sm"
         >
           {busy ? "Uploading…" : value ? "Change banner" : "Add banner"}
         </button>
@@ -67,7 +67,7 @@ export function BannerUploader({ value, onChange }: { value: string; onChange: (
           <button
             type="button"
             onClick={() => onChange("")}
-            className="text-[13px] font-medium text-muted hover:text-ink"
+            className="btn btn-ghost btn-sm text-muted"
           >
             Remove
           </button>

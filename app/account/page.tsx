@@ -4,6 +4,7 @@ import { getAuthedUser } from "@/lib/supabase/server";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { AccountSettingsForm } from "@/components/AccountSettingsForm";
 import { PremiumCard } from "@/components/PremiumCard";
+import { Icon } from "@/components/ui/Icon";
 
 export default async function AccountPage() {
   const { supabase, user } = await getAuthedUser();
@@ -45,22 +46,22 @@ export default async function AccountPage() {
   if (!profile?.username) redirect("/account/onboarding?next=/account");
 
   return (
-    <main className="mx-auto max-w-[1100px] px-4 py-12 lg:px-6">
-      <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-trust text-[22px] font-bold text-white">
+    <main className="mx-auto max-w-[1180px] px-4 py-10 lg:px-8 lg:py-14">
+      <div className="flex items-center gap-5">
+        <span className="grid h-16 w-16 shrink-0 -rotate-3 place-items-center overflow-hidden rounded-[18px] bg-chrome-2 font-[family-name:var(--font-display)] text-[28px] font-bold text-[#f3efe6] shadow-[var(--shadow-md)]">
           {(profile.display_name || profile.username || "?")[0].toUpperCase()}
         </span>
-        <div>
+        <div className="min-w-0">
           <p className="eyebrow">Account</p>
-          <h1 className="display mt-1 text-[34px]">Settings</h1>
-          <p className="mt-1 text-[14px] text-muted">
+          <h1 className="display mt-1 text-[clamp(32px,4vw,44px)]">Settings</h1>
+          <p className="mt-1 truncate text-[14px] text-muted">
             @{profile.username} · {user.email}
           </p>
         </div>
       </div>
 
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_300px]">
-      <div className="min-w-0">
+      <div className="mt-10 grid items-start gap-8 lg:grid-cols-[1fr_320px]">
+      <div className="min-w-0 space-y-6">
 
       <AccountSettingsForm
         displayName={profile.display_name ?? ""}
@@ -91,7 +92,7 @@ export default async function AccountPage() {
           limit) — this just makes that policy visible instead of a silent
           surprise the next time they try to list something. */}
       {!premium && (activeCount ?? 0) > plan.freeListingLimit && (
-        <div className="mt-4 rounded-[10px] border border-deal/40 bg-deal-soft px-4 py-3.5 text-[13.5px] leading-relaxed text-ink">
+        <div className="alert alert-warn">
           <strong>
             You have {activeCount} active listings, over the free plan&apos;s {plan.freeListingLimit}-listing limit.
           </strong>{" "}
@@ -103,34 +104,31 @@ export default async function AccountPage() {
       </div>
 
       <nav aria-label="Account sections" className="grid gap-3 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
-        <Link
-          href="/selling#payouts"
-          className="card-hover panel p-5"
-        >
-          <p className="text-[14px] font-semibold">Payout settings</p>
-          <p className="spec mt-1 text-muted">
-            Connect or manage your Stripe payout account. {" "}
-            Sidegrade never collects or stores your bank details or ABN itself.
-          </p>
-        </Link>
-        <Link
-          href="/account/security"
-          className="card-hover panel p-5"
-        >
-          <p className="text-[14px] font-semibold">Security</p>
-          <p className="spec mt-1 text-muted">Two-factor authentication.</p>
-        </Link>
-        <Link
-          href="/account/searches"
-          className="card-hover panel p-5"
-        >
-          <p className="text-[14px] font-semibold">Saved searches</p>
-          <p className="spec mt-1 text-muted">Get emailed when a new listing matches.</p>
-        </Link>
+        {(
+          [
+            ["/selling#payouts", "wallet", "Payout settings", `Connect or manage your Stripe payout account. ${"Sidegrade"} never collects or stores your bank details or ABN itself.`],
+            ["/account/security", "key", "Security", "Two-factor authentication."],
+            ["/account/searches", "bell", "Saved searches", "Get emailed when a new listing matches."],
+          ] as const
+        ).map(([href, icon, title, body]) => (
+          <Link key={href} href={href} className="card-lift group panel flex items-start gap-3.5 p-5">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-trust-soft text-trust transition group-hover:bg-signal group-hover:text-signal-ink">
+              <Icon name={icon} size={19} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center justify-between text-[15px] font-semibold">
+                {title}
+                <Icon name="chevron-right" size={16} className="text-muted transition group-hover:translate-x-0.5" />
+              </span>
+              <span className="mt-1 block text-[13px] leading-relaxed text-muted">{body}</span>
+            </span>
+          </Link>
+        ))}
         <Link
           href="/account/delete"
-          className="rounded-[14px] border border-dashed border-line p-4 text-[13.5px] font-semibold text-[#e11d48] transition hover:border-[#e11d48]/50 hover:bg-[#e11d48]/5"
+          className="flex items-center gap-2 rounded-[12px] border border-dashed border-line-strong p-4 text-[13.5px] font-semibold text-danger transition hover:border-danger hover:bg-danger-soft"
         >
+          <Icon name="trash" size={16} />
           Delete account
         </Link>
       </nav>

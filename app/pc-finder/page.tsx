@@ -57,7 +57,7 @@ export default function PcFinder() {
     return (
       <div className="mx-auto max-w-[560px] px-4 py-20 text-center">
         <p className="eyebrow text-deal">Your match</p>
-        <h1 className="display mt-2 text-[30px]">
+        <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">
           {answers.res === "4k"
             ? "You want a 4K-capable build"
             : answers.res === "1440p"
@@ -102,7 +102,7 @@ export default function PcFinder() {
           style={{ width: `${(step / STEPS.length) * 100}%` }}
         />
       </div>
-      <h1 className="display mt-6 text-[30px]">{current.question}</h1>
+      <h1 className="display mt-6 text-[clamp(30px,4vw,42px)]">{current.question}</h1>
       <div className="mt-6 space-y-2">
         {current.options.map(([label, value]) => (
           <button

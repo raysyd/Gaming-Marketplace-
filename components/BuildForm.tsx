@@ -48,7 +48,7 @@ export function BuildForm() {
   return (
     <div className="space-y-5 panel p-6">
       <label className="block">
-        <span className="eyebrow mb-1.5 block">Title</span>
+        <span className="label">Title</span>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value.slice(0, 120))}
@@ -58,12 +58,12 @@ export function BuildForm() {
       </label>
 
       <label className="block">
-        <span className="eyebrow mb-1.5 block">Photos</span>
+        <span className="label">Photos</span>
         <PhotoUploader photos={photos} onChange={setPhotos} min={0} max={10} />
       </label>
 
       <label className="block">
-        <span className="eyebrow mb-1.5 block">Description (optional)</span>
+        <span className="label">Description (optional)</span>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value.slice(0, 2000))}
@@ -74,7 +74,7 @@ export function BuildForm() {
       </label>
 
       <label className="block">
-        <span className="eyebrow mb-1.5 block">FPS / benchmark notes (optional)</span>
+        <span className="label">FPS / benchmark notes (optional)</span>
         <input
           value={fpsNotes}
           onChange={(e) => setFpsNotes(e.target.value.slice(0, 1000))}
@@ -84,7 +84,7 @@ export function BuildForm() {
       </label>
 
       <div>
-        <span className="eyebrow mb-1.5 block">Specs (optional)</span>
+        <span className="label">Specs (optional)</span>
         <div className="space-y-2">
           {specs.map((s, i) => (
             <div key={i} className="flex gap-2">

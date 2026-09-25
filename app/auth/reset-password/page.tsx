@@ -83,7 +83,7 @@ function ResetPasswordContent() {
         ) : linkError ? (
           <div className="text-center">
             <p className="eyebrow text-danger">Reset link unavailable</p>
-            <h1 className="display mt-2 text-[32px]">Request a fresh link</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Request a fresh link</h1>
             <p className="mt-3 text-[14px] text-muted">{linkError}</p>
             <p className="spec mt-3 text-muted">
               Reset links are single-use and only work on the device that
@@ -99,12 +99,12 @@ function ResetPasswordContent() {
         ) : status === "done" ? (
           <div className="text-center">
             <p className="eyebrow text-good">Password updated</p>
-            <h1 className="display mt-2 text-[32px]">You&apos;re all set</h1>
+            <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">You&apos;re all set</h1>
             <p className="mt-3 text-[14px] text-muted">Taking you to your dashboard…</p>
           </div>
         ) : (
           <>
-            <h1 className="display text-[32px]">Set a new password</h1>
+            <h1 className="display text-[clamp(30px,4vw,42px)]">Set a new password</h1>
             <p className="mt-2 text-[14px] text-muted">
               Choose a new password for your {BRAND.name} account.
             </p>

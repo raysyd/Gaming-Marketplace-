@@ -180,7 +180,7 @@ export default async function ProductPage({
                     </a>
                   ))}
                 </div>
-                <p className="spec mt-1.5 text-muted">
+                <p className="hint">
                   Seller-provided benchmark screenshots — not independently verified by {BRAND.name}.
                 </p>
               </div>

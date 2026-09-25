@@ -33,7 +33,7 @@ export default async function SellingPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Selling</p>
-          <h1 className="display mt-2 text-[34px]">Your shop</h1>
+          <h1 className="display mt-2 text-[clamp(30px,4vw,42px)]">Your shop</h1>
         </div>
         <Link
           href="/sell"

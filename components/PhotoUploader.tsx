@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { Icon } from "./ui/Icon";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
@@ -79,35 +80,36 @@ export function PhotoUploader({
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
         {photos.map((src, i) => (
           <div
             key={src + i}
-            className="relative h-20 w-24 overflow-hidden rounded border border-line bg-ink"
+            className="rise group relative aspect-[4/3] overflow-hidden rounded-[10px] border border-line bg-chrome"
           >
-            <Image src={src} alt="" fill sizes="96px" className="object-cover" />
+            <Image src={src} alt={`Photo ${i + 1}`} fill sizes="160px" className="object-cover" />
             <button
+              type="button"
               onClick={() => onChange(photos.filter((_, j) => j !== i))}
-              aria-label="Remove photo"
-              className="spec absolute right-0 top-0 bg-ink px-1.5 py-0.5 text-white"
+              aria-label={`Remove photo ${i + 1}`}
+              className="absolute right-1.5 top-1.5 grid h-7 w-7 !min-h-0 place-items-center rounded-full bg-[#17150f]/80 text-white opacity-90 transition hover:bg-danger hover:opacity-100"
             >
-              ×
+              <Icon name="x" size={14} strokeWidth={2.4} />
             </button>
             {i === 0 && (
-              <span className="spec absolute bottom-0 left-0 bg-deal px-1 text-white">
-                Main
-              </span>
+              <span className="sticker absolute bottom-1.5 left-1.5 !text-[10px]">Cover</span>
             )}
           </div>
         ))}
 
         {photos.length < max && (
           <button
+            type="button"
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="h-20 w-24 rounded border border-dashed border-line text-[12px] text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-50"
+            className="flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-[10px] border-2 border-dashed border-line-strong bg-paper text-[12.5px] font-semibold text-muted transition hover:border-ink hover:text-ink disabled:opacity-50"
           >
-            {busy ? "Uploading…" : "+ Add photos"}
+            {busy ? <span className="spinner" aria-hidden="true" /> : <Icon name="camera" size={22} />}
+            {busy ? "Uploading…" : "Add photos"}
           </button>
         )}
       </div>
@@ -121,7 +123,7 @@ export function PhotoUploader({
         className="hidden"
       />
 
-      <p className="spec mt-2 text-muted">
+      <p className="hint">
         {min}–{max} photos, JPG/PNG/WebP/GIF. Animated GIFs are fine.
         Photograph the actual unit — buyers skip listings that use press shots
         or stock photos. The first photo is what shows in search.

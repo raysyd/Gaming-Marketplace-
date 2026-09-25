@@ -75,6 +75,7 @@ export async function queryMessengerData(): Promise<{
       offerId: m.offer_id ?? undefined,
       offerStatus: m.offers?.status as Message["offerStatus"],
       offerCounterAmount: m.offers?.counter_amount ? Number(m.offers.counter_amount) : undefined,
+      imageUrl: m.image_url ?? undefined,
       createdAt: m.created_at,
     });
   }

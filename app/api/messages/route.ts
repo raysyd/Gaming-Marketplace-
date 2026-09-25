@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { nameFromEmail } from "@/lib/profile-name";
+import { isChatImagePathFor } from "@/lib/chat-images";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -13,9 +14,15 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
 
-  const { conversationId, listingId, body } = await req.json();
-  if (!body?.trim())
+  const { conversationId, listingId, body, imagePath } = await req.json();
+  // A photo can only go into a thread that already exists — its storage
+  // folder is the conversation id, which a brand-new thread doesn't have yet.
+  const isImage = imagePath != null;
+  if (isImage && !(typeof conversationId === "string" && isChatImagePathFor(imagePath, conversationId)))
+    return NextResponse.json({ error: "That photo can't be attached here." }, { status: 400 });
+  if (!isImage && !body?.trim())
     return NextResponse.json({ error: "Message is empty." }, { status: 400 });
+  const text = isImage ? (typeof body === "string" && body.trim()) || "Photo" : body;
 
   const supabase = await createClient();
   if (!supabase) {
@@ -91,14 +98,17 @@ export async function POST(req: Request) {
     conversation_id: realConversationId,
     listing_id: listingId ?? null,
     sender_id: user.id,
-    body,
-    kind: "text",
+    body: text,
+    kind: isImage ? "image" : "text",
+    // Only sent for photos, so text keeps working on a database that
+    // hasn't had supabase/24-chat-images.sql applied yet.
+    ...(isImage ? { image_url: imagePath } : {}),
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   await supabase
     .from("conversations")
-    .update({ last_message: body, updated_at: new Date().toISOString() })
+    .update({ last_message: isImage ? "Photo" : text, updated_at: new Date().toISOString() })
     .eq("id", realConversationId);
 
   return NextResponse.json({ ok: true, persisted: true, conversationId: realConversationId });

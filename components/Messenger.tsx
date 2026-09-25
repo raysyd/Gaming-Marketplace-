@@ -8,6 +8,14 @@ import { ProductImage } from "./ProductImage";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
 import { useAuth } from "./AuthProvider";
+import {
+  CHAT_IMAGE_BUCKET,
+  CHAT_IMAGE_TYPES,
+  chatImagePath,
+  chatImageProblem,
+} from "@/lib/chat-images";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Demo-mode buyer id — matches lib/demo.ts's DEMO_USER, unused once signed in. */
 const DEMO_ME = "u-you";
@@ -45,6 +53,18 @@ export function Messenger({
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  // Storage path -> signed URL for photos in the thread (the bucket is
+  // private; see supabase/24-chat-images.sql).
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  // Newest message timestamp on screen — where a realtime reconnect
+  // catches up from.
+  const latestRef = useRef<string>(
+    Object.values(initialMessages)
+      .flat()
+      .reduce((max, m) => (m.createdAt > max ? m.createdAt : max), "")
+  );
   const [showListOnMobile, setShowListOnMobile] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -131,66 +151,100 @@ export function Messenger({
   }, [deepListing, deepOffer, ME]);
 
   /*
-   * Live updates when Supabase is wired up — one subscription for the
-   * whole inbox, not per open thread. The previous version filtered
-   * postgres_changes down to `conversation_id=eq.${activeId}`, so a
-   * message landing in any conversation other than the one currently on
-   * screen was invisible until the page was reloaded: no badge, no
-   * preview update, nothing. Subscribing unfiltered instead relies on
-   * Realtime applying the same RLS "participants read messages"/
-   * "participants read conversations" policies to what gets broadcast,
-   * so this still only ever receives rows ME is actually a party to.
+   * Live updates — one Supabase Realtime subscription for the whole inbox,
+   * not per open thread, and no polling. Realtime applies the same RLS
+   * "participants read messages"/"participants read conversations" policies
+   * to what it broadcasts, so this only ever receives rows ME is a party to.
+   *
+   * Two gaps made chat feel broken even with the subscription in place:
+   * - A socket that dropped (laptop asleep, phone tab backgrounded) missed
+   *   everything sent meanwhile until a full reload. On every reconnect,
+   *   and when the tab becomes visible again, this now fetches whatever
+   *   arrived after the newest message already on screen.
+   * - Every event from ME was ignored, so a message sent from another tab
+   *   or device never appeared here. Own messages are now merged too, the
+   *   echo of this tab's own send replacing its optimistic copy.
    */
   useEffect(() => {
     if (!hasSupabase || !ME) return;
     const supabase = createClient();
     if (!supabase) return;
+
+    const toMessage = (r: Record<string, unknown>): Message => ({
+      id: String(r.id),
+      conversationId: String(r.conversation_id),
+      senderId: String(r.sender_id),
+      body: String(r.body ?? ""),
+      kind: (r.kind as Message["kind"]) ?? "text",
+      offerAmount: r.offer_amount ? Number(r.offer_amount) : undefined,
+      offerId: r.offer_id ? String(r.offer_id) : undefined,
+      imageUrl: r.image_url ? String(r.image_url) : undefined,
+      createdAt: String(r.created_at),
+    });
+
+    const applyMessage = (incoming: Message) => {
+      const convId = incoming.conversationId;
+      const mine = incoming.senderId === ME;
+      if (!latestRef.current || incoming.createdAt > latestRef.current) latestRef.current = incoming.createdAt;
+
+      setMessages((p) => {
+        const list = p[convId] ?? [];
+        if (list.some((m) => m.id === incoming.id)) return p;
+        if (mine) {
+          // This tab's own send coming back: swap the optimistic bubble for
+          // the real row rather than showing it twice.
+          const i = list.findIndex((m) => m.id.startsWith("m-") && m.body === incoming.body);
+          if (i >= 0) {
+            const next = [...list];
+            next[i] = incoming;
+            return { ...p, [convId]: next };
+          }
+        }
+        return { ...p, [convId]: [...list, incoming] };
+      });
+      setConversations((p) => {
+        if (!p.some((c) => c.id === convId)) return p; // new-thread case, handled below
+        return p
+          .map((c) =>
+            c.id === convId
+              ? {
+                  ...c,
+                  lastMessage: incoming.kind === "image" ? "Photo" : incoming.body,
+                  updatedAt: incoming.createdAt,
+                  unread: mine || convId === activeIdRef.current ? 0 : c.unread + 1,
+                }
+              : c
+          )
+          .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
+      });
+      if (!mine && convId === activeIdRef.current) {
+        fetch("/api/messages", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId: convId }),
+        }).catch(() => {});
+      }
+    };
+
+    // Whatever landed while the socket wasn't listening.
+    const catchUp = async () => {
+      if (!latestRef.current) return;
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .gt("created_at", latestRef.current)
+        .order("created_at", { ascending: true })
+        .limit(200);
+      for (const r of data ?? []) applyMessage(toMessage(r));
+    };
+
+    let everSubscribed = false;
     const channel = supabase
       .channel(`inbox:${ME}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const r = payload.new as Record<string, unknown>;
-          const convId = String(r.conversation_id);
-          const incoming: Message = {
-            id: String(r.id),
-            conversationId: convId,
-            senderId: String(r.sender_id),
-            body: String(r.body ?? ""),
-            kind: (r.kind as Message["kind"]) ?? "text",
-            offerAmount: r.offer_amount ? Number(r.offer_amount) : undefined,
-            createdAt: String(r.created_at),
-          };
-          if (incoming.senderId === ME) return; // own send, already applied optimistically
-
-          setMessages((p) => {
-            if (p[convId]?.some((m) => m.id === incoming.id)) return p;
-            return { ...p, [convId]: [...(p[convId] ?? []), incoming] };
-          });
-          setConversations((p) => {
-            if (!p.some((c) => c.id === convId)) return p; // new-thread case, handled below
-            return p
-              .map((c) =>
-                c.id === convId
-                  ? {
-                      ...c,
-                      lastMessage: incoming.body,
-                      updatedAt: incoming.createdAt,
-                      unread: convId === activeIdRef.current ? 0 : c.unread + 1,
-                    }
-                  : c
-              )
-              .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
-          });
-          if (convId === activeIdRef.current) {
-            fetch("/api/messages", {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ conversationId: convId }),
-            }).catch(() => {});
-          }
-        }
+        (payload) => applyMessage(toMessage(payload.new as Record<string, unknown>))
       )
       .on(
         // A brand-new thread someone else started with ME (only relevant
@@ -235,8 +289,21 @@ export function Messenger({
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status !== "SUBSCRIBED") return;
+        // The first subscribe starts from the server-rendered messages;
+        // every later one is a reconnect with a gap to fill.
+        if (everSubscribed) catchUp();
+        everSubscribed = true;
+      });
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") catchUp();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
+      document.removeEventListener("visibilitychange", onVisible);
       supabase.removeChannel(channel);
     };
   }, [ME, listings]);
@@ -334,6 +401,91 @@ export function Messenger({
       fail("Couldn't reach the server. Check your connection and try again.");
     }
     setSending(false);
+  };
+
+  // Sign any photos in the open thread that don't have a URL yet — one
+  // batched request, and only for the thread actually on screen.
+  useEffect(() => {
+    if (!hasSupabase) return;
+    const paths = thread
+      .filter((m) => m.kind === "image" && m.imageUrl && !m.imageUrl.startsWith("blob:") && !signedUrls[m.imageUrl])
+      .map((m) => m.imageUrl as string);
+    if (!paths.length) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.storage
+      .from(CHAT_IMAGE_BUCKET)
+      .createSignedUrls(paths, 60 * 60)
+      .then(({ data }) => {
+        const next: Record<string, string> = {};
+        for (const d of data ?? []) if (d.path && d.signedUrl) next[d.path] = d.signedUrl;
+        if (Object.keys(next).length) setSignedUrls((p) => ({ ...p, ...next }));
+      });
+  }, [thread, signedUrls]);
+
+  const sendPhoto = async (file: File) => {
+    if (!activeId || !ME) return;
+    setSendError("");
+    const problem = chatImageProblem(file);
+    if (problem) return setSendError(problem);
+    // The photo's storage folder is the conversation id, so a thread that
+    // only exists locally so far needs its first text message sent first.
+    if (!UUID_RE.test(activeId))
+      return setSendError("Send a message first to start the conversation, then add photos.");
+    const supabase = createClient();
+    if (!supabase) return setSendError("Photos need Supabase Storage connected.");
+
+    const convId = activeId;
+    const preview = URL.createObjectURL(file);
+    const msg: Message = {
+      id: `m-${Date.now()}`,
+      conversationId: convId,
+      senderId: ME,
+      body: "Photo",
+      kind: "image",
+      imageUrl: preview,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((p) => ({ ...p, [convId]: [...(p[convId] ?? []), msg] }));
+    setUploading(true);
+    const fail = (reason: string) => {
+      setMessages((p) => ({ ...p, [convId]: (p[convId] ?? []).filter((m) => m.id !== msg.id) }));
+      setSendError(reason);
+    };
+    try {
+      const path = chatImagePath(convId, file.type, crypto.randomUUID());
+      const { error: upErr } = await supabase.storage
+        .from(CHAT_IMAGE_BUCKET)
+        .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+      if (upErr) {
+        fail(upErr.message || "Photo didn't upload. Try again.");
+      } else {
+        const res = await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversationId: convId, listingId: active?.listingId, imagePath: path }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) fail(data.error ?? "Photo didn't send. Try again.");
+        else {
+          // Keep showing the local preview until the realtime echo swaps in
+          // the stored copy; the path lets that copy be signed.
+          setSignedUrls((p) => ({ ...p, [path]: preview }));
+          setMessages((p) => ({
+            ...p,
+            [convId]: (p[convId] ?? []).map((m) => (m.id === msg.id ? { ...m, imageUrl: path } : m)),
+          }));
+          setConversations((p) =>
+            p
+              .map((c) => (c.id === convId ? { ...c, lastMessage: "Photo", updatedAt: msg.createdAt, unread: 0 } : c))
+              .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
+          );
+        }
+      }
+    } catch {
+      fail("Couldn't reach the server. Check your connection and try again.");
+    }
+    setUploading(false);
   };
 
   const [respondingOfferId, setRespondingOfferId] = useState<string | null>(null);
@@ -570,6 +722,34 @@ export function Messenger({
                     {m.body} · {clockTime(m.createdAt)}
                   </p>
                 );
+              if (m.kind === "image") {
+                const src = m.imageUrl?.startsWith("blob:") ? m.imageUrl : m.imageUrl && signedUrls[m.imageUrl];
+                return (
+                  <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                    <div className="max-w-[70%]">
+                      {src ? (
+                        // Thumbnail in the thread; click opens the full photo.
+                        <a href={src} target="_blank" rel="noopener noreferrer" className="block">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL, not an optimisable static asset */}
+                          <img
+                            src={src}
+                            alt="Photo in conversation"
+                            loading="lazy"
+                            className="max-h-60 max-w-[240px] rounded-[14px] border border-line object-cover shadow-sm"
+                          />
+                        </a>
+                      ) : (
+                        <div className="grid h-40 w-48 place-items-center rounded-[14px] border border-line bg-card text-muted">
+                          <span className="spec">Loading photo…</span>
+                        </div>
+                      )}
+                      <span className={`spec mt-1 block text-muted ${mine ? "text-right" : ""}`}>
+                        {clockTime(m.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
               if (m.kind === "offer") {
                 // The offer message is always sent by the buyer, so "mine"
                 // here means "I'm the buyer on this offer" — the seller is
@@ -715,6 +895,35 @@ export function Messenger({
           <div className="border-t border-line p-3">
             {sendError && <p className="spec mb-2 text-deal">{sendError}</p>}
             <div className="flex gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept={CHAT_IMAGE_TYPES.join(",")}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) sendPhoto(file);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading || !activeId}
+                aria-label="Send a photo"
+                title="Send a photo (JPEG, PNG, WebP or GIF, up to 5 MB)"
+                className="grid w-11 shrink-0 place-items-center rounded-md border border-line text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
+              >
+                {uploading ? (
+                  <span className="spec">…</span>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="9" cy="10" r="1.6" />
+                    <path d="M21 16l-5-5-8 8" />
+                  </svg>
+                )}
+              </button>
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}

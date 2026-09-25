@@ -49,7 +49,7 @@ export default async function BuildPage({ params }: { params: Promise<{ id: stri
       )}
 
       {build.specs.length > 0 && (
-        <dl className="mt-6 overflow-hidden rounded-[10px] border border-line bg-card">
+        <dl className="mt-6 overflow-hidden panel">
           {build.specs.map((s, i) => (
             <div key={s.label} className={`flex justify-between px-4 py-2.5 ${i % 2 ? "bg-paper" : ""}`}>
               <dt className="spec text-muted">{s.label}</dt>

@@ -22,7 +22,7 @@ export function DraftListingActions({ id }: { id: string }) {
     <div className="flex items-center gap-2">
       <Link
         href={`/sell?draft=${id}`}
-        className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
+        className="btn btn-outline btn-sm"
       >
         Continue editing
       </Link>
@@ -30,7 +30,7 @@ export function DraftListingActions({ id }: { id: string }) {
         type="button"
         onClick={discard}
         disabled={busy}
-        className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+        className="btn btn-outline btn-sm"
       >
         {busy ? "Discarding…" : "Discard"}
       </button>

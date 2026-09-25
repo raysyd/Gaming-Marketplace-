@@ -126,7 +126,7 @@ export function PhotoUploader({
         Photograph the actual unit — buyers skip listings that use press shots
         or stock photos. The first photo is what shows in search.
       </p>
-      {error && <p className="spec mt-1 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-1">{error}</p>}
     </div>
   );
 }

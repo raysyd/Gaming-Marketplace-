@@ -340,14 +340,14 @@ export function SellForm({
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/selling"
-            className="rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+            className="btn btn-dark btn-sm"
           >
             View your listings
           </Link>
           {listingId && (
             <Link
               href={`/product/${listingId}/${slugify(form.title)}`}
-              className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
+              className="btn btn-outline btn-sm"
             >
               View listing
             </Link>
@@ -401,7 +401,7 @@ export function SellForm({
               type="button"
               onClick={upgrade}
               disabled={upgradeBusy}
-              className="mt-3 rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-dark btn-sm mt-3"
             >
               {upgradeBusy ? "Loading…" : "Upgrade to Premium Seller"}
             </button>
@@ -592,7 +592,7 @@ export function SellForm({
                   <button
                     type="button"
                     onClick={suggestSpecs}
-                    className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust"
+                    className="btn btn-outline btn-sm"
                   >
                     + Suggest fields for {findSub(form.subcategorySlug)?.name}
                   </button>
@@ -633,7 +633,7 @@ export function SellForm({
           </div>
         </Step>
 
-        <div className="space-y-3 rounded-[14px] border border-line bg-card p-5">
+        <div className="space-y-3 panel p-5">
           {state === "error" && <p className="spec text-deal">{error}</p>}
           {draftState === "error" && <p className="spec text-deal">{draftError}</p>}
           {draftState === "saving" && <p className="spec text-muted">Saving draft…</p>}
@@ -661,7 +661,7 @@ export function SellForm({
                 !payoutsReady ||
                 atListingLimit
               }
-              className="rgb-ring h-[50px] flex-1 rounded-[10px] bg-deal text-[15px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+              className="btn btn-primary btn-lg flex-1"
             >
               {state === "saving"
                 ? "Publishing…"
@@ -677,7 +677,7 @@ export function SellForm({
         </div>
         </div>
 
-        <aside className="h-fit space-y-4 rounded-[14px] border border-line bg-card p-6 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
+        <aside className="h-fit space-y-4 panel p-6 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
           <h2 className="text-[18px] font-bold">What you take home</h2>
           <div className="space-y-2 text-[13.5px]">
             <Row label="Buyer pays" value={money(price)} />
@@ -704,7 +704,7 @@ export function SellForm({
 /** Numbered section card for the listing form. */
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[14px] border border-line bg-card p-6">
+    <section className="panel p-6">
       <div className="mb-5 flex items-start gap-3">
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-trust-soft text-[14px] font-bold text-trust">{n}</span>
         <div>

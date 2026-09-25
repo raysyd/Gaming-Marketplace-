@@ -63,7 +63,7 @@ export default async function OrderConfirmationPage({
         Order {session.payment_intent ? String(session.payment_intent).slice(-8).toUpperCase() : session.id.slice(-8).toUpperCase()}
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-[10px] border border-line bg-card">
+      <div className="mt-6 overflow-hidden panel">
         {items.map((li) => (
           <div key={li.id} className="flex justify-between border-b border-line px-4 py-3 last:border-0">
             <span className="text-[14px]">{li.description}</span>
@@ -84,7 +84,7 @@ export default async function OrderConfirmationPage({
 
       <p className="spec mt-4 text-muted">Sold by {sellerName}</p>
 
-      <div className="mt-8 rounded-[10px] border border-line bg-card p-5">
+      <div className="mt-8 panel p-5">
         <h2 className="eyebrow">What happens next</h2>
         <ol className="mt-2 space-y-1.5 text-[14px] text-muted">
           <li>1. {BRAND.name} holds your payment — the seller hasn&apos;t been paid yet.</li>
@@ -101,7 +101,7 @@ export default async function OrderConfirmationPage({
 
       <Link
         href="/buying"
-        className="mt-6 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+        className="btn btn-dark btn-sm mt-6"
       >
         Go to your orders
       </Link>

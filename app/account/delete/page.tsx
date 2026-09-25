@@ -50,9 +50,9 @@ export default function DeleteAccountPage() {
   if (!user) {
     return (
       <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-        <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
+        <div className="w-full panel p-6 text-center sm:p-8">
           <p className="text-[14px] text-muted">Sign in to manage account deletion.</p>
-          <a href="/login?next=/account/delete" className="mt-4 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white">
+          <a href="/login?next=/account/delete" className="btn btn-dark mt-4">
             Sign in
           </a>
         </div>
@@ -62,8 +62,8 @@ export default function DeleteAccountPage() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 sm:p-8">
-        <p className="eyebrow text-deal">Danger zone</p>
+      <div className="w-full panel p-6 sm:p-8">
+        <p className="eyebrow text-danger">Danger zone</p>
         <h1 className="display mt-2 text-[26px]">Delete your account</h1>
         <p className="mt-3 text-[14px] text-muted">
           This permanently deletes your {BRAND.name} account — your profile,
@@ -89,13 +89,13 @@ export default function DeleteAccountPage() {
             type="button"
             onClick={sendConfirmation}
             disabled={status === "sending"}
-            className="mt-5 w-full rounded-md border border-deal px-5 py-3 text-[14px] font-semibold text-deal transition hover:bg-deal-soft disabled:opacity-50"
+            className="btn btn-outline mt-5 btn-block !text-danger"
           >
             {status === "sending" ? "Sending…" : "Email me a confirmation link"}
           </button>
         )}
         {status === "error" && (
-          <p aria-live="polite" className="spec mt-3 text-deal">
+          <p aria-live="polite" className="text-[13px] font-medium text-danger mt-3">
             {message}
           </p>
         )}

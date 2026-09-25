@@ -29,7 +29,7 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[10px] border border-line bg-card p-6">
+        <div className="panel p-6">
           <h2 className="text-[17px] font-semibold">How the money works</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             Payment is held by {BRAND.name} the moment a buyer checks out, and
@@ -42,7 +42,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="rounded-[10px] border border-line bg-card p-6">
+        <div className="panel p-6">
           <h2 className="text-[17px] font-semibold">Questions</h2>
           <p className="mt-2 text-[14.5px] leading-relaxed text-muted">
             See{" "}

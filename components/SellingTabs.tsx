@@ -77,7 +77,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
         })}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[14px] border border-line bg-card">
+      <div className="mt-4 overflow-hidden panel">
         {tabListings.length === 0 && tabOrders.length === 0 && (
           <div className="p-12 text-center">
             <p className="text-[14px] text-muted">Nothing in this tab yet.</p>

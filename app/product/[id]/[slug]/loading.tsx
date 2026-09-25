@@ -15,7 +15,7 @@ export default function Loading() {
           <div className="skeleton h-4 w-40" />
           <div className="skeleton h-9 w-full" />
           <div className="skeleton h-9 w-3/4" />
-          <div className="rounded-[14px] border border-line bg-card p-5">
+          <div className="panel p-5">
             <div className="skeleton h-10 w-40" />
             <div className="skeleton mt-4 h-3 w-2/3" />
             <div className="skeleton mt-6 h-[52px] w-full !rounded-[12px]" />

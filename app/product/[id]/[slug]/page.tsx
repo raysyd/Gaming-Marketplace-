@@ -189,7 +189,7 @@ export default async function ProductPage({
 
           <section className="order-7 lg:mt-12">
             <SectionTitle>From the seller</SectionTitle>
-            <figure className="relative mt-4 rounded-[14px] border border-line bg-card p-6 pl-14 shadow-[var(--shadow-sm)]">
+            <figure className="relative mt-4 panel p-6 pl-14 shadow-[var(--shadow-sm)]">
               <span aria-hidden="true" className="display absolute left-5 top-3 text-[54px] leading-none text-signal">&ldquo;</span>
               <blockquote className="max-w-2xl whitespace-pre-line text-[15px] leading-[1.7] text-ink-soft">
                 {listing.description}

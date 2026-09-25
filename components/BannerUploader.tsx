@@ -80,7 +80,7 @@ export function BannerUploader({ value, onChange }: { value: string; onChange: (
           className="hidden"
         />
       </div>
-      {error && <p className="spec mt-1.5 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-1.5">{error}</p>}
     </div>
   );
 }

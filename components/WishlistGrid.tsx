@@ -23,7 +23,7 @@ export function WishlistGrid({ listings }: { listings: Listing[] }) {
         </p>
         <Link
           href="/shop"
-          className="rgb-ring mt-6 inline-block rounded-full bg-ink px-7 py-3 text-[14px] font-semibold text-white"
+          className="btn btn-dark mt-6"
         >
           Browse listings
         </Link>

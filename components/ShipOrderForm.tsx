@@ -43,11 +43,11 @@ export function ShipOrderForm({ id, fulfillmentMethod = "shipping" }: { id: stri
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rgb-ring shrink-0 rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-dark btn-sm shrink-0"
         >
           {busy ? "Saving…" : "Mark ready for pickup"}
         </button>
-        {error && <p className="spec text-deal">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
       </div>
     );
 
@@ -64,12 +64,12 @@ export function ShipOrderForm({ id, fulfillmentMethod = "shipping" }: { id: stri
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rgb-ring shrink-0 rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-dark btn-sm shrink-0"
         >
           {busy ? "Saving…" : "Mark posted"}
         </button>
       </div>
-      {error && <p className="spec text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
     </div>
   );
 }

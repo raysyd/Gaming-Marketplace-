@@ -64,7 +64,7 @@ export function AccountMenu() {
       </button>
 
       {open && (
-        <div className="menu-pop absolute right-0 top-[calc(100%+10px)] z-50 w-[260px] overflow-hidden rounded-[14px] border border-line bg-card shadow-[var(--shadow-lg)]" role="menu">
+        <div className="menu-pop absolute right-0 top-[calc(100%+10px)] z-50 w-[260px] overflow-hidden panel shadow-[var(--shadow-lg)]" role="menu">
           <div className="flex items-center gap-3 border-b border-line bg-paper px-4 py-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-[14px] font-bold text-paper">{initial}</span>
             <p className="truncate text-[13px] text-muted">{user.email}</p>

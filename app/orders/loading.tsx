@@ -4,7 +4,7 @@ export default function OrdersLoading() {
       <div className="h-9 w-40 rounded bg-line" />
       <div className="mt-6 space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-[10px] border border-line bg-card" />
+          <div key={i} className="h-20 panel" />
         ))}
       </div>
     </div>

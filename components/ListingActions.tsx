@@ -26,7 +26,7 @@ export function ListingActions({ id, active }: { id: string; active: boolean }) 
       type="button"
       onClick={takeDown}
       disabled={busy}
-      className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+      className="btn btn-outline btn-sm"
     >
       {busy ? "Taking down..." : "Take down"}
     </button>

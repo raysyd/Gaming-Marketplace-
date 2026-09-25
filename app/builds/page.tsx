@@ -20,7 +20,7 @@ export default async function BuildsPage() {
         </div>
         <Link
           href="/builds/new"
-          className="rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+          className="btn btn-dark btn-sm"
         >
           Post your build
         </Link>
@@ -34,7 +34,7 @@ export default async function BuildsPage() {
             <Link
               key={b.id}
               href={`/builds/${b.id}`}
-              className="card-hover overflow-hidden rounded-[10px] border border-line bg-card"
+              className="card-hover overflow-hidden panel"
             >
               <div className="h-40 w-full overflow-hidden bg-ink">
                 <ProductImage src={b.photos[0] ?? ""} alt={b.title} category="Prebuilt PCs" seed={b.id} className="h-full w-full" showStockBadge={false} />

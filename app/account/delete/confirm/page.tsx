@@ -59,7 +59,7 @@ function ConfirmDeleteContent() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
+      <div className="w-full panel p-6 text-center sm:p-8">
         {checking ? (
           <p className="text-[14px] text-muted">Checking your link…</p>
         ) : linkError ? (
@@ -69,7 +69,7 @@ function ConfirmDeleteContent() {
             <p className="mt-3 text-[14px] text-muted">{linkError}</p>
             <a
               href="/account/delete"
-              className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+              className="btn btn-dark mt-6"
             >
               Back to account deletion
             </a>
@@ -94,7 +94,7 @@ function ConfirmDeleteContent() {
               type="button"
               onClick={confirmDelete}
               disabled={status === "deleting"}
-              className="mt-6 w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-danger mt-6 btn-block"
             >
               {status === "deleting" ? "Deleting…" : "Yes, delete my account"}
             </button>
@@ -102,7 +102,7 @@ function ConfirmDeleteContent() {
               Cancel, keep my account
             </a>
             {status === "error" && (
-              <p aria-live="polite" className="spec mt-3 text-deal">
+              <p aria-live="polite" className="text-[13px] font-medium text-danger mt-3">
                 {message}
               </p>
             )}

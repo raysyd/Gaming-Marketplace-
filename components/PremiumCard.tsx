@@ -39,7 +39,7 @@ export function PremiumCard({
   };
 
   return (
-    <div className="mt-6 rounded-[10px] border border-line bg-card p-5">
+    <div className="mt-6 panel p-5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="eyebrow">{badgeLabel}</h2>
         {active && (
@@ -57,7 +57,7 @@ export function PremiumCard({
         A paid badge, not an identity check — separate from Verified.
       </p>
       <ListingUsageBar count={activeListingCount} limit={listingLimit} />
-      {error && <p className="spec mt-2 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-2">{error}</p>}
       <button
         onClick={() => go(active ? "/api/premium/portal" : "/api/premium/checkout")}
         disabled={busy}

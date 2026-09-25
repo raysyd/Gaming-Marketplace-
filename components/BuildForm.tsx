@@ -46,7 +46,7 @@ export function BuildForm() {
   };
 
   return (
-    <div className="space-y-5 rounded-[10px] border border-line bg-card p-6">
+    <div className="space-y-5 panel p-6">
       <label className="block">
         <span className="eyebrow mb-1.5 block">Title</span>
         <input
@@ -112,12 +112,12 @@ export function BuildForm() {
         </div>
       </div>
 
-      {error && <p className="spec text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
 
       <button
         onClick={submit}
         disabled={busy || !title.trim()}
-        className="rgb-ring w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+        className="btn btn-primary btn-block"
       >
         {busy ? "Posting…" : "Post build"}
       </button>

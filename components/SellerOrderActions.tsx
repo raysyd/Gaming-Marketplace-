@@ -55,7 +55,7 @@ export function SellerOrderActions({
         >
           {busy ? "Working…" : "Refund"}
         </button>
-        {error && <p className="spec mt-1 text-deal">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-danger mt-1">{error}</p>}
       </div>
     </div>
   );

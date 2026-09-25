@@ -27,11 +27,11 @@ export function IdentityVerificationButton() {
       <button
         onClick={start}
         disabled={busy}
-        className="rounded-md border border-ink/20 px-4 py-2 text-[13px] font-semibold transition hover:border-ink/50 disabled:opacity-50"
+        className="btn btn-outline btn-sm"
       >
         {busy ? "Starting…" : "Verify identity with Stripe"}
       </button>
-      {error && <p className="spec mt-2 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-2">{error}</p>}
     </div>
   );
 }

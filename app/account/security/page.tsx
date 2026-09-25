@@ -108,11 +108,11 @@ export default function SecuritySettingsPage() {
   if (!user)
     return (
       <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-        <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
+        <div className="w-full panel p-6 text-center sm:p-8">
           <p className="text-[14px] text-muted">Sign in to manage account security.</p>
           <Link
             href="/login?next=/account/security"
-            className="mt-4 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+            className="btn btn-dark mt-4"
           >
             Sign in
           </Link>
@@ -136,7 +136,7 @@ export default function SecuritySettingsPage() {
       </p>
 
       {notice && <p className="spec mt-4 font-semibold text-good">{notice}</p>}
-      {error && <p className="spec mt-4 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-4">{error}</p>}
 
       {factors === null ? null : verifiedFactor ? (
         <div className="mt-6 rounded-[10px] border border-good/40 bg-card p-5">
@@ -154,7 +154,7 @@ export default function SecuritySettingsPage() {
           </button>
         </div>
       ) : enrolling ? (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-5">
+        <div className="mt-6 panel p-5">
           <p className="text-[14px] font-semibold">Scan this in your authenticator app</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={enrolling.qrCode} alt="TOTP QR code" className="mt-3 h-44 w-44" />
@@ -178,7 +178,7 @@ export default function SecuritySettingsPage() {
               type="button"
               onClick={verifyEnroll}
               disabled={busy || code.length !== 6}
-              className="rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-dark btn-sm"
             >
               {busy ? "Verifying…" : "Confirm"}
             </button>
@@ -196,7 +196,7 @@ export default function SecuritySettingsPage() {
           type="button"
           onClick={startEnroll}
           disabled={busy}
-          className="mt-6 rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-dark mt-6"
         >
           {busy ? "Starting…" : "Enable two-factor authentication"}
         </button>

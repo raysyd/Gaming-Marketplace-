@@ -71,7 +71,7 @@ export default function PcFinder() {
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href={href}
-            className="rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white"
+            className="btn btn-primary"
           >
             See matching builds
           </Link>
@@ -108,7 +108,7 @@ export default function PcFinder() {
           <button
             key={value}
             onClick={() => choose(current.key, value)}
-            className="w-full rounded-[10px] border border-line bg-card px-5 py-4 text-left text-[15px] font-medium transition hover:border-ink/40 hover:bg-paper"
+            className="w-full panel px-5 py-4 text-left text-[15px] font-medium transition hover:border-ink/40 hover:bg-paper"
           >
             {label}
           </button>

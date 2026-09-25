@@ -84,7 +84,7 @@ export function AvatarUploader({
           onChange={(e) => pick(e.target.files)}
           className="hidden"
         />
-        {error && <p className="spec mt-1.5 text-deal">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-danger mt-1.5">{error}</p>}
       </div>
     </div>
   );

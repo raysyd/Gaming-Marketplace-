@@ -87,7 +87,7 @@ export function BuyerOrderActions({
             type="button"
             onClick={submitDispute}
             disabled={busy}
-            className="rounded bg-deal px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             {busy ? "Submitting…" : "Report problem"}
           </button>
@@ -99,7 +99,7 @@ export function BuyerOrderActions({
             Cancel
           </button>
         </div>
-        {error && <p className="spec mt-2 text-deal">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-danger mt-2">{error}</p>}
         <p className="spec mt-2 text-muted">
           Payment stays held while this is reviewed — it won&apos;t release automatically.
         </p>
@@ -121,12 +121,12 @@ export function BuyerOrderActions({
           type="button"
           onClick={release}
           disabled={busy}
-          className="rgb-ring rounded-md bg-good px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-green btn-sm"
         >
           {busy ? "Releasing…" : fulfillmentMethod === "pickup" ? "Confirm collection & release" : "Confirm delivery & release"}
         </button>
       </div>
-      {error && <p className="spec text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
     </div>
   );
 }

@@ -58,7 +58,7 @@ export default function TrustPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {SECTIONS.map(([title, body, icon]) => (
-          <div key={title} className="rounded-[10px] border border-line bg-card p-6">
+          <div key={title} className="panel p-6">
             <div className="text-trust">{icon}</div>
             <h2 className="mt-3 text-[16px] font-semibold">{title}</h2>
             <p className="mt-2 text-[14px] leading-relaxed text-muted">{body}</p>
@@ -66,7 +66,7 @@ export default function TrustPage() {
         ))}
       </div>
 
-      <div className="mt-8 rounded-[10px] border border-line bg-card p-6">
+      <div className="mt-8 panel p-6">
         <h2 className="display text-[20px]">Something gone wrong?</h2>
         <p className="mt-2 text-[14px] text-muted">
           Report it from the order in your account, or email {BRAND.supportEmail}.
@@ -75,7 +75,7 @@ export default function TrustPage() {
         </p>
         <Link
           href="/buying"
-          className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+          className="btn btn-dark btn-sm mt-4"
         >
           Go to your orders
         </Link>

@@ -9,7 +9,7 @@ export function RecentlySold({ items, title = "Recently sold" }: { items: SoldLi
   return (
     <div className="mt-14">
       <h2 className="display text-[24px]">{title}</h2>
-      <ul className="mt-4 overflow-hidden rounded-[14px] border border-line bg-card">
+      <ul className="mt-4 overflow-hidden panel">
         {items.map((s) => (
           <li
             key={s.listingId}

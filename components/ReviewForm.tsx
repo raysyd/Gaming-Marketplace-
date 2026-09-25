@@ -76,7 +76,7 @@ export function ReviewForm({ orderId, listingTitle }: { orderId: string; listing
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rounded bg-deal px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-primary btn-sm"
         >
           {busy ? "Posting…" : "Post review"}
         </button>
@@ -88,7 +88,7 @@ export function ReviewForm({ orderId, listingTitle }: { orderId: string; listing
           Cancel
         </button>
       </div>
-      {error && <p className="spec mt-2 text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger mt-2">{error}</p>}
     </div>
   );
 }

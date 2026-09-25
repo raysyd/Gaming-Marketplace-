@@ -115,7 +115,7 @@ export default async function SellerProfilePage({
       </div>
 
       {profile?.policyNote && (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
+        <div className="mt-6 panel p-4">
           <p className="eyebrow">Shipping &amp; returns</p>
           <p className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-muted">{profile.policyNote}</p>
         </div>
@@ -138,7 +138,7 @@ export default async function SellerProfilePage({
       ) : (
         <ul className="mt-4 space-y-3">
           {reviews.map((r) => (
-            <li key={r.id} className="rounded-[10px] border border-line bg-card p-4">
+            <li key={r.id} className="panel p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="flex items-center gap-1.5 text-[13.5px] font-semibold">
                   {r.reviewerName}
@@ -163,7 +163,7 @@ export default async function SellerProfilePage({
       <RecentlySold items={recentlySold} title="Recently sold by this seller" />
 
       {builds.length > 0 && (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
+        <div className="mt-6 panel p-4">
           <p className="text-[14px] font-semibold">Build showcase</p>
           <p className="spec mt-1 text-muted">
             {sellerName} has posted {builds.length} build{builds.length === 1 ? "" : "s"}.

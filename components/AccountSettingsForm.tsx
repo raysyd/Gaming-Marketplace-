@@ -77,7 +77,7 @@ export function AccountSettingsForm({
   };
 
   return (
-    <div className="mt-6 space-y-5 rounded-[10px] border border-line bg-card p-6">
+    <div className="mt-6 space-y-5 panel p-6">
       {verified ? (
         <p className="spec inline-block w-fit rounded bg-trust-soft px-2 py-1 font-semibold text-trust">
           ✓ Verified seller
@@ -185,13 +185,13 @@ export function AccountSettingsForm({
         </p>
       </label>
 
-      {error && <p className="spec text-deal">{error}</p>}
+      {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
       {status === "saved" && <p className="spec font-semibold text-good">Saved.</p>}
 
       <button
         onClick={save}
         disabled={status === "saving"}
-        className="rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-chrome-2 disabled:opacity-50"
+        className="btn btn-dark btn-sm"
       >
         {status === "saving" ? "Saving…" : "Save changes"}
       </button>

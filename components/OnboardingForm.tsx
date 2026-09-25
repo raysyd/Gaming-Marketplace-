@@ -51,7 +51,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
         deal with you — it takes a minute.
       </p>
 
-      <div className="mt-8 space-y-5 rounded-[10px] border border-line bg-card p-6">
+      <div className="mt-8 space-y-5 panel p-6">
         <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />
 
         <label className="block">
@@ -115,12 +115,12 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
           </label>
         </div>
 
-        {error && <p className="spec text-deal">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-danger">{error}</p>}
 
         <button
           onClick={submit}
           disabled={busy || !usernameValid}
-          className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+          className="btn btn-primary btn-block"
         >
           {busy ? "Saving…" : "Continue"}
         </button>

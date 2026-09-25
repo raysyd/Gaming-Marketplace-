@@ -6,12 +6,12 @@ export default function DashboardLoading() {
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-[74px] rounded-[10px] border border-line bg-card" />
+          <div key={i} className="h-[74px] panel" />
         ))}
       </div>
 
       <div className="mt-8 h-7 w-32 rounded bg-line" />
-      <div className="mt-3 h-64 rounded-[10px] border border-line bg-card" />
+      <div className="mt-3 h-64 panel" />
     </div>
   );
 }

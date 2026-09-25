@@ -37,7 +37,7 @@ export default async function SellingPage() {
         </div>
         <Link
           href="/sell"
-          className="rgb-ring inline-flex items-center gap-2 rounded-full bg-deal px-5 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-110"
+          className="btn btn-primary inline-flex"
         >
           <span aria-hidden="true" className="text-[18px] leading-none">+</span> List an item
         </Link>
@@ -52,7 +52,7 @@ export default async function SellingPage() {
             ["Next payout", money(gross - fee), "M3 12h14M13 6l6 6-6 6", true],
           ] as const
         ).map(([label, value, icon, isMoney]) => (
-          <div key={label} className="flex items-center gap-4 rounded-[14px] border border-line bg-card p-5">
+          <div key={label} className="flex items-center gap-4 panel p-5">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[12px] bg-trust-soft text-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icon} /></svg>
             </span>
@@ -71,7 +71,7 @@ export default async function SellingPage() {
         <SellingTabs listings={listings} orders={orders} />
       </Suspense>
 
-      <div id="payouts" className="mt-8 rounded-[14px] border border-line bg-card p-6">
+      <div id="payouts" className="mt-8 panel p-6">
         <h2 className="eyebrow">Payouts</h2>
         <p className="mt-2 max-w-lg text-[14px] text-muted">
           {payoutStatus === "active"

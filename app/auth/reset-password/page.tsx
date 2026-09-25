@@ -77,13 +77,13 @@ function ResetPasswordContent() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[420px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 sm:p-8">
+      <div className="w-full panel p-6 sm:p-8">
         {checking ? (
           <p className="text-center text-[14px] text-muted">Checking your link…</p>
         ) : linkError ? (
           <div className="text-center">
-            <p className="eyebrow text-deal">Reset link unavailable</p>
-            <h1 className="display mt-2 text-[28px]">Request a fresh link</h1>
+            <p className="eyebrow text-danger">Reset link unavailable</p>
+            <h1 className="display mt-2 text-[32px]">Request a fresh link</h1>
             <p className="mt-3 text-[14px] text-muted">{linkError}</p>
             <p className="spec mt-3 text-muted">
               Reset links are single-use and only work on the device that
@@ -91,7 +91,7 @@ function ResetPasswordContent() {
             </p>
             <a
               href="/login"
-              className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+              className="btn btn-dark mt-6"
             >
               Return to {BRAND.name} sign in
             </a>
@@ -99,12 +99,12 @@ function ResetPasswordContent() {
         ) : status === "done" ? (
           <div className="text-center">
             <p className="eyebrow text-good">Password updated</p>
-            <h1 className="display mt-2 text-[28px]">You&apos;re all set</h1>
+            <h1 className="display mt-2 text-[32px]">You&apos;re all set</h1>
             <p className="mt-3 text-[14px] text-muted">Taking you to your dashboard…</p>
           </div>
         ) : (
           <>
-            <h1 className="display text-[24px]">Set a new password</h1>
+            <h1 className="display text-[32px]">Set a new password</h1>
             <p className="mt-2 text-[14px] text-muted">
               Choose a new password for your {BRAND.name} account.
             </p>
@@ -116,6 +116,7 @@ function ResetPasswordContent() {
                 type="password"
                 autoComplete="new-password"
                 placeholder="New password"
+                aria-label="New password"
                 className="input"
               />
               <input
@@ -125,17 +126,18 @@ function ResetPasswordContent() {
                 type="password"
                 autoComplete="new-password"
                 placeholder="Confirm new password"
+                aria-label="Confirm new password"
                 className="input"
               />
               <button
                 onClick={submit}
                 disabled={status === "saving"}
-                className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-primary btn-block"
               >
                 {status === "saving" ? "Saving…" : "Save password"}
               </button>
               {status === "error" && (
-                <p aria-live="polite" className="spec text-deal">
+                <p aria-live="polite" className="text-[13px] font-medium text-danger">
                   {message}
                 </p>
               )}

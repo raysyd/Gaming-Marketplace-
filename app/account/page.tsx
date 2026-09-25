@@ -105,7 +105,7 @@ export default async function AccountPage() {
       <nav aria-label="Account sections" className="grid gap-3 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
         <Link
           href="/selling#payouts"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover panel p-5"
         >
           <p className="text-[14px] font-semibold">Payout settings</p>
           <p className="spec mt-1 text-muted">
@@ -115,14 +115,14 @@ export default async function AccountPage() {
         </Link>
         <Link
           href="/account/security"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover panel p-5"
         >
           <p className="text-[14px] font-semibold">Security</p>
           <p className="spec mt-1 text-muted">Two-factor authentication.</p>
         </Link>
         <Link
           href="/account/searches"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover panel p-5"
         >
           <p className="text-[14px] font-semibold">Saved searches</p>
           <p className="spec mt-1 text-muted">Get emailed when a new listing matches.</p>

@@ -419,7 +419,7 @@ export function Messenger({
         </p>
         <Link
           href="/shop"
-          className="mt-5 inline-block rounded-md bg-ink px-6 py-3 text-[14px] font-semibold text-white"
+          className="btn btn-dark mt-5"
         >
           Browse listings
         </Link>
@@ -433,7 +433,7 @@ export function Messenger({
 
       {/* Fixed-height app shell on desktop: the conversation list and the
           thread each scroll inside themselves instead of growing the page. */}
-      <div className="grid overflow-hidden rounded-[14px] border border-line bg-card lg:h-[calc(100vh-var(--header-offset,140px)-120px)] lg:min-h-[520px] lg:grid-cols-[340px_1fr]">
+      <div className="grid overflow-hidden panel lg:h-[calc(100vh-var(--header-offset,140px)-120px)] lg:min-h-[520px] lg:grid-cols-[340px_1fr]">
         {/* Conversation list */}
         <aside
           className={`${showListOnMobile ? "block" : "hidden"} border-line lg:flex lg:min-h-0 lg:flex-col lg:border-r`}
@@ -657,7 +657,7 @@ export function Messenger({
                       {status === "accepted" && mine && (
                         <Link
                           href="/cart"
-                          className="mt-2 inline-block rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white"
+                          className="btn btn-dark btn-sm mt-2"
                         >
                           Go to checkout
                         </Link>
@@ -714,7 +714,7 @@ export function Messenger({
               <button
                 onClick={send}
                 disabled={sending || !draft.trim()}
-                className="rounded-md bg-deal px-5 text-[13px] font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
+                className="btn btn-primary btn-sm"
               >
                 Send
               </button>

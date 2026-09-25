@@ -65,7 +65,7 @@ export default function CartPage() {
         <p className="mt-2 text-[14.5px] text-muted">
           Find a card, a rig or a monitor and it&apos;ll show up here.
         </p>
-        <Link href="/shop" className="rgb-ring mt-6 inline-block rounded-full bg-ink px-7 py-3 text-[14px] font-semibold text-white">
+        <Link href="/shop" className="btn btn-dark mt-6">
           Browse listings
         </Link>
       </div>
@@ -101,7 +101,7 @@ export default function CartPage() {
       )}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-[14px] border border-line bg-card">
+        <div className="panel">
           <ul>
             {items.map((i, k) => (
               <li key={i.id} className={`flex gap-4 p-4 sm:p-5 ${k ? "border-t border-line" : ""}`}>
@@ -157,7 +157,7 @@ export default function CartPage() {
           </div>
         </div>
 
-        <aside className="rounded-[14px] border border-line bg-card p-5 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
+        <aside className="panel p-5 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
           <h2 className="text-[18px] font-bold">Order summary</h2>
 
           {pickupOffered && (
@@ -218,7 +218,7 @@ export default function CartPage() {
           <button
             onClick={checkout}
             disabled={busy || mixedSellers}
-            className="rgb-ring mt-4 h-[50px] w-full rounded-[10px] bg-deal text-[15.5px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            className="btn btn-primary btn-lg mt-4 btn-block"
           >
             {busy ? "Opening checkout…" : "Checkout securely"}
           </button>

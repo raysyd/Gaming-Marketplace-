@@ -79,7 +79,7 @@ export function BuyingTabs({
           </p>
           <Link
             href="/shop"
-            className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+            className="btn btn-dark btn-sm mt-4"
           >
             Browse listings
           </Link>
@@ -89,7 +89,7 @@ export function BuyingTabs({
           {items.map((o) => (
             <li
               key={o.id}
-              className="flex flex-wrap items-center gap-4 rounded-[14px] border border-line bg-card p-4 transition hover:border-ink/25"
+              className="flex flex-wrap items-center gap-4 panel p-4 transition hover:border-ink/25"
             >
               <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
                 <ProductImage

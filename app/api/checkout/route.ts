@@ -4,6 +4,7 @@ import { getStripe } from "@/lib/stripe";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { siteUrlFrom } from "@/lib/site-url";
 import { BRAND } from "@/lib/brand";
+import { revalidateTag } from "next/cache";
 
 /** Checkout Session hold — how long a reservation survives an abandoned checkout. */
 const RESERVATION_MINUTES = 30;
@@ -213,6 +214,10 @@ export async function POST(req: Request) {
       { status: 409 }
     );
   }
+
+  // Stock just moved (and a last unit flips the listing to sold) — the
+  // cached catalogue has to hear about it, or it keeps offering it.
+  revalidateTag("listings", { expire: 0 });
 
   const site = siteUrlFrom(req);
   const currency = BRAND.currency.toLowerCase();

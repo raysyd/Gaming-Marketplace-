@@ -15,6 +15,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { HeroSearch } from "@/components/motion/HeroSearch";
 import { DealCarousel } from "@/components/motion/DealCarousel";
 import { EscrowFlow } from "@/components/motion/EscrowFlow";
+import { connection } from "next/server";
 
 // artKindFor(top.children[0].slug) would pick whichever subcategory
 // happens to be first in taxonomy.ts (e.g. "Monitors" for Peripherals,
@@ -30,9 +31,12 @@ const TILE_CATEGORY: Record<string, Category> = {
   "collectibles-and-parts": "Processors",
 };
 
-export const revalidate = 60;
 
 export default async function Home() {
+  // Rendered per request, from data that's cached and invalidated by tag
+  // (see lib/data.ts). Timed ISR here meant the first visitor after any
+  // change got the previous copy — the "only a hard refresh shows it" bug.
+  await connection();
   const [deals, watched, fresh, prebuilts, sold, justSold] = await Promise.all([
     queryListings({ dealsOnly: true, sort: "save", perPage: 8 }),
     queryListings({ sort: "watched", perPage: 8 }),

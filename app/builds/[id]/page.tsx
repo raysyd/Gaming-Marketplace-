@@ -4,10 +4,14 @@ import { getBuild } from "@/lib/builds-data";
 import { timeAgo } from "@/lib/format";
 import { ProductImage } from "@/components/ProductImage";
 import { BuildActions } from "@/components/BuildActions";
+import { connection } from "next/server";
 
-export const revalidate = 60;
 
 export default async function BuildPage({ params }: { params: Promise<{ id: string }> }) {
+  // Rendered per request, from data that's cached and invalidated by tag
+  // (see lib/data.ts). Timed ISR here meant the first visitor after any
+  // change got the previous copy — the "only a hard refresh shows it" bug.
+  await connection();
   const { id } = await params;
   const build = await getBuild(id);
   if (!build) notFound();

@@ -10,8 +10,8 @@ import { DemoBanner } from "@/components/DemoBanner";
 import { SaveSearchButton } from "@/components/SaveSearchButton";
 import type { ListingQuery } from "@/lib/types";
 import { attrsFromSearchParams } from "@/lib/attributes";
+import { connection } from "next/server";
 
-export const revalidate = 60;
 
 type SP = Record<string, string | undefined>;
 
@@ -27,6 +27,10 @@ export default async function ShopPage({
 }: {
   searchParams: Promise<SP>;
 }) {
+  // Rendered per request, from data that's cached and invalidated by tag
+  // (see lib/data.ts). Timed ISR here meant the first visitor after any
+  // change got the previous copy — the "only a hard refresh shows it" bug.
+  await connection();
   const sp = await searchParams;
 
   const query: ListingQuery = {

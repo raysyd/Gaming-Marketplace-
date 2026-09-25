@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { purchaseConfirmationEmail, saleNotificationEmail } from "@/lib/email/templates";
 import { BRAND } from "@/lib/brand";
+import { revalidateTag } from "next/cache";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
@@ -287,6 +288,11 @@ export async function POST(req: Request) {
       break;
     }
   }
+
+  // A sale, an expired checkout or a refund all move stock/status — without
+  // this, a sold listing kept showing as available until its cache aged out.
+  if (["checkout.session.completed", "checkout.session.expired", "charge.refunded"].includes(event.type))
+    revalidateTag("listings", { expire: 0 });
 
   return NextResponse.json({ received: true });
 }

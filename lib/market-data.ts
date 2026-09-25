@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
 
 /**
@@ -51,7 +52,15 @@ export type SoldListing = {
 };
 
 /** Recently sold listings — title/price only, never buyer/seller identity. Pass sellerId for one seller's own sold items, subcategorySlug for a category-wide rail, or neither for the newest sales platform-wide. */
-export async function getRecentlySold(
+/** Cached with the catalogue ("listings" tag) — it's on the homepage and
+ * every product page, and only changes when something sells, which
+ * invalidates that tag (checkout + Stripe webhook). */
+export const getRecentlySold = unstable_cache(getRecentlySoldUncached, ["recently-sold"], {
+  revalidate: 120,
+  tags: ["listings"],
+});
+
+async function getRecentlySoldUncached(
   opts: { subcategorySlug?: string; sellerId?: string; limit?: number } = {}
 ): Promise<SoldListing[]> {
   const supabase = createPublicClient();

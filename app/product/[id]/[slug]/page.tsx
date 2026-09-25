@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { Listing } from "@/lib/types";
-import { getListing, getRelated, queryListings } from "@/lib/data";
+import { getListing, getRelated } from "@/lib/data";
 import { money, timeAgo } from "@/lib/format";
 import { findSub, findTop } from "@/lib/taxonomy";
 import { BRAND } from "@/lib/brand";
@@ -20,19 +20,8 @@ import { ProductGallery } from "@/components/ProductGallery";
 import { BuyBox } from "@/components/BuyBox";
 import { WishlistButton } from "@/components/WishlistButton";
 import { RecentlySold } from "@/components/RecentlySold";
+import { connection } from "next/server";
 
-export const revalidate = 120;
-export const dynamicParams = true;
-
-/**
- * Prerender the current catalogue at build time so opening a listing is a
- * static file read, not a render. Anything newer than the last build still
- * works — it renders on demand once, then caches.
- */
-export async function generateStaticParams() {
-  const { items } = await queryListings({ perPage: 200 });
-  return items.map((l) => ({ id: l.id, slug: l.slug }));
-}
 
 export async function generateMetadata({
   params,
@@ -53,6 +42,10 @@ export default async function ProductPage({
 }: {
   params: Promise<{ id: string; slug: string }>;
 }) {
+  // Rendered per request, from data that's cached and invalidated by tag
+  // (see lib/data.ts). Timed ISR here meant the first visitor after any
+  // change got the previous copy — the "only a hard refresh shows it" bug.
+  await connection();
   const { id } = await params;
   const listing = await getListing(id);
   if (!listing) notFound();

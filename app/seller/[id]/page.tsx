@@ -10,14 +10,18 @@ import { listBuildsByUser } from "@/lib/builds-data";
 import { timeAgo, responseTimeLabel } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 import { RecentlySold } from "@/components/RecentlySold";
+import { connection } from "next/server";
 
-export const revalidate = 60;
 
 export default async function SellerProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Rendered per request, from data that's cached and invalidated by tag
+  // (see lib/data.ts). Timed ISR here meant the first visitor after any
+  // change got the previous copy — the "only a hard refresh shows it" bug.
+  await connection();
   const { id } = await params;
 
   const [{ items: listings }, reviews, stats, profile, plan] = await Promise.all([

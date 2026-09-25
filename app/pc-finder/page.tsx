@@ -57,21 +57,21 @@ export default function PcFinder() {
     return (
       <div className="mx-auto max-w-[560px] px-4 py-20 text-center">
         <p className="eyebrow text-deal">Your match</p>
-        <h1 className="display mt-2 text-[30px]">
+        <h1 className="display mt-2 text-3xl">
           {answers.res === "4k"
             ? "You want a 4K-capable build"
             : answers.res === "1440p"
               ? "You want a 1440p build"
               : "You want a high-refresh 1080p build"}
         </h1>
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-sm text-muted">
           Between {money(min)} and {money(max)}, from Australian sellers, with
           payment held until it arrives.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href={href}
-            className="rounded-md bg-deal px-6 py-3 text-[14px] font-semibold text-white"
+            className="btn btn-primary"
           >
             See matching builds
           </Link>
@@ -80,7 +80,7 @@ export default function PcFinder() {
               setStep(0);
               setAnswers({});
             }}
-            className="rounded-md border border-line px-6 py-3 text-[14px] font-semibold"
+            className="btn btn-secondary"
           >
             Start over
           </button>
@@ -96,19 +96,19 @@ export default function PcFinder() {
       <p className="eyebrow">
         PC Finder · step {step + 1} of {STEPS.length}
       </p>
-      <div className="mt-3 h-1 w-full rounded bg-line">
+      <div className="mt-3 h-1 w-full rounded-lg bg-line">
         <div
-          className="h-1 rounded bg-deal transition-all"
+          className="h-1 rounded-lg bg-deal transition-all"
           style={{ width: `${(step / STEPS.length) * 100}%` }}
         />
       </div>
-      <h1 className="display mt-6 text-[30px]">{current.question}</h1>
+      <h1 className="display mt-6 text-3xl">{current.question}</h1>
       <div className="mt-6 space-y-2">
         {current.options.map(([label, value]) => (
           <button
             key={value}
             onClick={() => choose(current.key, value)}
-            className="w-full rounded-[10px] border border-line bg-card px-5 py-4 text-left text-[15px] font-medium transition hover:border-ink/40 hover:bg-paper"
+            className="w-full rounded-card border border-line bg-card px-5 py-4 text-left text-base font-medium transition hover:border-ink/40 hover:bg-paper"
           >
             {label}
           </button>

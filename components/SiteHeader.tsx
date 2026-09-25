@@ -76,8 +76,8 @@ export function SiteHeader() {
       <div className="bg-chrome text-white">
         <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
           <Link href="/" className="shrink-0">
-            <span className="display text-[21px] text-white">{BRAND.name}</span>
-            <span className="rgb-text display text-[21px]">.</span>
+            <span className="display text-xl text-white">{BRAND.name}</span>
+            <span className="rgb-text display text-xl">.</span>
           </Link>
 
           <div className="ml-2 hidden flex-1 md:flex">
@@ -87,24 +87,24 @@ export function SiteHeader() {
               onKeyDown={(e) => e.key === "Enter" && search()}
               placeholder="Search GPUs, prebuilts, monitors…"
               aria-label="Search listings"
-              className="search-input h-10 w-full rounded-l-md px-3 text-[14px] text-ink"
+              className="search-input h-10 w-full rounded-l-md px-3 text-sm text-ink"
             />
             <button
               onClick={search}
-              className="h-10 rounded-r-md bg-deal px-5 text-[13px] font-semibold text-white transition hover:brightness-110"
+              className="h-10 rounded-r-md bg-deal px-5 text-sm font-semibold text-white transition hover:brightness-110"
             >
               Search
             </button>
           </div>
 
-          <nav className="ml-auto flex min-w-0 shrink-0 items-center gap-0.5 text-[13px] sm:gap-1">
-            <Link href="/pc-finder" className="hidden rounded px-2.5 py-2 hover:bg-chrome-2 lg:block">
+          <nav className="ml-auto flex min-w-0 shrink-0 items-center gap-0.5 text-sm sm:gap-1">
+            <Link href="/pc-finder" className="hidden rounded-lg px-2.5 py-2 hover:bg-chrome-2 lg:block">
               PC Finder
             </Link>
-            <Link href="/sell" className="hidden rounded px-2.5 py-2 hover:bg-chrome-2 sm:block">
+            <Link href="/sell" className="hidden rounded-lg px-2.5 py-2 hover:bg-chrome-2 sm:block">
               Sell
             </Link>
-            <Link href="/messages" className="hidden rounded px-2.5 py-2 hover:bg-chrome-2 sm:block">
+            <Link href="/messages" className="hidden rounded-lg px-2.5 py-2 hover:bg-chrome-2 sm:block">
               Messages
             </Link>
             <NotificationBell />
@@ -112,9 +112,9 @@ export function SiteHeader() {
               href="/wishlist"
               aria-label="Saved items"
               title="Saved items"
-              className="flex shrink-0 items-center gap-1 rounded px-2 py-2 hover:bg-chrome-2 sm:px-2.5"
+              className="flex shrink-0 items-center gap-1 rounded-lg px-2 py-2 hover:bg-chrome-2 sm:px-2.5"
             >
-              <span className="text-[19px] leading-none" aria-hidden="true">♡</span>
+              <span className="text-xl leading-none" aria-hidden="true">♡</span>
               <span className="sr-only">Saved</span>
               {saved > 0 && (
                 <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
@@ -142,7 +142,7 @@ export function SiteHeader() {
                 >
                   <Link
                     href={`/shop?category=${top.slug}`}
-                    className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-[12.5px] transition ${
+                    className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-xs transition ${
                       activeCategory === top.slug
                         ? "border-deal text-deal"
                         : "rgb-underline border-transparent text-white/80 hover:text-white"
@@ -156,7 +156,7 @@ export function SiteHeader() {
                         <Link
                           key={sub.slug}
                           href={`/shop?category=${top.slug}&sub=${sub.slug}`}
-                          className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+                          className="block px-4 py-2 text-sm text-ink transition hover:bg-paper"
                         >
                           {sub.name}
                         </Link>
@@ -167,13 +167,13 @@ export function SiteHeader() {
               ))}
               <Link
                 href="/shop?deals=1"
-                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 transition hover:text-white"
+                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-xs text-white/80 transition hover:text-white"
               >
                 Price drops
               </Link>
               <Link
                 href="/shop?sort=watched"
-                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-[12.5px] text-white/80 transition hover:text-white"
+                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-xs text-white/80 transition hover:text-white"
               >
                 Most watched
               </Link>
@@ -203,11 +203,11 @@ export function SiteHeader() {
             onKeyDown={(e) => e.key === "Enter" && search()}
             placeholder="Search listings"
             aria-label="Search listings"
-            className="search-input h-9 w-full rounded-l-md px-3 text-[14px]"
+            className="search-input h-9 w-full rounded-l-md px-3 text-sm"
           />
           <button
             onClick={search}
-            className="h-9 rounded-r-md bg-ink px-4 text-[13px] font-semibold text-white"
+            className="h-9 rounded-r-md bg-ink px-4 text-sm font-semibold text-white"
           >
             Go
           </button>

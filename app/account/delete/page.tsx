@@ -50,9 +50,9 @@ export default function DeleteAccountPage() {
   if (!user) {
     return (
       <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-        <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
-          <p className="text-[14px] text-muted">Sign in to manage account deletion.</p>
-          <a href="/login?next=/account/delete" className="mt-4 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white">
+        <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
+          <p className="text-sm text-muted">Sign in to manage account deletion.</p>
+          <a href="/login?next=/account/delete" className="btn btn-primary mt-4">
             Sign in
           </a>
         </div>
@@ -62,25 +62,25 @@ export default function DeleteAccountPage() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 sm:p-8">
+      <div className="w-full rounded-card border border-line bg-card p-6 sm:p-8">
         <p className="eyebrow text-deal">Danger zone</p>
-        <h1 className="display mt-2 text-[26px]">Delete your account</h1>
-        <p className="mt-3 text-[14px] text-muted">
+        <h1 className="display mt-2 text-3xl">Delete your account</h1>
+        <p className="mt-3 text-sm text-muted">
           This permanently deletes your {BRAND.name} account — your profile,
           listings, messages, offers and saved items. It can&apos;t be undone.
           Accounts with order history can&apos;t be deleted this way; contact{" "}
           {BRAND.supportEmail} instead.
         </p>
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-sm text-muted">
           To confirm it&apos;s really you, we&apos;ll email a link to{" "}
           <strong>{user.email}</strong>. Opening it won&apos;t delete anything by
           itself — it takes you to a final confirmation step.
         </p>
 
         {status === "sent" ? (
-          <div className="mt-5 rounded-[10px] border border-good/40 bg-paper p-4">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
-            <p className="mt-1 text-[13.5px] text-muted">
+          <div className="mt-5 rounded-card border border-good/40 bg-paper p-4">
+            <p className="text-sm font-semibold text-good">Check your inbox</p>
+            <p className="mt-1 text-sm text-muted">
               Open the link on this device to finish deleting your account.
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function DeleteAccountPage() {
             type="button"
             onClick={sendConfirmation}
             disabled={status === "sending"}
-            className="mt-5 w-full rounded-md border border-deal px-5 py-3 text-[14px] font-semibold text-deal transition hover:bg-deal-soft disabled:opacity-50"
+            className="btn btn-danger mt-5 w-full"
           >
             {status === "sending" ? "Sending…" : "Email me a confirmation link"}
           </button>

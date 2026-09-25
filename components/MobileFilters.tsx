@@ -32,7 +32,7 @@ export function MobileFilters({
     <div className="lg:hidden">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-md border border-line bg-card py-2.5 text-[13px] font-semibold"
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-line bg-card py-2.5 text-sm font-semibold"
       >
         Filters
         {activeCount > 0 && (
@@ -51,10 +51,10 @@ export function MobileFilters({
           />
           <div className="relative max-h-[85vh] overflow-y-auto rounded-t-2xl bg-paper p-4 pb-8">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="display text-[20px]">Filters</h2>
+              <h2 className="display text-xl">Filters</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded border border-line px-3 py-1.5 text-[13px]"
+                className="rounded-lg border border-line px-3 py-1.5 text-sm"
               >
                 Done
               </button>

@@ -56,30 +56,30 @@ export function BuyingTabs({
               key={t.key}
               type="button"
               onClick={() => setActiveKey(t.key)}
-              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-[14px] transition ${
+              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-sm transition ${
                 activeTab.key === t.key
                   ? "border-trust font-semibold text-trust"
                   : "border-transparent text-muted hover:text-ink"
               }`}
             >
               {t.label}
-              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-[11.5px] font-semibold text-trust">{count}</span>}
+              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-xs font-semibold text-trust">{count}</span>}
             </button>
           );
         })}
       </div>
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-[14px] border border-dashed border-line bg-card p-14 text-center">
-          <h2 className="display text-[20px]">Nothing here</h2>
-          <p className="mt-2 text-[14px] text-muted">
+        <div className="mt-6 rounded-card border border-dashed border-line bg-card p-14 text-center">
+          <h2 className="display text-xl">Nothing here</h2>
+          <p className="mt-2 text-sm text-muted">
             {activeTab.key === "to-pay"
               ? "Orders waiting on payment show up here."
               : "Buy something and it'll show up in the right tab as it moves."}
           </p>
           <Link
             href="/shop"
-            className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+            className="btn btn-primary mt-4"
           >
             Browse listings
           </Link>
@@ -89,9 +89,9 @@ export function BuyingTabs({
           {items.map((o) => (
             <li
               key={o.id}
-              className="flex flex-wrap items-center gap-4 rounded-[14px] border border-line bg-card p-4 transition hover:border-ink/25"
+              className="flex flex-wrap items-center gap-4 rounded-card border border-line bg-card p-4 transition hover:border-ink/25"
             >
-              <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
+              <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-lg bg-ink">
                 <ProductImage
                   src={o.listingImage}
                   alt={o.listingTitle ?? "Listing"}
@@ -104,7 +104,7 @@ export function BuyingTabs({
               <div className="min-w-0 flex-1">
                 <Link
                   href={o.listingSlug ? `/product/${o.listingId}/${o.listingSlug}` : "#"}
-                  className="line-clamp-1 text-[14px] font-semibold hover:text-trust"
+                  className="line-clamp-1 text-sm font-semibold hover:text-trust"
                 >
                   {o.listingTitle ?? "Listing"}
                 </Link>

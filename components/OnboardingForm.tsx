@@ -45,13 +45,13 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
   return (
     <main className="mx-auto max-w-[560px] px-4 py-16">
       <p className="eyebrow">Welcome to {BRAND.name}</p>
-      <h1 className="display mt-2 text-[28px]">Set up your profile</h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <h1 className="display mt-2 text-3xl">Set up your profile</h1>
+      <p className="mt-2 text-sm text-muted">
         Signed in as {email}. This is what buyers and sellers see when they
         deal with you — it takes a minute.
       </p>
 
-      <div className="mt-8 space-y-5 rounded-[10px] border border-line bg-card p-6">
+      <div className="mt-8 space-y-5 rounded-card border border-line bg-card p-6">
         <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} fallback={email[0]?.toUpperCase() ?? "?"} />
 
         <label className="block">
@@ -120,7 +120,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
         <button
           onClick={submit}
           disabled={busy || !usernameValid}
-          className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+          className="btn btn-primary w-full"
         >
           {busy ? "Saving…" : "Continue"}
         </button>

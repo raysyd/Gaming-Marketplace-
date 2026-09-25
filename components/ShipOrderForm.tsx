@@ -43,7 +43,7 @@ export function ShipOrderForm({ id, fulfillmentMethod = "shipping" }: { id: stri
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rgb-ring shrink-0 rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-primary btn-sm rgb-ring shrink-0"
         >
           {busy ? "Saving…" : "Mark ready for pickup"}
         </button>
@@ -58,13 +58,13 @@ export function ShipOrderForm({ id, fulfillmentMethod = "shipping" }: { id: stri
           value={tracking}
           onChange={(e) => setTracking(e.target.value)}
           placeholder="Tracking number"
-          className="input w-[160px] text-[13px]"
+          className="input w-[160px] text-sm"
         />
         <button
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rgb-ring shrink-0 rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-primary btn-sm rgb-ring shrink-0"
         >
           {busy ? "Saving…" : "Mark posted"}
         </button>

@@ -83,7 +83,7 @@ export function PhotoUploader({
         {photos.map((src, i) => (
           <div
             key={src + i}
-            className="relative h-20 w-24 overflow-hidden rounded border border-line bg-ink"
+            className="relative h-20 w-24 overflow-hidden rounded-lg border border-line bg-ink"
           >
             <Image src={src} alt="" fill sizes="96px" className="object-cover" />
             <button
@@ -105,7 +105,7 @@ export function PhotoUploader({
           <button
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="h-20 w-24 rounded border border-dashed border-line text-[12px] text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-50"
+            className="h-20 w-24 rounded-lg border border-dashed border-line text-xs text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-50"
           >
             {busy ? "Uploading…" : "+ Add photos"}
           </button>

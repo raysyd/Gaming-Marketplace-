@@ -18,8 +18,8 @@ export default function ContactPage() {
 
       <div className="mt-10 max-w-2xl">
         <p className="eyebrow">Contact</p>
-        <h1 className="display mt-2 text-[32px]">Get in touch</h1>
-        <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+        <h1 className="display mt-2 text-3xl">Get in touch</h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
           Most things are faster to resolve from inside your account — a few
           common ones are below. For anything else, email us directly.
         </p>
@@ -30,23 +30,23 @@ export default function ContactPage() {
           <Link
             key={href}
             href={href}
-            className="rounded-[10px] border border-line bg-card p-4 transition hover:border-ink/30"
+            className="rounded-card border border-line bg-card p-4 transition hover:border-ink/30"
           >
-            <p className="text-[14px] font-semibold">{title}</p>
+            <p className="text-sm font-semibold">{title}</p>
             <p className="spec mt-1 text-muted">{body}</p>
           </Link>
         ))}
       </div>
 
-      <div className="mt-10 rounded-[10px] border border-line bg-card p-6">
-        <h2 className="display text-[20px]">Email support</h2>
-        <p className="mt-2 max-w-md text-[14px] text-muted">
+      <div className="mt-10 rounded-card border border-line bg-card p-6">
+        <h2 className="display text-xl">Email support</h2>
+        <p className="mt-2 max-w-md text-sm text-muted">
           For anything not covered above — account issues, feedback, press,
           or something that just doesn&apos;t fit a category.
         </p>
         <a
           href={`mailto:${BRAND.supportEmail}`}
-          className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+          className="btn btn-primary mt-4"
         >
           {BRAND.supportEmail}
         </a>

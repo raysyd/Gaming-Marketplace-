@@ -117,11 +117,11 @@ export default function SecuritySettingsPage() {
   if (!user)
     return (
       <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-        <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
-          <p className="text-[14px] text-muted">Sign in to manage account security.</p>
+        <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
+          <p className="text-sm text-muted">Sign in to manage account security.</p>
           <Link
             href="/login?next=/account/security"
-            className="mt-4 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+            className="btn btn-primary mt-4"
           >
             Sign in
           </Link>
@@ -134,8 +134,8 @@ export default function SecuritySettingsPage() {
   return (
     <main className="mx-auto max-w-[560px] px-4 py-16">
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-2 text-[28px]">Two-factor authentication</h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <h1 className="display mt-2 text-3xl">Two-factor authentication</h1>
+      <p className="mt-2 text-sm text-muted">
         Optional for buyers. Required before connecting a payout account as a
         seller — see{" "}
         <Link href="/selling#payouts" className="text-trust hover:underline">
@@ -148,28 +148,28 @@ export default function SecuritySettingsPage() {
       {error && <p className="spec mt-4 text-deal">{error}</p>}
 
       {factors === null ? null : verifiedFactor ? (
-        <div className="mt-6 rounded-[10px] border border-good/40 bg-card p-5">
-          <p className="text-[14px] font-semibold text-good">✓ Enabled</p>
-          <p className="mt-1 text-[13.5px] text-muted">
+        <div className="mt-6 rounded-card border border-good/40 bg-card p-5">
+          <p className="text-sm font-semibold text-good">✓ Enabled</p>
+          <p className="mt-1 text-sm text-muted">
             {verifiedFactor.friendly_name ?? "Authenticator app"} is protecting sign-in.
           </p>
           <button
             type="button"
             onClick={() => removeFactor(verifiedFactor.id)}
             disabled={busy}
-            className="mt-4 rounded-md border border-deal px-4 py-2 text-[13px] font-semibold text-deal transition hover:bg-deal-soft disabled:opacity-50"
+            className="btn btn-danger btn-sm mt-4"
           >
             Turn off
           </button>
         </div>
       ) : enrolling ? (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-5">
-          <p className="text-[14px] font-semibold">Scan this in your authenticator app</p>
+        <div className="mt-6 rounded-card border border-line bg-card p-5">
+          <p className="text-sm font-semibold">Scan this in your authenticator app</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={enrolling.qrCode} alt="TOTP QR code" className="mt-3 h-44 w-44" />
           <p className="spec mt-2 text-muted">
             Can&apos;t scan it? Enter this key manually:{" "}
-            <code className="rounded bg-paper px-1.5 py-0.5">{enrolling.secret}</code>
+            <code className="rounded-lg bg-paper px-1.5 py-0.5">{enrolling.secret}</code>
           </p>
           <label htmlFor="totp-code" className="eyebrow mt-4 block">
             6-digit code
@@ -196,7 +196,7 @@ export default function SecuritySettingsPage() {
             <button
               type="submit"
               disabled={busy || code.length !== 6}
-              className="rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-primary btn-sm"
             >
               {busy ? "Verifying…" : "Confirm"}
             </button>
@@ -217,7 +217,7 @@ export default function SecuritySettingsPage() {
           type="button"
           onClick={startEnroll}
           disabled={busy}
-          className="mt-6 rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-primary mt-6"
         >
           {busy ? "Starting…" : "Enable two-factor authentication"}
         </button>

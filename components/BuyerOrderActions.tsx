@@ -70,7 +70,7 @@ export function BuyerOrderActions({
 
   if (reporting)
     return (
-      <div className="w-full max-w-sm rounded-md border border-line bg-paper p-3">
+      <div className="w-full max-w-sm rounded-lg border border-line bg-paper p-3">
         <label htmlFor={`dispute-${id}`} className="eyebrow">
           What&apos;s wrong?
         </label>
@@ -80,21 +80,21 @@ export function BuyerOrderActions({
           onChange={(e) => setReason(e.target.value)}
           rows={3}
           placeholder="Item doesn't match the listing, arrived damaged, etc."
-          className="input mt-1.5 w-full resize-y text-[13px]"
+          className="input mt-1.5 w-full resize-y text-sm"
         />
         <div className="mt-2 flex gap-2">
           <button
             type="button"
             onClick={submitDispute}
             disabled={busy}
-            className="rounded bg-deal px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+            className="btn btn-primary btn-sm"
           >
             {busy ? "Submitting…" : "Report problem"}
           </button>
           <button
             type="button"
             onClick={() => setReporting(false)}
-            className="rounded border border-line px-3 py-2 text-[13px] font-medium"
+            className="rounded-lg border border-line px-3 py-2 text-sm font-medium"
           >
             Cancel
           </button>
@@ -113,7 +113,7 @@ export function BuyerOrderActions({
           type="button"
           onClick={() => setReporting(true)}
           disabled={busy}
-          className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+          className="spec rounded-lg border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
         >
           Report a problem
         </button>
@@ -121,7 +121,7 @@ export function BuyerOrderActions({
           type="button"
           onClick={release}
           disabled={busy}
-          className="rgb-ring rounded-md bg-good px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="rgb-ring rounded-lg bg-good px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
         >
           {busy ? "Releasing…" : fulfillmentMethod === "pickup" ? "Confirm collection & release" : "Confirm delivery & release"}
         </button>

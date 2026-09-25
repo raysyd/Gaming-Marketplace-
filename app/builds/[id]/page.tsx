@@ -24,7 +24,7 @@ export default async function BuildPage({ params }: { params: Promise<{ id: stri
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="display text-[28px]">{build.title}</h1>
+          <h1 className="display text-3xl">{build.title}</h1>
           <p className="spec mt-1 text-muted">
             {build.authorName} · {timeAgo(build.createdAt)}
           </p>
@@ -35,7 +35,7 @@ export default async function BuildPage({ params }: { params: Promise<{ id: stri
       {build.photos.length > 0 && (
         <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {build.photos.map((src, i) => (
-            <div key={src + i} className="aspect-[4/3] overflow-hidden rounded-[10px] border border-line bg-ink">
+            <div key={src + i} className="aspect-[4/3] overflow-hidden rounded-card border border-line bg-ink">
               <ProductImage src={src} alt={build.title} category="Prebuilt PCs" seed={build.id + i} className="h-full w-full" showStockBadge={false} />
             </div>
           ))}
@@ -43,17 +43,17 @@ export default async function BuildPage({ params }: { params: Promise<{ id: stri
       )}
 
       {build.fpsNotes && (
-        <p className="spec mt-6 rounded-md border border-trust bg-trust/5 px-3 py-2 text-trust">
+        <p className="spec mt-6 rounded-lg border border-trust bg-trust/5 px-3 py-2 text-trust">
           {build.fpsNotes}
         </p>
       )}
 
       {build.description && (
-        <p className="mt-6 max-w-2xl text-[14.5px] leading-relaxed">{build.description}</p>
+        <p className="mt-6 max-w-2xl text-sm leading-relaxed">{build.description}</p>
       )}
 
       {build.specs.length > 0 && (
-        <dl className="mt-6 overflow-hidden rounded-[10px] border border-line bg-card">
+        <dl className="mt-6 overflow-hidden rounded-card border border-line bg-card">
           {build.specs.map((s, i) => (
             <div key={s.label} className={`flex justify-between px-4 py-2.5 ${i % 2 ? "bg-paper" : ""}`}>
               <dt className="spec text-muted">{s.label}</dt>

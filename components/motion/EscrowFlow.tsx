@@ -53,8 +53,8 @@ export function EscrowFlow() {
           <li key={title} className={k <= step ? "is-lit" : ""}>
             <span className="escrow-dot" aria-hidden="true">{icon}</span>
             <span className="spec text-deal">0{k + 1}</span>
-            <h3 className="mt-1 text-[15px] font-semibold">{title}</h3>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">{body}</p>
+            <h3 className="mt-1 text-base font-semibold">{title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">{body}</p>
           </li>
         ))}
       </ol>

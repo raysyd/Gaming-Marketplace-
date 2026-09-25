@@ -39,14 +39,14 @@ export function PremiumCard({
   };
 
   return (
-    <div className="mt-6 rounded-[10px] border border-line bg-card p-5">
+    <div className="mt-6 rounded-card border border-line bg-card p-5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="eyebrow">{badgeLabel}</h2>
         {active && (
-          <span className="spec rounded bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">Active</span>
+          <span className="spec rounded-lg bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">Active</span>
         )}
       </div>
-      <p className="mt-2 max-w-md text-[13.5px] text-muted">
+      <p className="mt-2 max-w-md text-sm text-muted">
         {active
           ? `You have up to ${listingLimit} active listings and ${maxPhotos} photos per listing, plus the ${badgeLabel} badge on your profile.`
           : `Up to ${listingLimit} active listings, ${maxPhotos} photos per listing, and the ${badgeLabel} badge — ${money(
@@ -61,7 +61,7 @@ export function PremiumCard({
       <button
         onClick={() => go(active ? "/api/premium/portal" : "/api/premium/checkout")}
         disabled={busy}
-        className="mt-3 rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+        className="btn btn-primary btn-sm mt-3"
       >
         {busy ? "Loading…" : active ? "Manage subscription" : `Upgrade to ${badgeLabel}`}
       </button>

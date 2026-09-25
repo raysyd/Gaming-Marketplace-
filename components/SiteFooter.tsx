@@ -6,9 +6,9 @@ export function SiteFooter() {
     <footer className="mt-16 bg-chrome text-white/70">
       <div className="mx-auto grid max-w-[1560px] gap-8 px-4 py-12 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
-          <span className="display text-[20px] text-white">{BRAND.name}</span>
-          <span className="rgb-text display text-[20px]">.</span>
-          <p className="mt-2 max-w-xs text-[13px]">{BRAND.blurb}</p>
+          <span className="display text-xl text-white">{BRAND.name}</span>
+          <span className="rgb-text display text-xl">.</span>
+          <p className="mt-2 max-w-xs text-sm">{BRAND.blurb}</p>
         </div>
         <FooterCol
           title="Buy"
@@ -39,7 +39,7 @@ export function SiteFooter() {
         />
         <div>
           <h4 className="eyebrow text-white/50">How it works</h4>
-          <ul className="mt-3 space-y-2 text-[13px]">
+          <ul className="mt-3 space-y-2 text-sm">
             <li>Sellers list. Buyers pay through {BRAND.name}.</li>
             <li>
               We hold the money until delivery is confirmed, then release it minus
@@ -65,7 +65,7 @@ function FooterCol({ title, links }: { title: string; links: [string, string][] 
   return (
     <div>
       <h4 className="eyebrow text-white/50">{title}</h4>
-      <ul className="mt-3 space-y-2 text-[13px]">
+      <ul className="mt-3 space-y-2 text-sm">
         {links.map(([label, href]) => (
           <li key={href}>
             <Link href={href} className="transition hover:text-deal">

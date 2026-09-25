@@ -47,13 +47,13 @@ export default async function AccountPage() {
   return (
     <main className="mx-auto max-w-[1100px] px-4 py-12 lg:px-6">
       <div className="flex items-center gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-trust text-[22px] font-bold text-white">
+        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-trust text-xl font-bold text-white">
           {(profile.display_name || profile.username || "?")[0].toUpperCase()}
         </span>
         <div>
           <p className="eyebrow">Account</p>
-          <h1 className="display mt-1 text-[34px]">Settings</h1>
-          <p className="mt-1 text-[14px] text-muted">
+          <h1 className="display mt-1 text-4xl">Settings</h1>
+          <p className="mt-1 text-sm text-muted">
             @{profile.username} · {user.email}
           </p>
         </div>
@@ -91,7 +91,7 @@ export default async function AccountPage() {
           limit) — this just makes that policy visible instead of a silent
           surprise the next time they try to list something. */}
       {!premium && (activeCount ?? 0) > plan.freeListingLimit && (
-        <div className="mt-4 rounded-[10px] border border-deal/40 bg-deal-soft px-4 py-3.5 text-[13.5px] leading-relaxed text-ink">
+        <div className="mt-4 rounded-card border border-deal/40 bg-deal-soft px-4 py-3.5 text-sm leading-relaxed text-ink">
           <strong>
             You have {activeCount} active listings, over the free plan&apos;s {plan.freeListingLimit}-listing limit.
           </strong>{" "}
@@ -105,9 +105,9 @@ export default async function AccountPage() {
       <nav aria-label="Account sections" className="grid gap-3 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
         <Link
           href="/selling#payouts"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover rounded-card border border-line bg-card p-5"
         >
-          <p className="text-[14px] font-semibold">Payout settings</p>
+          <p className="text-sm font-semibold">Payout settings</p>
           <p className="spec mt-1 text-muted">
             Connect or manage your Stripe payout account. {" "}
             Sidegrade never collects or stores your bank details or ABN itself.
@@ -115,21 +115,21 @@ export default async function AccountPage() {
         </Link>
         <Link
           href="/account/security"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover rounded-card border border-line bg-card p-5"
         >
-          <p className="text-[14px] font-semibold">Security</p>
+          <p className="text-sm font-semibold">Security</p>
           <p className="spec mt-1 text-muted">Two-factor authentication.</p>
         </Link>
         <Link
           href="/account/searches"
-          className="card-hover rounded-[14px] border border-line bg-card p-5"
+          className="card-hover rounded-card border border-line bg-card p-5"
         >
-          <p className="text-[14px] font-semibold">Saved searches</p>
+          <p className="text-sm font-semibold">Saved searches</p>
           <p className="spec mt-1 text-muted">Get emailed when a new listing matches.</p>
         </Link>
         <Link
           href="/account/delete"
-          className="rounded-[14px] border border-dashed border-line p-4 text-[13.5px] font-semibold text-[#e11d48] transition hover:border-[#e11d48]/50 hover:bg-[#e11d48]/5"
+          className="rounded-card border border-dashed border-line p-4 text-sm font-semibold text-[#e11d48] transition hover:border-[#e11d48]/50 hover:bg-[#e11d48]/5"
         >
           Delete account
         </Link>

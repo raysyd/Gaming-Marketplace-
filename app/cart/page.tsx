@@ -65,11 +65,11 @@ export default function CartPage() {
           <path d="M3 4h2l2.4 11.2a2 2 0 002 1.6h7.9a2 2 0 002-1.5L21 8H6.2" />
           <circle cx="10" cy="20.5" r="1.3" /><circle cx="17" cy="20.5" r="1.3" />
         </svg>
-        <h1 className="display mt-4 text-[30px]">Your cart is empty</h1>
-        <p className="mt-2 text-[14.5px] text-muted">
+        <h1 className="display mt-4 text-3xl">Your cart is empty</h1>
+        <p className="mt-2 text-sm text-muted">
           Find a card, a rig or a monitor and it&apos;ll show up here.
         </p>
-        <Link href="/shop" className="rgb-ring mt-6 inline-block rounded-full bg-ink px-7 py-3 text-[14px] font-semibold text-white">
+        <Link href="/shop" className="btn btn-primary rgb-ring mt-6">
           Browse listings
         </Link>
       </div>
@@ -80,50 +80,50 @@ export default function CartPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="eyebrow">Checkout</p>
-          <h1 className="display mt-1 text-[34px]">
-            Your cart <span className="text-[18px] font-medium text-muted">{items.reduce((n, i) => n + i.qty, 0)} items</span>
+          <h1 className="display mt-1 text-4xl">
+            Your cart <span className="text-xl font-medium text-muted">{items.reduce((n, i) => n + i.qty, 0)} items</span>
           </h1>
         </div>
-        <Link href="/shop" className="text-[14px] font-semibold text-trust hover:underline">Continue shopping →</Link>
+        <Link href="/shop" className="text-sm font-semibold text-trust hover:underline">Continue shopping →</Link>
       </div>
 
       {compat.status === "conflict" && (
-        <div className="mt-5 rounded-[12px] border border-deal bg-deal-soft px-5 py-4 text-[13.5px] leading-relaxed">
+        <div className="mt-5 rounded-card border border-deal bg-deal-soft px-5 py-4 text-sm leading-relaxed">
           <p className="font-semibold text-deal">⚠ Possible compatibility issue</p>
           <ul className="mt-1.5 list-disc space-y-1 pl-5 text-ink">
             {compat.warnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
           </ul>
-          <p className="mt-2 text-[12.5px] text-muted">
+          <p className="mt-2 text-xs text-muted">
             Based on what each seller listed. Worth double-checking with them before you buy.
           </p>
         </div>
       )}
       {compat.status === "ok" && (
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-good/10 px-3 py-1.5 text-[13px] font-semibold text-good">✓ These components look compatible</p>
+        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-good/10 px-3 py-1.5 text-sm font-semibold text-good">✓ These components look compatible</p>
       )}
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-[14px] border border-line bg-card">
+        <div className="rounded-card border border-line bg-card">
           <ul>
             {items.map((i, k) => (
               <li key={i.id} className={`flex gap-4 p-4 sm:p-5 ${k ? "border-t border-line" : ""}`}>
-                <Link href={`/product/${i.id}/${i.slug}`} className="relative h-[90px] w-[120px] shrink-0 overflow-hidden rounded-[10px] bg-ink sm:h-[105px] sm:w-[140px]">
+                <Link href={`/product/${i.id}/${i.slug}`} className="relative h-[90px] w-[120px] shrink-0 overflow-hidden rounded-card bg-ink sm:h-[105px] sm:w-[140px]">
                   {i.category ? (
                     <ProductImage src={i.image} alt="" category={i.category} seed={i.id} showStockBadge={false} className="h-full w-full" />
                   ) : (
-                    <span className="grid h-full w-full place-items-center bg-gradient-to-br from-[#4fa3ff] to-[#1f6feb] text-[26px] font-bold text-white">{i.title[0]}</span>
+                    <span className="grid h-full w-full place-items-center bg-gradient-to-br from-[#4fa3ff] to-[#1f6feb] text-3xl font-bold text-white">{i.title[0]}</span>
                   )}
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex items-start justify-between gap-4">
-                    <Link href={`/product/${i.id}/${i.slug}`} className="line-clamp-2 text-[15px] font-semibold leading-snug hover:text-trust">
+                    <Link href={`/product/${i.id}/${i.slug}`} className="line-clamp-2 text-base font-semibold leading-snug hover:text-trust">
                       {i.title}
                     </Link>
-                    <span className="display shrink-0 text-[20px] text-trust">{money(i.price * i.qty)}</span>
+                    <span className="display shrink-0 text-xl text-trust">{money(i.price * i.qty)}</span>
                   </div>
-                  <p className={`mt-1 text-[12.5px] ${i.shipsFree ? "text-good" : "text-muted"}`}>
+                  <p className={`mt-1 text-xs ${i.shipsFree ? "text-good" : "text-muted"}`}>
                     {i.shipsFree ? "Free shipping" : "Paid shipping"}
                     {i.qty > 1 && <span className="text-muted"> · {money(i.price)} each</span>}
                   </p>
@@ -132,21 +132,21 @@ export default function CartPage() {
                       <button
                         onClick={() => setQty(i.id, i.qty - 1)}
                         aria-label={`Reduce quantity of ${i.title}`}
-                        className="h-8 w-9 text-[16px] transition hover:bg-paper"
+                        className="h-8 w-9 text-base transition hover:bg-paper"
                       >
                         −
                       </button>
-                      <span className="w-7 text-center text-[13.5px] font-semibold tabular-nums">{i.qty}</span>
+                      <span className="w-7 text-center text-sm font-semibold tabular-nums">{i.qty}</span>
                       <button
                         onClick={() => setQty(i.id, i.qty + 1)}
                         disabled={i.qty >= i.stock}
                         aria-label={`Increase quantity of ${i.title}`}
-                        className="h-8 w-9 text-[16px] transition hover:bg-paper disabled:opacity-35"
+                        className="h-8 w-9 text-base transition hover:bg-paper disabled:opacity-35"
                       >
                         +
                       </button>
                     </div>
-                    <button onClick={() => remove(i.id)} className="text-[13px] text-muted underline underline-offset-2 hover:text-[#e11d48]">
+                    <button onClick={() => remove(i.id)} className="text-sm text-muted underline underline-offset-2 hover:text-[#e11d48]">
                       Remove
                     </button>
                   </div>
@@ -155,14 +155,14 @@ export default function CartPage() {
             ))}
           </ul>
           <div className="flex justify-end border-t border-line px-5 py-3">
-            <button onClick={clear} className="text-[13px] text-muted underline underline-offset-2 hover:text-ink">
+            <button onClick={clear} className="text-sm text-muted underline underline-offset-2 hover:text-ink">
               Empty cart
             </button>
           </div>
         </div>
 
-        <aside className="rounded-[14px] border border-line bg-card p-5 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
-          <h2 className="text-[18px] font-bold">Order summary</h2>
+        <aside className="rounded-card border border-line bg-card p-5 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
+          <h2 className="text-xl font-bold">Order summary</h2>
 
           {pickupOffered && (
             <div className="mt-4">
@@ -171,7 +171,7 @@ export default function CartPage() {
                 {(["shipping", "pickup"] as const).map((f) => (
                   <label
                     key={f}
-                    className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-[10px] border px-3 py-2.5 text-[13.5px] font-medium transition ${
+                    className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-card border px-3 py-2.5 text-sm font-medium transition ${
                       fulfillment === f ? "border-trust bg-trust-soft text-trust" : "border-line hover:border-ink/30"
                     }`}
                   >
@@ -187,14 +187,14 @@ export default function CartPage() {
                 ))}
               </div>
               {fulfillment === "pickup" && (
-                <p className="mt-2 text-[12.5px] text-muted">
+                <p className="mt-2 text-xs text-muted">
                   Payment still stays held until you confirm you&apos;ve collected it.
                 </p>
               )}
             </div>
           )}
 
-          <div className="mt-4 space-y-2.5 text-[14px]">
+          <div className="mt-4 space-y-2.5 text-sm">
             <div className="flex justify-between text-muted">
               <span>Subtotal</span>
               <span className="text-ink">{money(subtotal)}</span>
@@ -206,13 +206,13 @@ export default function CartPage() {
               </span>
             </div>
             <div className="flex items-baseline justify-between border-t border-dashed border-line pt-3 font-semibold">
-              <span className="text-[16px]">Total</span>
-              <span className="display text-[26px]">{money(total)}</span>
+              <span className="text-base">Total</span>
+              <span className="display text-3xl">{money(total)}</span>
             </div>
           </div>
 
           {mixedSellers && (
-            <p className="mt-4 rounded-[10px] bg-deal-soft px-3 py-2.5 text-[12.5px] leading-relaxed text-ink">
+            <p className="mt-4 rounded-card bg-deal-soft px-3 py-2.5 text-xs leading-relaxed text-ink">
               Items in this cart are from different sellers. Remove all but
               one seller&apos;s items to check out. Each order pays one
               seller.
@@ -222,14 +222,14 @@ export default function CartPage() {
           <button
             onClick={checkout}
             disabled={busy || mixedSellers}
-            className="rgb-ring mt-4 h-[50px] w-full rounded-[10px] bg-deal text-[15.5px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+            className="btn btn-primary rgb-ring mt-4 w-full"
           >
             {busy ? "Opening checkout…" : "Checkout securely"}
           </button>
 
-          {note && <p className="mt-3 text-[13px] text-deal">{note}</p>}
+          {note && <p className="mt-3 text-sm text-deal">{note}</p>}
 
-          <ul className="mt-5 space-y-2.5 border-t border-line pt-4 text-[12.5px] text-muted">
+          <ul className="mt-5 space-y-2.5 border-t border-line pt-4 text-xs text-muted">
             <li className="flex gap-2"><span className="text-good">✓</span>{BRAND.name} holds your payment until you confirm the item arrived.</li>
             <li className="flex gap-2"><span className="text-good">✓</span>The seller is paid only after delivery, minus a {BRAND.feePercent}% fee.</li>
             <li className="flex gap-2"><span className="text-good">✓</span>Card details go straight to Stripe. We never see them.</li>

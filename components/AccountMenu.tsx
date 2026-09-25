@@ -31,7 +31,7 @@ export function AccountMenu() {
   }, [open]);
 
   if (loading)
-    return <span className="h-9 w-9 rounded px-2.5 py-2" aria-hidden="true" />;
+    return <span className="h-9 w-9 rounded-lg px-2.5 py-2" aria-hidden="true" />;
 
   if (!user)
     return (
@@ -39,7 +39,7 @@ export function AccountMenu() {
         href="/login"
         aria-label="Sign in"
         title="Sign in"
-        className="grid h-9 w-9 place-items-center rounded bg-white/10 text-[18px] transition hover:bg-white/20"
+        className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-xl transition hover:bg-white/20"
       >
         <UserIcon />
         <span className="sr-only">Sign in</span>
@@ -55,13 +55,13 @@ export function AccountMenu() {
         aria-label="Open account menu"
         title="Account"
         onClick={() => setOpen((v) => !v)}
-        className="grid h-9 w-9 place-items-center rounded transition hover:bg-chrome-2"
+        className="grid h-9 w-9 place-items-center rounded-lg transition hover:bg-chrome-2"
       >
         <UserIcon />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 min-w-[190px] rounded-md border border-line bg-card py-1.5 shadow-lg">
+        <div className="absolute right-0 top-full z-50 min-w-[190px] rounded-lg border border-line bg-card py-1.5 shadow-lg">
           <p className="spec truncate border-b border-line px-4 pb-2 text-muted">
             {user.email}
           </p>
@@ -78,7 +78,7 @@ export function AccountMenu() {
               href={href}
               prefetch={false}
               onClick={closeMenu}
-              className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+              className="block px-4 py-2 text-sm text-ink transition hover:bg-paper"
             >
               {label}
             </Link>
@@ -96,7 +96,7 @@ export function AccountMenu() {
               href={href}
               prefetch={false}
               onClick={closeMenu}
-              className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+              className="block px-4 py-2 text-sm text-ink transition hover:bg-paper"
             >
               {label}
             </Link>
@@ -106,7 +106,7 @@ export function AccountMenu() {
             href="/sell"
             prefetch={false}
             onClick={closeMenu}
-            className="block border-t border-line px-4 py-2 text-[13px] font-semibold text-trust transition hover:bg-paper"
+            className="block border-t border-line px-4 py-2 text-sm font-semibold text-trust transition hover:bg-paper"
           >
             List an item
           </Link>
@@ -115,7 +115,7 @@ export function AccountMenu() {
             href="/account"
             prefetch={false}
             onClick={closeMenu}
-            className="block border-t border-line px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+            className="block border-t border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
           >
             Profile & settings
           </Link>
@@ -124,7 +124,7 @@ export function AccountMenu() {
             href="/account/security"
             prefetch={false}
             onClick={closeMenu}
-            className="block px-4 py-2 text-[13px] text-ink transition hover:bg-paper"
+            className="block px-4 py-2 text-sm text-ink transition hover:bg-paper"
           >
             Security (2FA)
           </Link>
@@ -137,7 +137,7 @@ export function AccountMenu() {
           <form action="/auth/signout" method="post" className="border-t border-line">
             <button
               type="submit"
-              className="w-full px-4 py-2 text-left text-[13px] text-ink transition hover:bg-paper"
+              className="w-full px-4 py-2 text-left text-sm text-ink transition hover:bg-paper"
             >
               Sign out
             </button>
@@ -146,7 +146,7 @@ export function AccountMenu() {
             href="/account/delete"
             prefetch={false}
             onClick={closeMenu}
-            className="block px-4 py-2 text-[13px] text-deal transition hover:bg-paper"
+            className="block px-4 py-2 text-sm text-deal transition hover:bg-paper"
           >
             Delete account
           </Link>

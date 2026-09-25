@@ -16,14 +16,14 @@ export function WishlistGrid({ listings }: { listings: Listing[] }) {
         <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="text-muted opacity-60">
           <path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z" />
         </svg>
-        <h1 className="display mt-4 text-[30px]">Nothing saved yet</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <h1 className="display mt-4 text-3xl">Nothing saved yet</h1>
+        <p className="mt-2 text-sm text-muted">
           Tap the heart on any listing to keep an eye on it. We&apos;ll show you
           when the price drops.
         </p>
         <Link
           href="/shop"
-          className="rgb-ring mt-6 inline-block rounded-full bg-ink px-7 py-3 text-[14px] font-semibold text-white"
+          className="btn btn-primary rgb-ring mt-6"
         >
           Browse listings
         </Link>
@@ -32,7 +32,7 @@ export function WishlistGrid({ listings }: { listings: Listing[] }) {
 
   return (
     <div className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
-      <h1 className="display text-[34px]">Saved items</h1>
+      <h1 className="display text-4xl">Saved items</h1>
       <p className="spec mt-1 text-muted">
         {saved.length} saved · {money(total)} total
       </p>

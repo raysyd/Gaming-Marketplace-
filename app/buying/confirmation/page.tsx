@@ -58,35 +58,35 @@ export default async function OrderConfirmationPage({
   return (
     <div className="mx-auto max-w-[640px] px-4 py-16">
       <p className="eyebrow text-good">Order confirmed</p>
-      <h1 className="display mt-2 text-[30px]">Thanks — it&apos;s on its way to being shipped.</h1>
+      <h1 className="display mt-2 text-3xl">Thanks — it&apos;s on its way to being shipped.</h1>
       <p className="spec mt-2 text-muted">
         Order {session.payment_intent ? String(session.payment_intent).slice(-8).toUpperCase() : session.id.slice(-8).toUpperCase()}
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-[10px] border border-line bg-card">
+      <div className="mt-6 overflow-hidden rounded-card border border-line bg-card">
         {items.map((li) => (
           <div key={li.id} className="flex justify-between border-b border-line px-4 py-3 last:border-0">
-            <span className="text-[14px]">{li.description}</span>
-            <span className="text-[14px] font-semibold">{money((li.amount_total ?? 0) / 100)}</span>
+            <span className="text-sm">{li.description}</span>
+            <span className="text-sm font-semibold">{money((li.amount_total ?? 0) / 100)}</span>
           </div>
         ))}
         {shippingLine && (
           <div className="flex justify-between border-b border-line px-4 py-3 text-muted">
-            <span className="text-[14px]">Shipping</span>
-            <span className="text-[14px]">{money((shippingLine.amount_total ?? 0) / 100)}</span>
+            <span className="text-sm">Shipping</span>
+            <span className="text-sm">{money((shippingLine.amount_total ?? 0) / 100)}</span>
           </div>
         )}
         <div className="flex justify-between px-4 py-3 font-semibold">
           <span>Total paid</span>
-          <span className="display text-[18px]">{money((session.amount_total ?? 0) / 100)}</span>
+          <span className="display text-xl">{money((session.amount_total ?? 0) / 100)}</span>
         </div>
       </div>
 
       <p className="spec mt-4 text-muted">Sold by {sellerName}</p>
 
-      <div className="mt-8 rounded-[10px] border border-line bg-card p-5">
+      <div className="mt-8 rounded-card border border-line bg-card p-5">
         <h2 className="eyebrow">What happens next</h2>
-        <ol className="mt-2 space-y-1.5 text-[14px] text-muted">
+        <ol className="mt-2 space-y-1.5 text-sm text-muted">
           <li>1. {BRAND.name} holds your payment — the seller hasn&apos;t been paid yet.</li>
           <li>2. The seller posts within {BRAND.orderWindowHours} hours and adds tracking.</li>
           <li>
@@ -101,7 +101,7 @@ export default async function OrderConfirmationPage({
 
       <Link
         href="/buying"
-        className="mt-6 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+        className="btn btn-primary mt-6"
       >
         Go to your orders
       </Link>

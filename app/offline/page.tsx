@@ -6,10 +6,10 @@ import { BRAND } from "@/lib/brand";
 export default function OfflinePage() {
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
+      <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
         <p className="eyebrow text-trust">Offline</p>
-        <h1 className="display mt-2 text-[24px]">No connection right now</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <h1 className="display mt-2 text-3xl">No connection right now</h1>
+        <p className="mt-2 text-sm text-muted">
           {BRAND.name} needs a connection for anything beyond what&apos;s
           already been loaded. Reconnect and try again.
         </p>

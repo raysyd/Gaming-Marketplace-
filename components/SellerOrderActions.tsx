@@ -41,7 +41,7 @@ export function SellerOrderActions({
           type="button"
           onClick={() => post("deliver", "Mark this order delivered? This starts the buyer's confirmation window.")}
           disabled={busy}
-          className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft disabled:opacity-50"
+          className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft disabled:opacity-50"
         >
           Mark delivered
         </button>
@@ -51,7 +51,7 @@ export function SellerOrderActions({
           type="button"
           onClick={() => post("refund", "Refund this buyer and cancel the sale?")}
           disabled={busy}
-          className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+          className="spec rounded-lg border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
         >
           {busy ? "Working…" : "Refund"}
         </button>

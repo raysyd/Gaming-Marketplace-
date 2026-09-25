@@ -95,9 +95,9 @@ export function BuyBox({
   };
 
   return (
-    <div className="rounded-[10px] border border-line bg-card p-5">
+    <div className="rounded-card border border-line bg-card p-5">
       <div className="flex items-end gap-3">
-        <span className="display text-[34px]">{money(listing.price)}</span>
+        <span className="display text-4xl">{money(listing.price)}</span>
         {listing.compareAt && (
           <span className="spec pb-2 text-muted">
             <span className="line-through">{money(listing.compareAt)}</span>{" "}
@@ -125,7 +125,7 @@ export function BuyBox({
           90 days — omitted entirely (not "0 sales") below ~5 comparable
           sales, since a range built on noise is worse than no range. */}
       {priceStats && (
-        <p className="spec mt-2 rounded-md border border-line bg-paper px-3 py-2 text-muted">
+        <p className="spec mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-muted">
           {BRAND.name} market value: {money(priceStats.low)}–{money(priceStats.high)}
           {listing.price <= priceStats.low && (
             <span className="ml-1.5 font-semibold text-good">Good deal ✓</span>
@@ -147,7 +147,7 @@ export function BuyBox({
 
       <div className="mt-4 space-y-2">
         {ownListing ? (
-          <div className="rounded-md border border-line bg-paper px-3 py-2.5 text-center">
+          <div className="rounded-lg border border-line bg-paper px-3 py-2.5 text-center">
             <p className="spec text-muted">This is your listing.</p>
             {listing.status === "active" && (
               <Link href={`/sell?edit=${listing.id}`} className="spec mt-1 inline-block font-semibold text-trust hover:underline">
@@ -156,13 +156,13 @@ export function BuyBox({
             )}
           </div>
         ) : listing.status === "sold" ? (
-          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
+          <p className="spec rounded-lg border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
             Sold out
           </p>
         ) : (
           <button
             onClick={addToCart}
-            className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
+            className="btn btn-primary w-full"
           >
             {added ? "Added to cart" : "Add to cart"}
           </button>
@@ -170,7 +170,7 @@ export function BuyBox({
         {added && !unavailable && !ownListing && (
           <button
             onClick={() => router.push("/cart")}
-            className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
+            className="btn btn-primary w-full"
           >
             Go to cart
           </button>
@@ -178,7 +178,7 @@ export function BuyBox({
         {!ownListing && (
           <button
             onClick={() => router.push(`/messages?listing=${listing.id}`)}
-            className="w-full rounded-md border border-ink/20 py-3 text-[14px] font-semibold transition hover:border-ink/50"
+            className="btn btn-secondary w-full"
           >
             Message {listing.sellerName.split(" ")[0]}
           </button>
@@ -186,7 +186,7 @@ export function BuyBox({
         {listing.acceptsOffers && !unavailable && !ownListing && !offering && (
           <button
             onClick={() => setOffering(true)}
-            className="w-full rounded-md border border-line py-3 text-[13px] font-medium text-muted transition hover:border-ink/40 hover:text-ink"
+            className="w-full rounded-lg border border-line py-3 text-sm font-medium text-muted transition hover:border-ink/40 hover:text-ink"
           >
             Make an offer
           </button>
@@ -194,7 +194,7 @@ export function BuyBox({
       </div>
 
       {offering && (
-        <div className="mt-4 rounded-md border border-line bg-paper p-3">
+        <div className="mt-4 rounded-lg border border-line bg-paper p-3">
           <label htmlFor="offer" className="eyebrow">
             Your offer
           </label>
@@ -204,12 +204,12 @@ export function BuyBox({
               value={offer}
               onChange={(e) => setOffer(e.target.value.replace(/[^0-9]/g, ""))}
               inputMode="numeric"
-              className="w-full rounded border border-line px-3 py-2 text-[14px]"
+              className="w-full rounded-lg border border-line px-3 py-2 text-sm"
             />
             <button
               onClick={sendOffer}
               disabled={busy}
-              className="whitespace-nowrap rounded bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-primary btn-sm whitespace-nowrap"
             >
               {busy ? "Sending…" : "Send offer"}
             </button>

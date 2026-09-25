@@ -287,10 +287,10 @@ export function LoginForm() {
 
   return (
     <div className="mx-auto w-full max-w-[460px] px-6 py-9 sm:px-9 sm:py-11">
-      <h1 className="display text-[28px]">
+      <h1 className="display text-3xl">
         {mode === "password" && action === "signup" ? `Create your ${BRAND.name} account` : `Sign in to ${BRAND.name}`}
       </h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <p className="mt-2 text-sm text-muted">
         {mode === "password"
           ? action === "signup"
             ? "Set a password so you can sign in on any device."
@@ -299,13 +299,13 @@ export function LoginForm() {
       </p>
 
       {next === "/cart" && (
-        <p className="mt-4 rounded-[10px] border border-trust/30 bg-trust/5 px-3 py-2 text-[13.5px] text-ink">
+        <p className="mt-4 rounded-card border border-trust/30 bg-trust/5 px-3 py-2 text-sm text-ink">
           Sign in to check out. Everything in your cart comes with you.
         </p>
       )}
 
       {urlError && (
-        <p className="spec mt-4 rounded border border-deal bg-deal-soft px-3 py-2 text-deal">
+        <p className="spec mt-4 rounded-lg border border-deal bg-deal-soft px-3 py-2 text-deal">
           Sign-in didn&apos;t complete: {urlError.replace(/_/g, " ")}. Try
           requesting a fresh link — they expire after an hour and only work once.
         </p>
@@ -316,7 +316,7 @@ export function LoginForm() {
           type="button"
           onClick={signInWithGoogle}
           disabled={status === "sending"}
-          className="w-full rounded-md border border-line bg-card py-3 text-[14px] font-semibold text-ink transition hover:border-trust disabled:opacity-50"
+          className="w-full rounded-lg border border-line bg-card py-3 text-sm font-semibold text-ink transition hover:border-trust disabled:opacity-50"
         >
           Continue with Google
         </button>
@@ -327,11 +327,11 @@ export function LoginForm() {
         </div>
 
         {mode === "password" && (
-          <div className="grid grid-cols-2 gap-1 rounded-md border border-line bg-card p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-card p-1">
             <button
               type="button"
               onClick={() => switchAction("signin")}
-              className={`rounded py-2 text-[13px] font-semibold transition ${
+              className={`rounded-lg py-2 text-sm font-semibold transition ${
                 action === "signin" ? "bg-ink text-white" : "text-ink hover:bg-paper"
               }`}
             >
@@ -340,7 +340,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => switchAction("signup")}
-              className={`rounded py-2 text-[13px] font-semibold transition ${
+              className={`rounded-lg py-2 text-sm font-semibold transition ${
                 action === "signup" ? "bg-ink text-white" : "text-ink hover:bg-paper"
               }`}
             >
@@ -350,9 +350,9 @@ export function LoginForm() {
         )}
 
         {status === "check-email" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
-            <p className="mt-1 text-[13.5px] text-muted">
+          <div className="rounded-card border border-good/40 bg-card p-5">
+            <p className="text-sm font-semibold text-good">Check your inbox</p>
+            <p className="mt-1 text-sm text-muted">
               We sent a confirmation link to {email.trim().toLowerCase()}. Open it
               to activate your account, then come back and sign in.
             </p>
@@ -361,15 +361,15 @@ export function LoginForm() {
               onClick={() => {
                 switchAction("signin");
               }}
-              className="mt-4 rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+              className="btn btn-secondary btn-sm mt-4"
             >
               Back to sign in
             </button>
           </div>
         ) : mode === "link" && status === "sent" && message !== "reset" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
-            <p className="mt-1 text-[13.5px] text-muted">
+          <div className="rounded-card border border-good/40 bg-card p-5">
+            <p className="text-sm font-semibold text-good">Check your inbox</p>
+            <p className="mt-1 text-sm text-muted">
               The link goes to {email.trim().toLowerCase()} and works once.
             </p>
             <p className="spec mt-3 text-muted">
@@ -381,7 +381,7 @@ export function LoginForm() {
                 type="button"
                 onClick={sendMagicLink}
                 disabled={cooldown > 0}
-                className="rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-primary btn-sm"
               >
                 {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend link"}
               </button>
@@ -391,23 +391,23 @@ export function LoginForm() {
                   setStatus("idle");
                   setCooldown(0);
                 }}
-                className="rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+                className="btn btn-secondary btn-sm"
               >
                 Use another email
               </button>
             </div>
           </div>
         ) : status === "sent" && message === "reset" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
-            <p className="mt-1 text-[13.5px] text-muted">
+          <div className="rounded-card border border-good/40 bg-card p-5">
+            <p className="text-sm font-semibold text-good">Check your inbox</p>
+            <p className="mt-1 text-sm text-muted">
               We sent a password reset link to {email.trim().toLowerCase()}. Open
               it on this device to set a new password.
             </p>
             <button
               type="button"
               onClick={() => setStatus("idle")}
-              className="mt-4 rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+              className="btn btn-secondary btn-sm mt-4"
             >
               Back to sign in
             </button>
@@ -445,7 +445,7 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-muted hover:text-ink"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted hover:text-ink"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -468,7 +468,7 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={forgotPassword}
-                    className="text-[13px] text-trust hover:underline"
+                    className="text-sm text-trust hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -477,7 +477,7 @@ export function LoginForm() {
                 <button
                   onClick={submitPassword}
                   disabled={status === "sending"}
-                  className="rgb-ring w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                  className="btn btn-primary rgb-ring w-full"
                 >
                   {status === "sending"
                     ? action === "signup"
@@ -494,7 +494,7 @@ export function LoginForm() {
               <button
                 onClick={sendMagicLink}
                 disabled={status === "sending"}
-                className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-primary w-full"
               >
                 {status === "sending" ? "Sending…" : "Email me a link"}
               </button>
@@ -509,7 +509,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => switchMode(mode === "password" ? "link" : "password")}
-              className="w-full text-center text-[13px] text-trust hover:underline"
+              className="w-full text-center text-sm text-trust hover:underline"
             >
               {mode === "password" ? "Use an email link instead" : "Use a password instead"}
             </button>

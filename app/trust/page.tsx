@@ -43,39 +43,39 @@ export default function TrustPage() {
 
       <div className="mt-10 max-w-2xl">
         <p className="eyebrow">Trust &amp; Safety</p>
-        <h1 className="display mt-2 text-[36px] sm:text-[44px]">
+        <h1 className="display mt-2 text-4xl sm:text-[44px]">
           How {BRAND.name} keeps a stranger&apos;s money safe.
         </h1>
       </div>
 
-      <div className="mt-8 flex items-start gap-4 rounded-[10px] border border-trust bg-trust-soft p-6 sm:p-7">
+      <div className="mt-8 flex items-start gap-4 rounded-card border border-trust bg-trust-soft p-6 sm:p-7">
         <LockIcon />
         <div>
-          <h2 className="text-[18px] font-semibold text-trust">{HERO[0]}</h2>
-          <p className="mt-2 max-w-lg text-[14.5px] leading-relaxed text-ink">{HERO[1]}</p>
+          <h2 className="text-xl font-semibold text-trust">{HERO[0]}</h2>
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink">{HERO[1]}</p>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {SECTIONS.map(([title, body, icon]) => (
-          <div key={title} className="rounded-[10px] border border-line bg-card p-6">
+          <div key={title} className="rounded-card border border-line bg-card p-6">
             <div className="text-trust">{icon}</div>
-            <h2 className="mt-3 text-[16px] font-semibold">{title}</h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-muted">{body}</p>
+            <h2 className="mt-3 text-base font-semibold">{title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-8 rounded-[10px] border border-line bg-card p-6">
-        <h2 className="display text-[20px]">Something gone wrong?</h2>
-        <p className="mt-2 text-[14px] text-muted">
+      <div className="mt-8 rounded-card border border-line bg-card p-6">
+        <h2 className="display text-xl">Something gone wrong?</h2>
+        <p className="mt-2 text-sm text-muted">
           Report it from the order in your account, or email {BRAND.supportEmail}.
           Do it inside {BRAND.orderWindowHours} hours of delivery and the payment
           stays held while we look at it.
         </p>
         <Link
           href="/buying"
-          className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+          className="btn btn-primary mt-4"
         >
           Go to your orders
         </Link>

@@ -8,12 +8,12 @@ export function RecentlySold({ items, title = "Recently sold" }: { items: SoldLi
   if (!items.length) return null;
   return (
     <div className="mt-6">
-      <h2 className="display text-[18px]">{title}</h2>
+      <h2 className="display text-xl">{title}</h2>
       <ul className="mt-3 space-y-1.5">
         {items.map((s) => (
           <li
             key={s.listingId}
-            className="flex items-center justify-between gap-3 rounded-md border border-line bg-card px-3 py-2 text-[13px]"
+            className="flex items-center justify-between gap-3 rounded-lg border border-line bg-card px-3 py-2 text-sm"
           >
             <span className="line-clamp-1">{s.title}</span>
             <span className="spec shrink-0 whitespace-nowrap text-muted">

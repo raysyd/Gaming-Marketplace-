@@ -16,15 +16,15 @@ export function SavedSearchRow({ id, label, href }: { id: string; label: string;
   };
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-[10px] border border-line bg-card p-4">
-      <Link href={href} className="text-[14px] font-semibold hover:text-trust">
+    <li className="flex items-center justify-between gap-3 rounded-card border border-line bg-card p-4">
+      <Link href={href} className="text-sm font-semibold hover:text-trust">
         {label}
       </Link>
       <button
         type="button"
         onClick={remove}
         disabled={busy}
-        className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+        className="spec rounded-lg border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
       >
         {busy ? "Removing…" : "Remove"}
       </button>

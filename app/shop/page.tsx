@@ -95,7 +95,7 @@ export default async function ShopPage({
             )}
             {sp.sub && <> / {findSub(sp.sub)?.name}</>}
           </nav>
-          <h1 className="display mt-1.5 text-[30px]">{heading}</h1>
+          <h1 className="display mt-1.5 text-3xl">{heading}</h1>
           <p className="spec mt-1 text-muted">
             {total.toLocaleString()} {total === 1 ? "listing" : "listings"}
             {pages > 1 && ` · page ${page} of ${pages}`}
@@ -114,7 +114,7 @@ export default async function ShopPage({
             <Link
               key={v}
               href={hrefWith({ sort: v, page: undefined })}
-              className={`shrink-0 whitespace-nowrap rounded px-2.5 py-1.5 text-[12.5px] transition ${
+              className={`shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs transition ${
                 (sp.sort ?? "new") === v
                   ? "bg-ink font-semibold text-white"
                   : "border border-line hover:border-ink/40"
@@ -137,14 +137,14 @@ export default async function ShopPage({
 
         <div>
           {items.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-line bg-card p-12 text-center">
-              <h2 className="display text-[20px]">Nothing matches those filters</h2>
-              <p className="mt-2 text-[14px] text-muted">
+            <div className="rounded-card border border-dashed border-line bg-card p-12 text-center">
+              <h2 className="display text-xl">Nothing matches those filters</h2>
+              <p className="mt-2 text-sm text-muted">
                 Widen the price band or clear a category to see more.
               </p>
               <Link
                 href="/shop"
-                className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+                className="btn btn-primary mt-4"
               >
                 Clear filters
               </Link>

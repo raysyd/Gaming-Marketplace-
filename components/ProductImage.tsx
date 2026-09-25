@@ -93,7 +93,7 @@ export function ProductImage({
           className="object-cover"
         />
         {showStockBadge && (
-          <span className="spec absolute bottom-2 right-2 rounded bg-ink/85 px-1.5 py-1 font-medium text-white">
+          <span className="spec absolute bottom-2 right-2 rounded-lg bg-ink/85 px-1.5 py-1 font-medium text-white">
             Stock photo
           </span>
         )}

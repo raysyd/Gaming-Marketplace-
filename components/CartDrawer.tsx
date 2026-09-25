@@ -151,7 +151,7 @@ export function CartDrawer() {
         title="Cart"
         className={s.cartBtn}
       >
-        <span className="text-[17px] leading-none" aria-hidden="true">🛒</span>
+        <span className="text-base leading-none" aria-hidden="true">🛒</span>
         <span className={`${s.cartCount} ${bump ? s.bump : ""}`}>{count}</span>
       </button>
       {mounted && drawerOpen && createPortal(panel, document.body)}

@@ -24,7 +24,7 @@ export function BuildActions({ id, ownerId }: { id: string; ownerId: string }) {
       type="button"
       onClick={remove}
       disabled={busy}
-      className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+      className="spec rounded-lg border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
     >
       {busy ? "Removing…" : "Take down"}
     </button>

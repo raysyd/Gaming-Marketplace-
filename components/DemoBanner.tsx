@@ -18,7 +18,7 @@ export function DemoBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-3 rounded-[10px] border border-trust/40 bg-trust-soft px-4 py-2.5">
+    <div className="mb-4 flex items-center justify-between gap-3 rounded-card border border-trust/40 bg-trust-soft px-4 py-2.5">
       <p className="spec text-trust">
         Preview — sample listings, not real inventory.
       </p>

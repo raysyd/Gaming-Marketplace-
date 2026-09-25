@@ -582,13 +582,13 @@ export function Messenger({
   if (conversations.length === 0) {
     return (
       <div className="mx-auto max-w-[1560px] px-4 py-20 text-center lg:px-6">
-        <h1 className="display text-[26px]">No conversations yet</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <h1 className="display text-3xl">No conversations yet</h1>
+        <p className="mt-2 text-sm text-muted">
           Message a seller from any listing and the thread shows up here.
         </p>
         <Link
           href="/shop"
-          className="mt-5 inline-block rounded-md bg-ink px-6 py-3 text-[14px] font-semibold text-white"
+          className="btn btn-primary mt-5"
         >
           Browse listings
         </Link>
@@ -598,11 +598,11 @@ export function Messenger({
 
   return (
     <div className="mx-auto max-w-[1560px] px-4 py-6 lg:px-6">
-      <h1 className="display mb-4 text-[30px]">Messages</h1>
+      <h1 className="display mb-4 text-3xl">Messages</h1>
 
       {/* Fixed-height app shell on desktop: the conversation list and the
           thread each scroll inside themselves instead of growing the page. */}
-      <div className="grid overflow-hidden rounded-[14px] border border-line bg-card lg:h-[calc(100vh-var(--header-offset,140px)-120px)] lg:min-h-[520px] lg:grid-cols-[340px_1fr]">
+      <div className="grid overflow-hidden rounded-card border border-line bg-card lg:h-[calc(100vh-var(--header-offset,140px)-120px)] lg:min-h-[520px] lg:grid-cols-[340px_1fr]">
         {/* Conversation list */}
         <aside
           className={`${showListOnMobile ? "block" : "hidden"} border-line lg:flex lg:min-h-0 lg:flex-col lg:border-r`}
@@ -627,7 +627,7 @@ export function Messenger({
                       isActive ? "bg-trust-soft" : "hover:bg-paper"
                     }`}
                   >
-                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded bg-ink">
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-ink">
                       {l && (
                         <ProductImage
                           src={l.image}
@@ -641,7 +641,7 @@ export function Messenger({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="truncate text-[13px] font-semibold">
+                        <span className="truncate text-sm font-semibold">
                           {c.otherPartyName}
                         </span>
                         <span className="spec shrink-0 text-muted">
@@ -649,7 +649,7 @@ export function Messenger({
                         </span>
                       </div>
                       <p className="spec truncate text-muted">{c.listingTitle}</p>
-                      <p className="mt-0.5 truncate text-[12.5px] text-muted">
+                      <p className="mt-0.5 truncate text-xs text-muted">
                         {c.lastMessage || "No messages yet"}
                       </p>
                     </div>
@@ -667,17 +667,17 @@ export function Messenger({
 
         {/* Thread */}
         <section
-          className={`${showListOnMobile ? "hidden" : "flex"} min-h-[70vh] flex-col sm:min-h-[560px] lg:flex lg:min-h-0`}
+          className={`${showListOnMobile ? "hidden" : "flex"} h-[calc(100dvh-var(--header-offset,120px)-40px)] min-h-[460px] flex-col lg:flex lg:h-auto lg:min-h-0`}
         >
           {active && (
-            <header className="flex items-center gap-3 border-b border-line p-3">
+            <header className="flex items-center gap-3 border-b border-line bg-card px-4 py-3">
               <button
                 onClick={() => setShowListOnMobile(true)}
-                className="spec rounded border border-line px-2 py-1 lg:hidden"
+                className="spec rounded-lg border border-line px-2 py-1 lg:hidden"
               >
                 Back
               </button>
-              <div className="h-9 w-9 overflow-hidden rounded bg-ink">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-ink">
                 {activeListing && (
                   <ProductImage
                     src={activeListing.image}
@@ -690,21 +690,20 @@ export function Messenger({
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-semibold">
+                <p className="truncate text-sm font-semibold">
                   {active.otherPartyName}
                 </p>
-                <Link
-                  href={`/product/${active.listingId}/${activeListing?.slug ?? ""}`}
-                  className="spec truncate text-trust hover:underline"
-                >
+                <p className="truncate text-xs text-muted">
                   {active.listingTitle}
-                </Link>
+                  {activeListing && <span className="font-semibold text-ink"> · {money(activeListing.price)}</span>}
+                </p>
               </div>
-              {activeListing && (
-                <span className="display shrink-0 text-[17px]">
-                  {money(activeListing.price)}
-                </span>
-              )}
+              <Link
+                href={`/product/${active.listingId}/${activeListing?.slug ?? ""}`}
+                className="btn btn-secondary btn-sm shrink-0"
+              >
+                View listing
+              </Link>
             </header>
           )}
 
@@ -714,8 +713,13 @@ export function Messenger({
                 Say hello — ask about condition, age, or what&apos;s included.
               </p>
             )}
-            {thread.map((m) => {
+            {thread.map((m, i) => {
               const mine = m.senderId === ME;
+              const sameGroup = (a?: Message, b?: Message) =>
+                Boolean(a && b && a.senderId === b.senderId && (a.kind ?? "text") === "text" && (b.kind ?? "text") === "text" &&
+                  Math.abs(+new Date(b.createdAt) - +new Date(a.createdAt)) < 5 * 60_000);
+              const joinsPrev = sameGroup(thread[i - 1], m);
+              const lastInGroup = !sameGroup(m, thread[i + 1]);
               if (m.kind === "system")
                 return (
                   <p key={m.id} className="spec py-1 text-center text-muted">
@@ -735,11 +739,11 @@ export function Messenger({
                             src={src}
                             alt="Photo in conversation"
                             loading="lazy"
-                            className="max-h-60 max-w-[240px] rounded-[14px] border border-line object-cover shadow-sm"
+                            className="max-h-60 max-w-[240px] rounded-card border border-line object-cover shadow-sm"
                           />
                         </a>
                       ) : (
-                        <div className="grid h-40 w-48 place-items-center rounded-[14px] border border-line bg-card text-muted">
+                        <div className="grid h-40 w-48 place-items-center rounded-card border border-line bg-card text-muted">
                           <span className="spec">Loading photo…</span>
                         </div>
                       )}
@@ -770,7 +774,7 @@ export function Messenger({
                       <p className="eyebrow text-deal">
                         {mine ? "You offered" : "Offer received"}
                       </p>
-                      <p className="display mt-1 text-[22px]">
+                      <p className="display mt-1 text-xl">
                         {money(m.offerAmount ?? 0)}
                       </p>
 
@@ -799,7 +803,7 @@ export function Messenger({
                           <button
                             onClick={() => m.offerId && respondToOffer(m.offerId, "accept")}
                             disabled={busy}
-                            className="rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50"
+                            className="btn btn-primary btn-sm"
                           >
                             Accept
                           </button>
@@ -807,7 +811,7 @@ export function Messenger({
                             <button
                               onClick={() => m.offerId && setCounteringOfferId(m.offerId)}
                               disabled={busy}
-                              className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold disabled:opacity-50"
+                              className="btn btn-secondary btn-sm"
                             >
                               Counter
                             </button>
@@ -815,7 +819,7 @@ export function Messenger({
                           <button
                             onClick={() => m.offerId && respondToOffer(m.offerId, "decline")}
                             disabled={busy}
-                            className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold disabled:opacity-50"
+                            className="btn btn-secondary btn-sm"
                           >
                             Decline
                           </button>
@@ -832,19 +836,19 @@ export function Messenger({
                               }))
                             }
                             placeholder="Your counter amount"
-                            className="input text-[13px]"
+                            className="input text-sm"
                           />
                           <div className="flex gap-2">
                             <button
                               onClick={() => m.offerId && respondToOffer(m.offerId, "counter")}
                               disabled={busy}
-                              className="rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50"
+                              className="btn btn-primary btn-sm"
                             >
                               Send counter
                             </button>
                             <button
                               onClick={() => setCounteringOfferId(null)}
-                              className="rounded border border-ink/25 px-3 py-1.5 text-[12px] font-semibold"
+                              className="btn btn-secondary btn-sm"
                             >
                               Cancel
                             </button>
@@ -854,7 +858,7 @@ export function Messenger({
                       {status === "accepted" && mine && (
                         <Link
                           href="/cart"
-                          className="mt-2 inline-block rounded bg-ink px-3 py-1.5 text-[12px] font-semibold text-white"
+                          className="btn btn-primary btn-sm mt-2"
                         >
                           Go to checkout
                         </Link>
@@ -870,21 +874,19 @@ export function Messenger({
               return (
                 <div
                   key={m.id}
-                  className={`flex ${mine ? "justify-end" : "justify-start"}`}
+                  className={`flex ${mine ? "justify-end" : "justify-start"} ${joinsPrev ? "!mt-1" : ""}`}
                 >
                   <div
-                    className={`max-w-[70%] px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ${
+                    className={`max-w-[75%] whitespace-pre-wrap break-words px-4 py-2.5 text-sm leading-relaxed sm:max-w-[65%] ${
                       mine
-                        ? "rounded-[18px] rounded-br-[6px] bg-trust text-white"
-                        : "rounded-[18px] rounded-bl-[6px] border border-line bg-card text-ink"
+                        ? `rounded-[18px] bg-ink text-white ${lastInGroup ? "rounded-br-[6px]" : ""}`
+                        : `rounded-[18px] border border-line bg-card text-ink ${lastInGroup ? "rounded-bl-[6px]" : ""}`
                     }`}
                   >
                     {m.body}
-                    <span
-                      className={`spec mt-1 block ${mine ? "text-white/70" : "text-muted"}`}
-                    >
-                      {clockTime(m.createdAt)}
-                    </span>
+                    {lastInGroup && (
+                      <span className="spec mt-1 block opacity-60">{clockTime(m.createdAt)}</span>
+                    )}
                   </div>
                 </div>
               );
@@ -912,7 +914,7 @@ export function Messenger({
                 disabled={uploading || !activeId}
                 aria-label="Send a photo"
                 title="Send a photo (JPEG, PNG, WebP or GIF, up to 5 MB)"
-                className="grid w-11 shrink-0 place-items-center rounded-md border border-line text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
+                className="grid w-11 shrink-0 place-items-center rounded-lg border border-line text-muted transition hover:border-ink/40 hover:text-ink disabled:opacity-40"
               >
                 {uploading ? (
                   <span className="spec">…</span>
@@ -936,12 +938,12 @@ export function Messenger({
                 rows={1}
                 placeholder="Write a message"
                 aria-label="Write a message"
-                className="max-h-28 flex-1 resize-none rounded-md border border-line px-3 py-2.5 text-[13.5px]"
+                className="max-h-28 flex-1 resize-none rounded-lg border border-line px-3 py-2.5 text-sm"
               />
               <button
                 onClick={send}
                 disabled={sending || !draft.trim()}
-                className="rounded-md bg-deal px-5 text-[13px] font-semibold text-white transition hover:brightness-110 disabled:opacity-40"
+                className="btn btn-primary"
               >
                 Send
               </button>

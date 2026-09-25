@@ -18,7 +18,7 @@ export function Pagination({
   return (
     <nav className="mt-8 flex items-center justify-center gap-1" aria-label="Pagination">
       {page > 1 && (
-        <Link href={makeHref(page - 1)} className="rounded border border-line px-3 py-2 text-[13px] hover:border-ink/40">
+        <Link href={makeHref(page - 1)} className="rounded-lg border border-line px-3 py-2 text-sm hover:border-ink/40">
           Previous
         </Link>
       )}
@@ -28,7 +28,7 @@ export function Pagination({
           key={p}
           href={makeHref(p)}
           aria-current={p === page ? "page" : undefined}
-          className={`rounded px-3 py-2 text-[13px] ${
+          className={`rounded-lg px-3 py-2 text-sm ${
             p === page
               ? "bg-ink font-semibold text-white"
               : "border border-line hover:border-ink/40"
@@ -39,7 +39,7 @@ export function Pagination({
       ))}
       {start + 5 <= pages && <span className="spec px-2 text-muted">…</span>}
       {page < pages && (
-        <Link href={makeHref(page + 1)} className="rounded border border-line px-3 py-2 text-[13px] hover:border-ink/40">
+        <Link href={makeHref(page + 1)} className="rounded-lg border border-line px-3 py-2 text-sm hover:border-ink/40">
           Next
         </Link>
       )}

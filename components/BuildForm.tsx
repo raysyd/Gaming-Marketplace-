@@ -46,7 +46,7 @@ export function BuildForm() {
   };
 
   return (
-    <div className="space-y-5 rounded-[10px] border border-line bg-card p-6">
+    <div className="space-y-5 rounded-card border border-line bg-card p-6">
       <label className="block">
         <span className="eyebrow mb-1.5 block">Title</span>
         <input
@@ -105,7 +105,7 @@ export function BuildForm() {
           <button
             type="button"
             onClick={() => setSpecs((p) => [...p, { label: "", value: "" }])}
-            className="spec rounded border border-line px-2.5 py-1.5 font-medium"
+            className="spec rounded-lg border border-line px-2.5 py-1.5 font-medium"
           >
             + Add spec
           </button>
@@ -117,7 +117,7 @@ export function BuildForm() {
       <button
         onClick={submit}
         disabled={busy || !title.trim()}
-        className="rgb-ring w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+        className="btn btn-primary rgb-ring w-full"
       >
         {busy ? "Posting…" : "Post build"}
       </button>

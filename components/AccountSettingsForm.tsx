@@ -77,9 +77,9 @@ export function AccountSettingsForm({
   };
 
   return (
-    <div className="mt-6 space-y-5 rounded-[10px] border border-line bg-card p-6">
+    <div className="mt-6 space-y-5 rounded-card border border-line bg-card p-6">
       {verified ? (
-        <p className="spec inline-block w-fit rounded bg-trust-soft px-2 py-1 font-semibold text-trust">
+        <p className="spec inline-block w-fit rounded-lg bg-trust-soft px-2 py-1 font-semibold text-trust">
           ✓ Verified seller
         </p>
       ) : (
@@ -140,7 +140,7 @@ export function AccountSettingsForm({
         <span className="eyebrow mb-1.5 block">Seller type</span>
         <div className="flex gap-4">
           {(["private", "business"] as const).map((t) => (
-            <label key={t} className="flex items-center gap-1.5 text-[13.5px]">
+            <label key={t} className="flex items-center gap-1.5 text-sm">
               <input
                 type="radio"
                 name="sellerType"
@@ -191,7 +191,7 @@ export function AccountSettingsForm({
       <button
         onClick={save}
         disabled={status === "saving"}
-        className="rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-chrome-2 disabled:opacity-50"
+        className="btn btn-primary"
       >
         {status === "saving" ? "Saving…" : "Save changes"}
       </button>

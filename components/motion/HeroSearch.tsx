@@ -66,15 +66,15 @@ export function HeroSearch() {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             autoComplete="off"
-            className="w-full bg-transparent py-3 text-[16px] outline-none"
+            className="w-full bg-transparent py-3 text-base outline-none"
           />
           {!q && (
-            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-[16px] text-muted">
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-base text-muted">
               Search &ldquo;{hint}<span className="caret" />&rdquo;
             </span>
           )}
         </div>
-        <button type="submit" className="rgb-ring shrink-0 rounded-md bg-deal px-5 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-110">
+        <button type="submit" className="btn btn-primary rgb-ring shrink-0">
           Search
         </button>
       </form>

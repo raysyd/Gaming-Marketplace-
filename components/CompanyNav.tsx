@@ -24,7 +24,7 @@ export function CompanyNav({ active }: { active: string }) {
             key={href}
             href={href}
             aria-current={isActive ? "page" : undefined}
-            className={`shrink-0 whitespace-nowrap border-b-2 px-0.5 pb-3 text-[13px] font-semibold transition ${
+            className={`shrink-0 whitespace-nowrap border-b-2 px-0.5 pb-3 text-sm font-semibold transition ${
               isActive
                 ? "border-ink text-ink"
                 : "border-transparent text-muted hover:text-ink"

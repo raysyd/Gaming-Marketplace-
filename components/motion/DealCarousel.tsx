@@ -68,7 +68,7 @@ export function DealCarousel({ deals }: { deals: Listing[] }) {
             aria-hidden={k !== i || undefined}
             tabIndex={k === i ? undefined : -1}
           >
-          <div className="relative overflow-hidden rounded-md bg-ink">
+          <div className="relative overflow-hidden rounded-lg bg-ink">
             <div className={k === i ? "deal-swap" : undefined}>
               <ProductImage
                 src={d.image}
@@ -86,7 +86,7 @@ export function DealCarousel({ deals }: { deals: Listing[] }) {
           </div>
           <div className={`p-3 ${k === i ? "deal-swap" : ""}`} style={{ animationDelay: "60ms" }}>
             <p className="eyebrow text-deal">Biggest savings right now · {k + 1}/{n}</p>
-            <h2 className="mt-1 line-clamp-1 text-[16px] font-semibold leading-snug">{d.title}</h2>
+            <h2 className="mt-1 line-clamp-1 text-base font-semibold leading-snug">{d.title}</h2>
             <SpecGrid listing={d} />
             {d.fps1080p && (
               <div className="mt-4">
@@ -95,7 +95,7 @@ export function DealCarousel({ deals }: { deals: Listing[] }) {
             )}
             <div className="mt-4 flex items-end justify-between border-t border-line pt-3">
               <div>
-                <div className="display text-[30px]">{money(d.price)}</div>
+                <div className="display text-3xl">{money(d.price)}</div>
                 {d.compareAt && (
                   <div className="spec text-muted">
                     <span className="line-through">{money(d.compareAt)}</span>

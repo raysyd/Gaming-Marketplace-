@@ -59,17 +59,17 @@ function ConfirmDeleteContent() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 text-center sm:p-8">
+      <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
         {checking ? (
-          <p className="text-[14px] text-muted">Checking your link…</p>
+          <p className="text-sm text-muted">Checking your link…</p>
         ) : linkError ? (
           <>
             <p className="eyebrow text-deal">Link unavailable</p>
-            <h1 className="display mt-2 text-[26px]">Request a fresh link</h1>
-            <p className="mt-3 text-[14px] text-muted">{linkError}</p>
+            <h1 className="display mt-2 text-3xl">Request a fresh link</h1>
+            <p className="mt-3 text-sm text-muted">{linkError}</p>
             <a
               href="/account/delete"
-              className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+              className="btn btn-primary mt-6"
             >
               Back to account deletion
             </a>
@@ -77,16 +77,16 @@ function ConfirmDeleteContent() {
         ) : status === "done" ? (
           <>
             <p className="eyebrow text-good">Account deleted</p>
-            <h1 className="display mt-2 text-[26px]">Sorry to see you go</h1>
-            <p className="mt-3 text-[14px] text-muted">
+            <h1 className="display mt-2 text-3xl">Sorry to see you go</h1>
+            <p className="mt-3 text-sm text-muted">
               Your {BRAND.name} account has been permanently deleted. Taking you home…
             </p>
           </>
         ) : (
           <>
             <p className="eyebrow text-deal">Last step</p>
-            <h1 className="display mt-2 text-[26px]">Permanently delete this account?</h1>
-            <p className="mt-3 text-[14px] text-muted">
+            <h1 className="display mt-2 text-3xl">Permanently delete this account?</h1>
+            <p className="mt-3 text-sm text-muted">
               This can&apos;t be undone. Your profile, listings, messages, offers
               and saved items will all be removed.
             </p>
@@ -94,11 +94,11 @@ function ConfirmDeleteContent() {
               type="button"
               onClick={confirmDelete}
               disabled={status === "deleting"}
-              className="mt-6 w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-primary mt-6 w-full"
             >
               {status === "deleting" ? "Deleting…" : "Yes, delete my account"}
             </button>
-            <a href="/" className="mt-3 block text-[13px] text-muted hover:underline">
+            <a href="/" className="mt-3 block text-sm text-muted hover:underline">
               Cancel, keep my account
             </a>
             {status === "error" && (

@@ -375,24 +375,24 @@ export function SellForm({
     return (
       <div className="mx-auto max-w-[560px] px-4 py-24 text-center">
         <p className="eyebrow text-good">{editMode ? "Changes saved" : "Listing live"}</p>
-        <h1 className="display mt-2 text-[30px]">
+        <h1 className="display mt-2 text-3xl">
           {editMode ? `${form.title} is updated.` : `${form.title} is on the market.`}
         </h1>
-        <p className="mt-3 text-[14px] text-muted">
+        <p className="mt-3 text-sm text-muted">
           Buyers can message you from the listing. You&apos;ll get{" "}
           {money(price - fee)} once delivery is confirmed.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/selling"
-            className="rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
+            className="btn btn-primary"
           >
             View your listings
           </Link>
           {listingId && (
             <Link
               href={`/product/${listingId}/${slugify(form.title)}`}
-              className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
+              className="btn btn-secondary"
             >
               View listing
             </Link>
@@ -400,7 +400,7 @@ export function SellForm({
           {!editMode && (
             <button
               onClick={() => setState("idle")}
-              className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
+              className="btn btn-secondary"
             >
               List another
             </button>
@@ -412,8 +412,8 @@ export function SellForm({
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10 lg:px-6">
       <p className="eyebrow">Sell{editMode ? " · editing live listing" : draftId && " · editing draft"}</p>
-      <h1 className="display mt-2 text-[36px]">{editMode ? "Edit listing" : "List an item"}</h1>
-      <p className="mt-2 max-w-lg text-[15px] text-muted">
+      <h1 className="display mt-2 text-4xl">{editMode ? "Edit listing" : "List an item"}</h1>
+      <p className="mt-2 max-w-lg text-base text-muted">
         Listing is free. {BRAND.name} takes {BRAND.feePercent}% only when the item
         sells and the buyer confirms delivery.
         {draftId && " Saved as a draft — it isn't visible to anyone until you publish it."}
@@ -423,9 +423,9 @@ export function SellForm({
       </div>
 
       {!payoutsReady && !editMode && (
-        <div className="mt-6 rounded-[10px] border border-trust bg-trust/5 p-5">
-          <p className="text-[14px] font-semibold">Finish payout setup to publish</p>
-          <p className="mt-1 max-w-lg text-[13.5px] text-muted">
+        <div className="mt-6 rounded-card border border-trust bg-trust/5 p-5">
+          <p className="text-sm font-semibold">Finish payout setup to publish</p>
+          <p className="mt-1 max-w-lg text-sm text-muted">
             Connect a Stripe payout account before listing — that&apos;s how
             you&apos;ll actually get paid once a sale is delivered and confirmed.
           </p>
@@ -434,11 +434,11 @@ export function SellForm({
       )}
 
       {payoutsReady && atListingLimit && (
-        <div className="mt-6 rounded-[10px] border border-line bg-paper p-5">
-          <p className="text-[14px] font-semibold">
+        <div className="mt-6 rounded-card border border-line bg-paper p-5">
+          <p className="text-sm font-semibold">
             You&apos;ve reached your {listingLimit}-listing limit
           </p>
-          <p className="mt-1 max-w-lg text-[13.5px] text-muted">
+          <p className="mt-1 max-w-lg text-sm text-muted">
             {premium
               ? "Take a listing down to free up a slot."
               : "Take a listing down, or upgrade to Premium Seller for a higher limit and more photos per listing."}
@@ -448,7 +448,7 @@ export function SellForm({
               type="button"
               onClick={upgrade}
               disabled={upgradeBusy}
-              className="mt-3 rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="btn btn-primary btn-sm mt-3"
             >
               {upgradeBusy ? "Loading…" : "Upgrade to Premium Seller"}
             </button>
@@ -631,7 +631,7 @@ export function SellForm({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSpecs((p) => [...p, { label: "", value: "" }])}
-                  className="spec rounded border border-line px-2.5 py-1.5 font-medium"
+                  className="spec rounded-lg border border-line px-2.5 py-1.5 font-medium"
                 >
                   + Add spec
                 </button>
@@ -639,7 +639,7 @@ export function SellForm({
                   <button
                     type="button"
                     onClick={suggestSpecs}
-                    className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust"
+                    className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust"
                   >
                     + Suggest fields for {findSub(form.subcategorySlug)?.name}
                   </button>
@@ -680,7 +680,7 @@ export function SellForm({
           </div>
         </Step>
 
-        <div className="space-y-3 rounded-[14px] border border-line bg-card p-5">
+        <div className="space-y-3 rounded-card border border-line bg-card p-5">
           {state === "error" && <p className="spec text-deal">{error}</p>}
           {draftState === "error" && <p className="spec text-deal">{draftError}</p>}
           {draftState === "saving" && <p className="spec text-muted">Saving draft…</p>}
@@ -696,7 +696,7 @@ export function SellForm({
               type="button"
               onClick={persistDraft}
               disabled={draftState === "saving" || !form.title.trim()}
-              className="h-[50px] rounded-[10px] border border-line text-[14px] font-semibold transition hover:border-ink/40 disabled:opacity-50 sm:w-48"
+              className="btn btn-secondary sm:w-48"
             >
               {draftState === "saving" ? "Saving…" : "Save now"}
             </button>
@@ -710,7 +710,7 @@ export function SellForm({
                 (!payoutsReady && !editMode) ||
                 atListingLimit
               }
-              className="rgb-ring h-[50px] flex-1 rounded-[10px] bg-deal text-[15px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+              className="btn btn-primary rgb-ring flex-1"
             >
               {state === "saving"
                 ? editMode ? "Saving…" : "Publishing…"
@@ -726,9 +726,9 @@ export function SellForm({
         </div>
         </div>
 
-        <aside className="h-fit space-y-4 rounded-[14px] border border-line bg-card p-6 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
-          <h2 className="text-[18px] font-bold">What you take home</h2>
-          <div className="space-y-2 text-[13.5px]">
+        <aside className="h-fit space-y-4 rounded-card border border-line bg-card p-6 lg:sticky lg:top-[calc(var(--header-offset,140px)+16px)]">
+          <h2 className="text-xl font-bold">What you take home</h2>
+          <div className="space-y-2 text-sm">
             <Row label="Buyer pays" value={money(price)} />
             <Row
               label={`${BRAND.name} fee (${BRAND.feePercent}%)`}
@@ -736,7 +736,7 @@ export function SellForm({
             />
             <div className="flex justify-between border-t border-line pt-2 font-semibold">
               <span>You receive</span>
-              <span className="display text-[28px] text-trust">{money(price - fee)}</span>
+              <span className="display text-3xl text-trust">{money(price - fee)}</span>
             </div>
           </div>
           <p className="spec text-muted">
@@ -753,12 +753,12 @@ export function SellForm({
 /** Numbered section card for the listing form. */
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[14px] border border-line bg-card p-6">
+    <section className="rounded-card border border-line bg-card p-6">
       <div className="mb-5 flex items-start gap-3">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-trust-soft text-[14px] font-bold text-trust">{n}</span>
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-trust-soft text-sm font-bold text-trust">{n}</span>
         <div>
-          <h2 className="text-[17px] font-bold leading-tight">{title}</h2>
-          <p className="mt-0.5 text-[13px] text-muted">{hint}</p>
+          <h2 className="text-base font-bold leading-tight">{title}</h2>
+          <p className="mt-0.5 text-sm text-muted">{hint}</p>
         </div>
       </div>
       <div className="space-y-5">{children}</div>
@@ -797,7 +797,7 @@ function Toggle({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-start gap-3 rounded-[10px] border p-3.5 transition ${
+      className={`flex cursor-pointer items-start gap-3 rounded-card border p-3.5 transition ${
         on ? "border-trust bg-trust/5" : "border-line"
       }`}
     >
@@ -808,7 +808,7 @@ function Toggle({
         className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-trust)]"
       />
       <span>
-        <span className="block text-[13.5px] font-semibold">{label}</span>
+        <span className="block text-sm font-semibold">{label}</span>
         <span className="spec mt-0.5 block text-muted">{hint}</span>
       </span>
     </label>

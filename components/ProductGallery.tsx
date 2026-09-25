@@ -11,7 +11,7 @@ export function ProductGallery({ listing }: { listing: Listing }) {
 
   return (
     <div>
-      <div className="overflow-hidden rounded-[10px] border border-line bg-ink">
+      <div className="overflow-hidden rounded-card border border-line bg-ink">
         <ProductImage
           src={photos[active]}
           alt={listing.title}
@@ -28,7 +28,7 @@ export function ProductGallery({ listing }: { listing: Listing }) {
               key={src + i}
               onClick={() => setActive(i)}
               aria-label={`Photo ${i + 1} of ${photos.length}`}
-              className={`overflow-hidden rounded border bg-ink transition ${
+              className={`overflow-hidden rounded-lg border bg-ink transition ${
                 i === active ? "border-ink" : "border-line opacity-70 hover:opacity-100"
               }`}
             >

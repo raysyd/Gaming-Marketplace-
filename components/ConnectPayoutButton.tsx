@@ -34,7 +34,7 @@ export function ConnectPayoutButton({
       <button
         onClick={connect}
         disabled={busy}
-        className="rgb-ring mt-3 rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+        className="btn btn-primary rgb-ring mt-3"
       >
         {busy ? "Connecting…" : status === "pending" ? "Finish payout setup" : "Connect payout account"}
       </button>

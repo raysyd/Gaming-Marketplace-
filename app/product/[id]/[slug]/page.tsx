@@ -156,7 +156,7 @@ export default async function ProductPage({
 
             {(listing.benchmarkImages?.length ?? 0) > 0 && (
               <div className="mt-4">
-                <p className="spec inline-block rounded bg-good/10 px-2 py-1 font-semibold text-good">
+                <p className="spec inline-block rounded-lg bg-good/10 px-2 py-1 font-semibold text-good">
                   ✓ Performance Verified
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -166,7 +166,7 @@ export default async function ProductPage({
                       href={src}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative block h-24 w-32 overflow-hidden rounded border border-line bg-ink"
+                      className="relative block h-24 w-32 overflow-hidden rounded-lg border border-line bg-ink"
                     >
                       <Image src={src} alt="Benchmark screenshot" fill sizes="128px" className="object-cover" />
                     </a>
@@ -181,7 +181,7 @@ export default async function ProductPage({
 
           <section className="order-7 lg:mt-8">
             <h2 className="eyebrow">From the seller</h2>
-            <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed">
               {listing.description}
             </p>
           </section>
@@ -196,14 +196,14 @@ export default async function ProductPage({
               </p>
               <WishlistButton id={listing.id} />
             </div>
-            <h1 className="display mt-2 text-[26px] leading-tight">
+            <h1 className="display mt-2 text-3xl leading-tight">
               {listing.title}
             </h1>
             <ViewerCount listingId={listing.id} />
           </div>
 
           {listing.fps1080p && (
-            <div className="order-3 rounded-[10px] border border-line bg-card p-4">
+            <div className="order-3 rounded-card border border-line bg-card p-4">
               <FpsBar fps={listing.fps1080p} />
               <p className="spec mt-2 text-muted">
                 Estimated from the GPU and CPU pairing across common titles.
@@ -215,17 +215,17 @@ export default async function ProductPage({
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
           </div>
 
-          <div className="order-5 rounded-[10px] border border-line bg-card p-5">
+          <div className="order-5 rounded-card border border-line bg-card p-5">
             <h2 className="eyebrow">Seller</h2>
             <Link href={`/seller/${listing.sellerId}`} className="mt-3 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-[15px] font-semibold text-white">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-base font-semibold text-white">
                 {listing.sellerName[0]}
               </div>
               <div>
-                <p className="flex items-center gap-1.5 text-[14px] font-semibold hover:text-trust">
+                <p className="flex items-center gap-1.5 text-sm font-semibold hover:text-trust">
                   {listing.sellerName}
                   {listing.sellerVerified && (
-                    <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
+                    <span className="spec rounded-lg bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
                       Verified
                     </span>
                   )}
@@ -241,20 +241,20 @@ export default async function ProductPage({
           </div>
 
           {perf && (
-            <div className="order-5 rounded-[10px] border border-line bg-card p-5">
+            <div className="order-5 rounded-card border border-line bg-card p-5">
               <h2 className="eyebrow">Performance</h2>
-              <div className="mt-3 flex items-baseline justify-between text-[13.5px]">
+              <div className="mt-3 flex items-baseline justify-between text-sm">
                 <span className="text-muted">{perf.kind === "system" ? "Total Performance" : perf.kind === "gpu" ? "GPU Performance" : "CPU Performance"}</span>
                 <span className="font-semibold tabular-nums">{perf.score.toLocaleString()}</span>
               </div>
               <div className="perf-bar mt-1.5"><span className="perf-fill perf-score" style={{ width: `${Math.min(100, (perf.score / SCORE_MAX) * 100)}%` }} /></div>
-              <div className="mt-3 flex items-baseline justify-between text-[13.5px]">
+              <div className="mt-3 flex items-baseline justify-between text-sm">
                 <span className="text-muted">Price-to-Performance</span>
                 <span className="font-semibold tabular-nums">{perf.value.toFixed(1)}</span>
               </div>
               <div className="perf-bar mt-1.5"><span className="perf-fill perf-value" style={{ width: `${Math.min(100, (perf.value / VALUE_MAX) * 100)}%` }} /></div>
               {res.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-[12.5px]">
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-muted">Comfortable at</span>
                   {res.map((r) => (
                     <span key={r} className="rounded-full bg-trust-soft px-2.5 py-1 font-semibold text-trust">{r}</span>
@@ -262,9 +262,9 @@ export default async function ProductPage({
                 </div>
               )}
               {pairing && (
-                <p className="mt-3 rounded-md bg-deal-soft px-3 py-2 text-[12.5px] leading-snug text-ink">{pairing}</p>
+                <p className="mt-3 rounded-lg bg-deal-soft px-3 py-2 text-xs leading-snug text-ink">{pairing}</p>
               )}
-              <p className="mt-3 text-[12px] leading-snug text-muted">
+              <p className="mt-3 text-xs leading-snug text-muted">
                 Estimates from the listed parts using typical benchmark results. Higher Price-to-Performance means more performance per dollar.
               </p>
             </div>
@@ -274,7 +274,7 @@ export default async function ProductPage({
 
       {related.length > 0 && (
         <section className="mt-14">
-          <h2 className="display mb-4 text-[24px]">More {sub?.name}</h2>
+          <h2 className="display mb-4 text-3xl">More {sub?.name}</h2>
           <div
             className={`grid ${
               listing.categorySlug === "full-systems"

@@ -26,7 +26,7 @@ export function ListingActions({ id, active }: { id: string; active: boolean }) 
     <div className="flex items-center gap-2">
     <Link
       href={`/sell?edit=${id}`}
-      className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
+      className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
     >
       Edit
     </Link>
@@ -34,7 +34,7 @@ export function ListingActions({ id, active }: { id: string; active: boolean }) 
       type="button"
       onClick={takeDown}
       disabled={busy}
-      className="spec rounded border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
+      className="spec rounded-lg border border-line px-2.5 py-1.5 text-muted transition hover:border-deal hover:text-deal disabled:opacity-50"
     >
       {busy ? "Taking down..." : "Take down"}
     </button>

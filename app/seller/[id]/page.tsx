@@ -56,7 +56,7 @@ export default async function SellerProfilePage({
   return (
     <div className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
       {profile?.bannerUrl && (
-        <div className="relative -mt-2 mb-6 h-32 w-full overflow-hidden rounded-[10px] bg-trust-soft sm:h-44">
+        <div className="relative -mt-2 mb-6 h-32 w-full overflow-hidden rounded-card bg-trust-soft sm:h-44">
           <Image src={profile.bannerUrl} alt="" fill sizes="(max-width: 1240px) 100vw, 1240px" className="object-cover" />
         </div>
       )}
@@ -65,19 +65,19 @@ export default async function SellerProfilePage({
           {profile?.avatarUrl ? (
             <Image src={profile.avatarUrl} alt="" fill sizes="56px" className="object-cover" />
           ) : (
-            <span className="grid h-full w-full place-items-center text-[20px] font-semibold text-white">
+            <span className="grid h-full w-full place-items-center text-xl font-semibold text-white">
               {sellerName[0]}
             </span>
           )}
         </div>
         <div>
-          <h1 className="display flex flex-wrap items-center gap-2 text-[26px]">
+          <h1 className="display flex flex-wrap items-center gap-2 text-3xl">
             {sellerName}
             {profile?.username && (
               <span className="spec font-normal text-muted">@{profile.username}</span>
             )}
             {profile?.verified && (
-              <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
+              <span className="spec rounded-lg bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
                 Verified
               </span>
             )}
@@ -85,12 +85,12 @@ export default async function SellerProfilePage({
                 this is a paid badge, not an identity check, and the two
                 must never look interchangeable. See lib/premium.ts. */}
             {premium && (
-              <span className="spec rounded bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">
+              <span className="spec rounded-lg bg-deal-soft px-1.5 py-0.5 font-semibold text-deal">
                 {plan.badgeLabel}
               </span>
             )}
             {profile?.sellerType === "business" && (
-              <span className="spec rounded border border-line px-1.5 py-0.5 font-medium text-muted">
+              <span className="spec rounded-lg border border-line px-1.5 py-0.5 font-medium text-muted">
                 Business seller
               </span>
             )}
@@ -106,7 +106,7 @@ export default async function SellerProfilePage({
           {responseMinutes != null && (
             <p className="spec mt-1 text-trust">Usually responds within {responseTimeLabel(responseMinutes)}</p>
           )}
-          {profile?.bio && <p className="mt-2 max-w-lg text-[13.5px] text-muted">{profile.bio}</p>}
+          {profile?.bio && <p className="mt-2 max-w-lg text-sm text-muted">{profile.bio}</p>}
           {profile?.contactLink && (
             <a
               href={profile.contactLink}
@@ -121,15 +121,15 @@ export default async function SellerProfilePage({
       </div>
 
       {profile?.policyNote && (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
+        <div className="mt-6 rounded-card border border-line bg-card p-4">
           <p className="eyebrow">Shipping &amp; returns</p>
-          <p className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-muted">{profile.policyNote}</p>
+          <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-muted">{profile.policyNote}</p>
         </div>
       )}
 
-      <h2 className="display mt-10 text-[20px]">Active listings</h2>
+      <h2 className="display mt-10 text-xl">Active listings</h2>
       {listings.length === 0 ? (
-        <p className="mt-3 text-[14px] text-muted">Nothing listed right now.</p>
+        <p className="mt-3 text-sm text-muted">Nothing listed right now.</p>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {listings.map((l) => (
@@ -138,18 +138,18 @@ export default async function SellerProfilePage({
         </div>
       )}
 
-      <h2 className="display mt-10 text-[20px]">Reviews</h2>
+      <h2 className="display mt-10 text-xl">Reviews</h2>
       {reviews.length === 0 ? (
-        <p className="mt-3 text-[14px] text-muted">No reviews yet.</p>
+        <p className="mt-3 text-sm text-muted">No reviews yet.</p>
       ) : (
         <ul className="mt-4 space-y-3">
           {reviews.map((r) => (
-            <li key={r.id} className="rounded-[10px] border border-line bg-card p-4">
+            <li key={r.id} className="rounded-card border border-line bg-card p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="flex items-center gap-1.5 text-[13.5px] font-semibold">
+                <p className="flex items-center gap-1.5 text-sm font-semibold">
                   {r.reviewerName}
                   {repeatBuyerIds.has(r.reviewerId) && (
-                    <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
+                    <span className="spec rounded-lg bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
                       Repeat buyer
                     </span>
                   )}
@@ -160,7 +160,7 @@ export default async function SellerProfilePage({
                 {"★".repeat(r.rating)}
                 {"☆".repeat(5 - r.rating)}
               </p>
-              {r.body && <p className="mt-2 text-[14px] leading-relaxed">{r.body}</p>}
+              {r.body && <p className="mt-2 text-sm leading-relaxed">{r.body}</p>}
             </li>
           ))}
         </ul>
@@ -169,8 +169,8 @@ export default async function SellerProfilePage({
       <RecentlySold items={recentlySold} title="Recently sold by this seller" />
 
       {builds.length > 0 && (
-        <div className="mt-6 rounded-[10px] border border-line bg-card p-4">
-          <p className="text-[14px] font-semibold">Build showcase</p>
+        <div className="mt-6 rounded-card border border-line bg-card p-4">
+          <p className="text-sm font-semibold">Build showcase</p>
           <p className="spec mt-1 text-muted">
             {sellerName} has posted {builds.length} build{builds.length === 1 ? "" : "s"}.
           </p>
@@ -180,7 +180,7 @@ export default async function SellerProfilePage({
         </div>
       )}
 
-      <Link href="/shop" className="mt-8 inline-block text-[13px] font-semibold text-trust hover:underline">
+      <Link href="/shop" className="mt-8 inline-block text-sm font-semibold text-trust hover:underline">
         ← Back to marketplace
       </Link>
     </div>

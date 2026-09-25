@@ -77,21 +77,21 @@ function ResetPasswordContent() {
 
   return (
     <main className="mx-auto flex min-h-[55vh] w-full max-w-[420px] items-center px-4 py-16">
-      <div className="w-full rounded-[10px] border border-line bg-card p-6 sm:p-8">
+      <div className="w-full rounded-card border border-line bg-card p-6 sm:p-8">
         {checking ? (
-          <p className="text-center text-[14px] text-muted">Checking your link…</p>
+          <p className="text-center text-sm text-muted">Checking your link…</p>
         ) : linkError ? (
           <div className="text-center">
             <p className="eyebrow text-deal">Reset link unavailable</p>
-            <h1 className="display mt-2 text-[28px]">Request a fresh link</h1>
-            <p className="mt-3 text-[14px] text-muted">{linkError}</p>
+            <h1 className="display mt-2 text-3xl">Request a fresh link</h1>
+            <p className="mt-3 text-sm text-muted">{linkError}</p>
             <p className="spec mt-3 text-muted">
               Reset links are single-use and only work on the device that
               requested them. Request a new one from the sign-in page.
             </p>
             <a
               href="/login"
-              className="mt-6 inline-block rounded-md bg-ink px-5 py-3 text-[14px] font-semibold text-white"
+              className="btn btn-primary mt-6"
             >
               Return to {BRAND.name} sign in
             </a>
@@ -99,13 +99,13 @@ function ResetPasswordContent() {
         ) : status === "done" ? (
           <div className="text-center">
             <p className="eyebrow text-good">Password updated</p>
-            <h1 className="display mt-2 text-[28px]">You&apos;re all set</h1>
-            <p className="mt-3 text-[14px] text-muted">Taking you to your dashboard…</p>
+            <h1 className="display mt-2 text-3xl">You&apos;re all set</h1>
+            <p className="mt-3 text-sm text-muted">Taking you to your dashboard…</p>
           </div>
         ) : (
           <>
-            <h1 className="display text-[24px]">Set a new password</h1>
-            <p className="mt-2 text-[14px] text-muted">
+            <h1 className="display text-3xl">Set a new password</h1>
+            <p className="mt-2 text-sm text-muted">
               Choose a new password for your {BRAND.name} account.
             </p>
             <div className="mt-5 space-y-3">
@@ -130,7 +130,7 @@ function ResetPasswordContent() {
               <button
                 onClick={submit}
                 disabled={status === "saving"}
-                className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-primary w-full"
               >
                 {status === "saving" ? "Saving…" : "Save password"}
               </button>

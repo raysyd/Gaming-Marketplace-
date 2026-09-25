@@ -13,8 +13,8 @@ export default async function SavedSearchesPage() {
   return (
     <main className="mx-auto max-w-[640px] px-4 py-12">
       <p className="eyebrow">Account</p>
-      <h1 className="display mt-2 text-[28px]">Saved searches</h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <h1 className="display mt-2 text-3xl">Saved searches</h1>
+      <p className="mt-2 text-sm text-muted">
         You&apos;ll get an email when a new listing matches one of these — save a
         search from any filtered view on{" "}
         <Link href="/shop" className="text-trust hover:underline">
@@ -24,7 +24,7 @@ export default async function SavedSearchesPage() {
       </p>
 
       {searches.length === 0 ? (
-        <p className="mt-8 text-[14px] text-muted">No saved searches yet.</p>
+        <p className="mt-8 text-sm text-muted">No saved searches yet.</p>
       ) : (
         <ul className="mt-6 space-y-2">
           {searches.map((s) => (

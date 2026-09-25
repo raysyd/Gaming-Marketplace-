@@ -19,7 +19,7 @@ export default async function LoginPage() {
       <div aria-hidden="true" className="login-wall pointer-events-none absolute inset-0 -z-10">
         <div className="login-wall-grid">
           {wall.map((l, i) => (
-            <div key={`${l.id}-${i}`} className="overflow-hidden rounded-[14px] bg-ink">
+            <div key={`${l.id}-${i}`} className="overflow-hidden rounded-card bg-ink">
               <ProductImage src={l.image} alt="" category={l.category} seed={l.id} showStockBadge={false} className="aspect-[4/3] w-full" />
             </div>
           ))}

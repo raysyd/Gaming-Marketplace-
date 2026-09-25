@@ -64,29 +64,29 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
               key={t.key}
               type="button"
               onClick={() => setActiveKey(t.key)}
-              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-[14px] transition ${
+              className={`-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3.5 py-3 text-sm transition ${
                 activeTab.key === t.key
                   ? "border-trust font-semibold text-trust"
                   : "border-transparent text-muted hover:text-ink"
               }`}
             >
               {t.label}
-              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-[11.5px] font-semibold text-trust">{count}</span>}
+              {count > 0 && <span className="rounded-full bg-trust-soft px-2 py-0.5 text-xs font-semibold text-trust">{count}</span>}
             </button>
           );
         })}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[14px] border border-line bg-card">
+      <div className="mt-4 overflow-hidden rounded-card border border-line bg-card">
         {tabListings.length === 0 && tabOrders.length === 0 && (
           <div className="p-12 text-center">
-            <p className="text-[14px] text-muted">Nothing in this tab yet.</p>
+            <p className="text-sm text-muted">Nothing in this tab yet.</p>
           </div>
         )}
 
         {tabListings.map((l) => (
           <div key={l.id} className="flex items-center gap-4 border-b border-line p-3 last:border-0">
-            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
+            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-lg bg-ink">
               <ProductImage src={l.image} alt={l.title} category={l.category} seed={l.id} className="h-full w-full" showStockBadge={false} />
             </div>
             <div className="min-w-0 flex-1">
@@ -94,9 +94,9 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
                 // A draft has no public page to link to (it's never
                 // status = "active", so /product/[id] can't resolve it) —
                 // "Continue editing" on the right is the only way in.
-                <p className="line-clamp-1 text-[14px] font-semibold">{l.title || "Untitled draft"}</p>
+                <p className="line-clamp-1 text-sm font-semibold">{l.title || "Untitled draft"}</p>
               ) : (
-                <Link href={`/product/${l.id}/${l.slug}`} className="line-clamp-1 text-[14px] font-semibold hover:text-trust">
+                <Link href={`/product/${l.id}/${l.slug}`} className="line-clamp-1 text-sm font-semibold hover:text-trust">
                   {l.title}
                 </Link>
               )}
@@ -105,7 +105,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
               </p>
             </div>
             <div className="text-right">
-              <p className="display text-[17px]">{l.price ? money(l.price) : "No price yet"}</p>
+              <p className="display text-base">{l.price ? money(l.price) : "No price yet"}</p>
               {activeTab.key === "listings" && (
                 <div className="mt-1 flex items-center justify-end gap-2">
                   <p className="spec text-good">Active</p>
@@ -124,7 +124,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
 
         {tabOrders.map((o) => (
           <div key={o.id} className="flex flex-wrap items-center gap-4 border-b border-line p-3 last:border-0">
-            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-[8px] bg-ink">
+            <div className="h-[72px] w-24 shrink-0 overflow-hidden rounded-lg bg-ink">
               <ProductImage
                 src={o.listingImage}
                 alt={o.listingTitle ?? "Listing"}
@@ -135,7 +135,7 @@ export function SellingTabs({ listings, orders }: { listings: Listing[]; orders:
               />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-1 text-[14px] font-semibold">{o.listingTitle ?? "Listing"}</p>
+              <p className="line-clamp-1 text-sm font-semibold">{o.listingTitle ?? "Listing"}</p>
               <p className="spec mt-1 text-muted">
                 {money(o.amount - o.platformFee + (o.shippingFee ?? 0))} to you (of {money(o.amount + (o.shippingFee ?? 0))} held)
                 {o.quantity > 1 ? ` · Qty ${o.quantity}` : ""}

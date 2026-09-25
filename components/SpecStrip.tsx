@@ -14,7 +14,7 @@ export function SpecStrip({
       {specs.slice(0, max).map((s) => (
         <div
           key={s.label}
-          className="spec flex items-center gap-1 rounded border border-line bg-paper px-1.5 py-0.5"
+          className="spec flex items-center gap-1 rounded-lg border border-line bg-paper px-1.5 py-0.5"
         >
           <SpecIcon label={s.label} size={12} />
           <dt className="text-muted">{s.label}</dt>

@@ -42,14 +42,14 @@ export function ReviewForm({ orderId, listingTitle }: { orderId: string; listing
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
+        className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
       >
         Leave a review
       </button>
     );
 
   return (
-    <div className="w-full max-w-sm rounded-md border border-line bg-paper p-3">
+    <div className="w-full max-w-sm rounded-lg border border-line bg-paper p-3">
       <p className="eyebrow">Rate {listingTitle}</p>
       <div className="mt-1.5 flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
@@ -58,7 +58,7 @@ export function ReviewForm({ orderId, listingTitle }: { orderId: string; listing
             type="button"
             onClick={() => setRating(n)}
             aria-label={`${n} star${n === 1 ? "" : "s"}`}
-            className={`text-[22px] leading-none ${n <= rating ? "text-deal" : "text-line"}`}
+            className={`text-xl leading-none ${n <= rating ? "text-deal" : "text-line"}`}
           >
             ★
           </button>
@@ -69,21 +69,21 @@ export function ReviewForm({ orderId, listingTitle }: { orderId: string; listing
         onChange={(e) => setBody(e.target.value)}
         rows={3}
         placeholder="How was the item and the seller? (optional)"
-        className="input mt-2 w-full resize-y text-[13px]"
+        className="input mt-2 w-full resize-y text-sm"
       />
       <div className="mt-2 flex gap-2">
         <button
           type="button"
           onClick={submit}
           disabled={busy}
-          className="rounded bg-deal px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+          className="btn btn-primary btn-sm"
         >
           {busy ? "Posting…" : "Post review"}
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded border border-line px-3 py-2 text-[13px] font-medium"
+          className="rounded-lg border border-line px-3 py-2 text-sm font-medium"
         >
           Cancel
         </button>

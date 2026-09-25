@@ -51,7 +51,7 @@ export function SaveSearchButton({ defaultLabel }: { defaultLabel: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
+        className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
       >
         Save this search
       </button>
@@ -69,7 +69,7 @@ export function SaveSearchButton({ defaultLabel }: { defaultLabel: string }) {
         type="button"
         onClick={save}
         disabled={state === "saving"}
-        className="spec rounded bg-ink px-3 py-1.5 font-semibold text-white disabled:opacity-50"
+        className="spec rounded-lg bg-ink px-3 py-1.5 font-semibold text-white disabled:opacity-50"
       >
         {state === "saving" ? "Saving…" : "Save"}
       </button>

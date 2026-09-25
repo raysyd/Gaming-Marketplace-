@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import Link from "next/link";
+import { Icon } from "./ui/Icon";
 import { useSearchParams } from "next/navigation";
 import { BRAND } from "@/lib/brand";
 import { createClient } from "@/lib/supabase/client";
@@ -286,11 +287,11 @@ export function LoginForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[460px] px-6 py-9 sm:px-9 sm:py-11">
-      <h1 className="display text-[28px]">
+    <div className="mx-auto w-full max-w-[440px]">
+      <h1 className="display text-[clamp(30px,3.4vw,40px)]">
         {mode === "password" && action === "signup" ? `Create your ${BRAND.name} account` : `Sign in to ${BRAND.name}`}
       </h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <p className="mt-3 text-[15px] leading-relaxed text-muted">
         {mode === "password"
           ? action === "signup"
             ? "Set a password so you can sign in on any device."
@@ -299,50 +300,49 @@ export function LoginForm() {
       </p>
 
       {next === "/cart" && (
-        <p className="mt-4 rounded-[10px] border border-trust/30 bg-trust/5 px-3 py-2 text-[13.5px] text-ink">
+        <p className="alert alert-info mt-5">
+          <Icon name="bag" size={16} />
           Sign in to check out. Everything in your cart comes with you.
         </p>
       )}
 
       {urlError && (
-        <p className="spec mt-4 rounded border border-deal bg-deal-soft px-3 py-2 text-deal">
-          Sign-in didn&apos;t complete: {urlError.replace(/_/g, " ")}. Try
-          requesting a fresh link — they expire after an hour and only work once.
+        <p className="alert alert-danger mt-5">
+          <Icon name="warning" size={16} />
+          <span>Sign-in didn&apos;t complete: {urlError.replace(/_/g, " ")}. Try
+          requesting a fresh link — they expire after an hour and only work once.</span>
         </p>
       )}
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-7 space-y-4">
         <button
           type="button"
           onClick={signInWithGoogle}
           disabled={status === "sending"}
-          className="w-full rounded-md border border-line bg-card py-3 text-[14px] font-semibold text-ink transition hover:border-trust disabled:opacity-50"
+          className="btn btn-outline btn-block"
         >
+          <Icon name="google" size={17} />
           Continue with Google
         </button>
         <div className="flex items-center gap-3 py-1" aria-hidden="true">
           <span className="h-px flex-1 bg-line" />
-          <span className="spec text-muted">or</span>
+          <span className="tag-label text-muted">or with email</span>
           <span className="h-px flex-1 bg-line" />
         </div>
 
         {mode === "password" && (
-          <div className="grid grid-cols-2 gap-1 rounded-md border border-line bg-card p-1">
+          <div className="seg">
             <button
               type="button"
               onClick={() => switchAction("signin")}
-              className={`rounded py-2 text-[13px] font-semibold transition ${
-                action === "signin" ? "bg-ink text-white" : "text-ink hover:bg-paper"
-              }`}
+              aria-pressed={action === "signin"}
             >
               Sign in
             </button>
             <button
               type="button"
               onClick={() => switchAction("signup")}
-              className={`rounded py-2 text-[13px] font-semibold transition ${
-                action === "signup" ? "bg-ink text-white" : "text-ink hover:bg-paper"
-              }`}
+              aria-pressed={action === "signup"}
             >
               Create account
             </button>
@@ -350,8 +350,8 @@ export function LoginForm() {
         )}
 
         {status === "check-email" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
+          <div className="rise rounded-[14px] border border-good/40 bg-trust-soft p-5">
+            <p className="flex items-center gap-2 text-[15px] font-semibold text-good"><Icon name="mail" size={18} /> Check your inbox</p>
             <p className="mt-1 text-[13.5px] text-muted">
               We sent a confirmation link to {email.trim().toLowerCase()}. Open it
               to activate your account, then come back and sign in.
@@ -361,14 +361,14 @@ export function LoginForm() {
               onClick={() => {
                 switchAction("signin");
               }}
-              className="mt-4 rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+              className="btn btn-outline btn-sm mt-4"
             >
               Back to sign in
             </button>
           </div>
         ) : mode === "link" && status === "sent" && message !== "reset" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
+          <div className="rise rounded-[14px] border border-good/40 bg-trust-soft p-5">
+            <p className="flex items-center gap-2 text-[15px] font-semibold text-good"><Icon name="mail" size={18} /> Check your inbox</p>
             <p className="mt-1 text-[13.5px] text-muted">
               The link goes to {email.trim().toLowerCase()} and works once.
             </p>
@@ -381,7 +381,7 @@ export function LoginForm() {
                 type="button"
                 onClick={sendMagicLink}
                 disabled={cooldown > 0}
-                className="rounded-md bg-ink px-3 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-dark btn-sm"
               >
                 {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend link"}
               </button>
@@ -391,15 +391,15 @@ export function LoginForm() {
                   setStatus("idle");
                   setCooldown(0);
                 }}
-                className="rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+                className="btn btn-outline btn-sm"
               >
                 Use another email
               </button>
             </div>
           </div>
         ) : status === "sent" && message === "reset" ? (
-          <div className="rounded-[10px] border border-good/40 bg-card p-5">
-            <p className="text-[14px] font-semibold text-good">Check your inbox</p>
+          <div className="rise rounded-[14px] border border-good/40 bg-trust-soft p-5">
+            <p className="flex items-center gap-2 text-[15px] font-semibold text-good"><Icon name="mail" size={18} /> Check your inbox</p>
             <p className="mt-1 text-[13.5px] text-muted">
               We sent a password reset link to {email.trim().toLowerCase()}. Open
               it on this device to set a new password.
@@ -407,14 +407,16 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => setStatus("idle")}
-              className="mt-4 rounded-md border border-line px-3 py-2 text-[13px] font-semibold"
+              className="btn btn-outline btn-sm mt-4"
             >
               Back to sign in
             </button>
           </div>
         ) : (
           <div className="space-y-3">
+            <label htmlFor="login-email" className="label !mb-0">Email</label>
             <input
+              id="login-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => {
@@ -431,8 +433,21 @@ export function LoginForm() {
 
             {mode === "password" && (
               <>
+                <div className="flex items-baseline justify-between pt-1">
+                  <label htmlFor="login-password" className="label !mb-0">Password</label>
+                  {action === "signin" && (
+                    <button
+                      type="button"
+                      onClick={forgotPassword}
+                      className="inline-link text-[12.5px]"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <input
+                    id="login-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && submitPassword()}
@@ -445,8 +460,10 @@ export function LoginForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] font-semibold text-muted hover:text-ink"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 flex h-8 -translate-y-1/2 items-center gap-1 rounded-md px-2 text-[12px] font-semibold text-muted transition hover:bg-paper hover:text-ink"
                   >
+                    <Icon name="eye" size={15} />
                     {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
@@ -460,25 +477,17 @@ export function LoginForm() {
                     autoComplete="new-password"
                     enterKeyHint="send"
                     placeholder="Confirm password"
+                    aria-label="Confirm password"
                     className="input"
                   />
-                )}
-
-                {action === "signin" && (
-                  <button
-                    type="button"
-                    onClick={forgotPassword}
-                    className="text-[13px] text-trust hover:underline"
-                  >
-                    Forgot password?
-                  </button>
                 )}
 
                 <button
                   onClick={submitPassword}
                   disabled={status === "sending"}
-                  className="rgb-ring w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                  className="btn btn-primary btn-lg btn-block !mt-5"
                 >
+                  {status === "sending" && <span className="spinner" aria-hidden="true" />}
                   {status === "sending"
                     ? action === "signup"
                       ? "Creating account…"
@@ -494,14 +503,16 @@ export function LoginForm() {
               <button
                 onClick={sendMagicLink}
                 disabled={status === "sending"}
-                className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-50"
+                className="btn btn-primary btn-lg btn-block !mt-5"
               >
+                {status === "sending" ? <span className="spinner" aria-hidden="true" /> : <Icon name="mail" size={18} />}
                 {status === "sending" ? "Sending…" : "Email me a link"}
               </button>
             )}
 
             {status === "error" && (
-              <p aria-live="polite" className="spec text-deal">
+              <p aria-live="polite" className="alert alert-danger">
+                <Icon name="warning" size={16} />
                 {message}
               </p>
             )}
@@ -509,7 +520,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={() => switchMode(mode === "password" ? "link" : "password")}
-              className="w-full text-center text-[13px] text-trust hover:underline"
+              className="btn btn-ghost btn-block btn-sm text-muted hover:text-ink"
             >
               {mode === "password" ? "Use an email link instead" : "Use a password instead"}
             </button>
@@ -517,8 +528,8 @@ export function LoginForm() {
         )}
       </div>
 
-      <p className="spec mt-6 text-muted">
-        <Link href="/shop" className="text-trust hover:underline">
+      <p className="mt-8 border-t border-dashed border-line-strong pt-5 text-[13px] text-muted">
+        <Link href="/shop" className="inline-link">
           Keep browsing
         </Link>{" "}
         — you only need an account to buy or sell.

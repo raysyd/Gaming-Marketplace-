@@ -16,6 +16,7 @@ import {
   type NotificationKind,
 } from "@/lib/notifications";
 import s from "./NotificationBell.module.css";
+import { Icon } from "./ui/Icon";
 
 /**
  * Header bell with a red unread count. Clicking it slides a full-height
@@ -204,10 +205,7 @@ export function NotificationBell() {
         title="Notifications"
         className={`${s.bell} ${open ? s.bellOpen : ""} ${ring ? s.ringing : ""}`}
       >
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 003.4 0" />
-        </svg>
+        <Icon name="bell" size={20} />
         {unread.length > 0 && (
           <span className={s.count} aria-hidden="true">
             {unread.length > 99 ? "99+" : unread.length}
@@ -258,10 +256,10 @@ function Sentence({ n }: { n: AppNotification }) {
 }
 
 const BADGE: Record<NotificationKind, { bg: string; path: React.ReactNode }> = {
-  message: { bg: "#5a39d6", path: <path d="M4 5h16v11H9l-5 4z" fill="#fff" stroke="none" /> },
-  offer: { bg: "#0d8055", path: <path d="M12 4v16M16 7.5c-1-1.2-2.4-1.8-4-1.8-2.2 0-4 1.1-4 3s1.8 2.6 4 3.1 4 1.2 4 3.2-1.8 3.2-4 3.2c-1.7 0-3.2-.7-4.2-2" stroke="#fff" fill="none" strokeWidth="2.4" /> },
-  liked_sold: { bg: "#e11d48", path: <path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z" fill="#fff" stroke="none" /> },
-  price_drop: { bg: "#d86f00", path: <path d="M12 5v14M6 13l6 6 6-6" stroke="#fff" fill="none" strokeWidth="2.6" /> },
+  message: { bg: "#17150f", path: <path d="M4 5h16v11H9l-5 4z" fill="#fff" stroke="none" /> },
+  offer: { bg: "#0c6a4a", path: <path d="M12 4v16M16 7.5c-1-1.2-2.4-1.8-4-1.8-2.2 0-4 1.1-4 3s1.8 2.6 4 3.1 4 1.2 4 3.2-1.8 3.2-4 3.2c-1.7 0-3.2-.7-4.2-2" stroke="#fff" fill="none" strokeWidth="2.4" /> },
+  liked_sold: { bg: "#c42a3c", path: <path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z" fill="#fff" stroke="none" /> },
+  price_drop: { bg: "#e04a10", path: <path d="M12 5v14M6 13l6 6 6-6" stroke="#fff" fill="none" strokeWidth="2.6" /> },
 };
 
 function Avatar({ n }: { n: AppNotification }) {
@@ -294,8 +292,8 @@ function MailboxArt() {
       <rect x="75" y="78" width="10" height="52" rx="2" fill="currentColor" opacity=".25" />
       <path d="M52 44h56a16 16 0 0116 16v22H52z" fill="currentColor" opacity=".18" />
       <path d="M52 44a16 16 0 0116 16v22H36V60a16 16 0 0116-16z" fill="currentColor" opacity=".38" />
-      <path d="M108 58h10v-8h-10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity=".6" />
-      <path d="M108 50V40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity=".6" />
+      <path d="M108 58h10v-8h-10" stroke="var(--color-signal)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M108 50V40" stroke="var(--color-signal)" strokeWidth="2.8" strokeLinecap="round" />
       <path d="M30 34l-6-6M36 28l-2-8M24 42l-8-2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" opacity=".5" />
     </svg>
   );

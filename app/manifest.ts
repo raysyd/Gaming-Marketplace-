@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: BRAND.blurb,
     start_url: "/",
     display: "standalone",
-    background_color: "#f6f6f6",
-    theme_color: "#080808",
+    background_color: "#f3efe6",
+    theme_color: "#17150f",
     icons: [
       { src: "/api/pwa-icon/192", sizes: "192x192", type: "image/png" },
       { src: "/api/pwa-icon/512", sizes: "512x512", type: "image/png" },

@@ -1,49 +1,106 @@
 @import "tailwindcss";
 @import "./motion.css";
 
+/* =====================================================================
+   SIDEGRADE — design tokens
+   ---------------------------------------------------------------------
+   The identity is a workbench, not a gaming-rig RGB strip:
+     paper   warm bone, like the inside of a GPU box
+     ink     graphite, slightly warm
+     signal  solder-flux orange — the one "do something" colour
+     trust   circuit-board green — money held, seller verified, all good
+     gold    contact-pad gold — ratings and small highlights only
+   Token names from the previous design (deal, trust, chrome…) are kept
+   so every existing utility class picks the new palette up for free.
+===================================================================== */
 @theme {
-  --color-ink: #111111;
-  --color-chrome: #080808;
-  --color-chrome-2: #202020;
-  --color-paper: #f6f6f6;
-  --color-card: #ffffff;
-  --color-line: #e2e6ed;
-  --color-muted: #656e7e;
-  --color-deal: #d86f00;
-  --color-deal-soft: #fff1df;
-  /* Accent for text, links, prices, numbers and performance bars. */
-  --color-trust: #1f6feb;
-  --color-trust-soft: #e7f0ff;
-  /* Icons keep the original purple (SpecIcon, verified tick, trust page). */
-  --color-icon: #5a39d6;
-  --color-good: #0d8055;
+  --color-paper: #f3efe6;
+  --color-paper-2: #ebe5d8;
+  --color-card: #fffcf6;
+  --color-ink: #17150f;
+  --color-ink-soft: #3a372f;
+  --color-line: #e0d9ca;
+  --color-line-strong: #cbc2ae;
+  --color-muted: #6b665a;
 
-  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  /* Labels, specs and small print use the same face as the nav (Inter),
-     not a code font. Kept as --font-mono so every existing usage follows. */
-  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Dark "board" surfaces: header strips, footer, feature panels. */
+  --color-chrome: #101814;
+  --color-chrome-2: #1b2821;
 
-  --radius-card: 10px;
+  --color-signal: #ff5b1f;
+  --color-signal-ink: #1d0d03;
+  --color-deal: #c2410c;
+  --color-deal-soft: #ffe7da;
+
+  --color-trust: #0c6a4a;
+  --color-trust-soft: #dcefe3;
+  --color-good: #11754f;
+  --color-icon: #0c6a4a;
+  --color-gold: #b8860b;
+  --color-gold-soft: #f7ecc8;
+  --color-danger: #c42a3c;
+  --color-danger-soft: #fbe3e5;
+
+  --font-display: var(--font-bricolage), "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  /* Small print and spec values stay in the body face (tabular numbers),
+     not a code font. The mono is reserved for .tag-label below. */
+  --font-mono: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-tag: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-hand: var(--font-caveat), "Comic Sans MS", cursive;
+
+  --radius-card: 12px;
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 
 html.dark {
-  --color-ink: #f5f5f5;
-  --color-chrome: #000000;
-  --color-chrome-2: #242424;
-  --color-paper: #050505;
-  --color-card: #111111;
-  --color-line: #3a3a3a;
-  --color-muted: #a8a8a8;
-  --color-deal: #ff8b18;
-  --color-deal-soft: #302011;
-  --color-trust: #5aa2ff;
-  --color-trust-soft: #16263f;
-  --color-icon: #9674ff;
+  --color-paper: #0e1110;
+  --color-paper-2: #141816;
+  --color-card: #161a18;
+  --color-ink: #f0ece2;
+  --color-ink-soft: #cfcabd;
+  --color-line: #2a302c;
+  --color-line-strong: #3a423d;
+  --color-muted: #9ea39b;
+  --color-chrome: #070a09;
+  --color-chrome-2: #18211c;
+  --color-signal: #ff6a2e;
+  --color-signal-ink: #1d0d03;
+  --color-deal: #ff8a57;
+  --color-deal-soft: #33201a;
+  --color-trust: #5fd0a0;
+  --color-trust-soft: #13291f;
+  --color-good: #5fd0a0;
+  --color-icon: #5fd0a0;
+  --color-gold: #e2bd4f;
+  --color-gold-soft: #2e2713;
+  --color-danger: #ff7384;
+  --color-danger-soft: #3a1a1f;
+  color-scheme: dark;
 }
 
+:root {
+  --shadow-sm: 0 1px 0 rgba(23, 21, 15, 0.04), 0 1px 3px rgba(23, 21, 15, 0.06);
+  --shadow-md: 0 1px 0 rgba(23, 21, 15, 0.04), 0 10px 24px -14px rgba(23, 21, 15, 0.28);
+  --shadow-lg: 0 2px 0 rgba(23, 21, 15, 0.03), 0 30px 60px -30px rgba(23, 21, 15, 0.4);
+  --perfboard: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--color-ink) 16%, transparent) 1px, transparent 1.6px);
+}
+html.dark {
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 28px -16px rgba(0, 0, 0, 0.8);
+  --shadow-lg: 0 30px 60px -30px rgba(0, 0, 0, 0.9);
+}
+
+/* =====================================================================
+   Base
+===================================================================== */
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 *,
@@ -57,240 +114,16 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* The display face carries the retail-signage personality: wide, heavy, tight. */
-.display {
-  font-family: var(--font-display);
-  font-variation-settings: "wdth" 112;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 0.98;
-}
-
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-
-.spec {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-trust);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.rise {
-  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-/* ---------------------------------------------------------------------
-   RGB accents. Deliberately restrained: a rainbow sweep used as a hover/
-   focus highlight on primary CTAs and cards, not a background theme.
-   Same gradient in both light and dark — it's a thin decorative accent,
-   not body content, so contrast against the page doesn't matter the way
-   it would for text.
---------------------------------------------------------------------- */
-:root {
-  --rgb-gradient: linear-gradient(
-    90deg,
-    #ff5f6d,
-    #ffc371,
-    #4ade80,
-    #38bdf8,
-    #a78bfa,
-    #ff5f6d
-  );
-}
-
-@keyframes rgb-cycle {
-  to {
-    background-position: 200% center;
-  }
-}
-
-/* Animated gradient glow behind an element on hover/focus — for buttons
-   and other elements that don't clip their own overflow. Do not use on
-   anything with overflow-hidden (e.g. ProductCard) — the pseudo-element
-   would get clipped; use .card-hover there instead. */
-.rgb-ring {
-  position: relative;
-  isolation: isolate;
-}
-.rgb-ring::before {
-  content: "";
-  position: absolute;
-  inset: -3px;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--rgb-gradient);
-  background-size: 200% 100%;
-  filter: blur(8px);
-  opacity: 0;
-  animation: rgb-cycle 3s linear infinite;
-  transition: opacity 200ms ease;
-}
-.rgb-ring:hover::before,
-.rgb-ring:focus-visible::before {
-  opacity: 0.6;
-}
-
-/* Animated gradient text — small accents only (a brand mark, a headline
-   highlight), never body copy. */
-.rgb-text {
-  background: var(--rgb-gradient);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: rgb-cycle 4s linear infinite;
-}
-
-/* Animated gradient underline sweep, for nav-style links. */
-.rgb-underline {
-  position: relative;
-}
-.rgb-underline::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -2px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--rgb-gradient);
-  background-size: 200% 100%;
-  opacity: 0;
-  transform: scaleX(0.6);
-  transform-origin: left;
-  animation: rgb-cycle 3s linear infinite;
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-.rgb-underline:hover::after,
-.rgb-underline:focus-visible::after {
-  opacity: 1;
-  transform: scaleX(1);
-}
-
-/* Card lift + tinted glow on hover. Box-shadow (unlike a pseudo-element)
-   isn't clipped by the card's own overflow-hidden, so this is the one
-   that's safe on ProductCard. */
-.card-hover {
-  transition: transform 220ms ease, box-shadow 220ms ease;
-}
-.card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 0 0 1px var(--color-trust),
-    0 14px 28px -16px rgba(90, 57, 214, 0.4),
-    0 4px 14px -6px rgba(216, 111, 0, 0.25);
-}
-html.dark .card-hover:hover {
-  box-shadow:
-    0 0 0 1px var(--color-trust),
-    0 14px 28px -16px rgba(150, 116, 255, 0.5),
-    0 4px 14px -6px rgba(255, 139, 24, 0.3);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-.input {
-  width: 100%;
-  border: 1px solid var(--color-line);
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 16px;
-  background: var(--color-card);
-  color: var(--color-ink);
-}
-
-.search-input {
-  border: 1px solid var(--color-line);
-  background: var(--color-card);
-  color: var(--color-ink);
-}
-
-.search-input::placeholder {
-  color: var(--color-muted);
-}
-
-.bg-ink.text-white {
-  color: var(--color-paper);
-}
-
-.theme-switch {
-  display: grid;
-  height: 32px;
-  width: 58px;
-  place-items: center;
-  border-radius: 999px;
-  background: #3a3a3a;
-  padding: 3px;
-  transition: background 160ms ease;
-}
-
-.theme-switch-track {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.theme-switch-thumb {
-  display: grid;
-  height: 26px;
-  width: 26px;
-  place-items: center;
-  border-radius: 999px;
-  background: #f1f1f1;
-  color: #151515;
-  font-size: 14px;
-  line-height: 1;
-  transition: transform 160ms ease;
-}
-
-html.dark .theme-switch {
-  background: #3a3a3a;
-}
-
-html.dark .theme-switch-track {
-  justify-content: flex-start;
+::selection {
+  background: var(--color-signal);
+  color: var(--color-signal-ink);
 }
 
 button,
@@ -300,11 +133,32 @@ textarea {
   font: inherit;
 }
 
-@media (min-width: 640px) {
-  .input {
-    font-size: 14px;
-  }
+button:not(:disabled),
+[role="button"],
+summary,
+label[for] {
+  cursor: pointer;
 }
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -60px;
+  z-index: 200;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-weight: 600;
+  transition: top 0.2s var(--ease-out-soft);
+}
+.skip-link:focus { top: 12px; }
 
 /* Nothing may exceed the viewport width. A single wide child on a phone
    turns the entire page into a sideways-scrolling one. */
@@ -313,8 +167,7 @@ body {
   max-width: 100%;
   /* clip, not hidden: hidden turns body into a scroll container, which
      silently breaks position: sticky for everything inside it (the header
-     and the shop's filter sidebar). clip stops sideways scroll the same way
-     without that side effect. */
+     and the shop's filter sidebar). */
   overflow-x: clip;
 }
 
@@ -345,112 +198,661 @@ dt {
     min-height: 40px;
   }
   .spec a,
-  .spec button {
+  .spec button,
+  .inline-link {
     min-height: 0;
   }
 }
 
-/* Listing card: Jawa-style spec grid + performance bars (components/ProductCard.tsx) */
-.spec-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin: 12px 0 0;
-}
-/* Only a cross through the middle: a vertical line between the columns and
-   a horizontal line between the rows. Padding is equal on both sides of
-   each line so all four cells sit symmetrically. */
-.spec-grid > div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px;
-  font-size: 11.5px;
-}
-.spec-grid > div:nth-child(odd) { padding-left: 0; border-right: 1px solid var(--color-line); }
-.spec-grid > div:nth-child(even) { padding-right: 0; }
-.spec-grid:has(> :nth-child(3)) > div:nth-child(-n + 2) { border-bottom: 1px solid var(--color-line); }
-.spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
-.spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
-.spec-grid:not(:has(> :nth-child(3))) > div { padding-bottom: 0; }
-.spec-grid dd { margin: 0; }
-.perf-bar { height: 7px; border-radius: 99px; background: var(--color-trust-soft); overflow: hidden; }
-.perf-fill { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: perf-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.perf-score { background: linear-gradient(90deg, #1f6feb, #4fa3ff); }
-.perf-value { background: linear-gradient(90deg, #f28a8a, #f7b0a4); }
-.perf-bar:has(.perf-value) { background: #fdecea; }
-html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
-@keyframes perf-grow { from { transform: scaleX(0); } }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Listing page full specification (app/product/[id]/[slug]/page.tsx):
-   a spec list, not a table. Grouped rows with icon, label, value and a
-   plain-English note, separated by hairlines only. */
-.spec-list {
-  border: 1px solid var(--color-line);
-  border-radius: 14px;
-  background: var(--color-card);
-  padding: 4px 22px;
-  margin-bottom: 0;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
-.spec-item {
-  display: grid;
-  grid-template-columns: 40px 130px minmax(0, 1fr);
-  align-items: start;
-  gap: 14px;
-  padding: 14px 0;
+
+@layer components {
+
+/* =====================================================================
+   Typography
+===================================================================== */
+.display {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-variation-settings: "wdth" 88, "opsz" 72;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
+  text-wrap: balance;
 }
-.spec-item + .spec-item { border-top: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent); }
-/* Rainbow tile that slowly cycles through the site's RGB gradient. Every
-   tile runs the same animation in step, so they're always the same colour. */
-.spec-item-icon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  color: #fff;
-  background: var(--rgb-gradient);
-  background-size: 400% 400%;
-  animation: spec-rainbow 6s ease-in-out infinite alternate;
-  box-shadow: 0 6px 14px -8px rgba(90, 57, 214, 0.55);
-}
-.spec-item-icon svg { color: #fff; stroke: #fff; }
-@keyframes spec-rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-.spec-item-label {
-  padding-top: 11px;
-  font-size: 13px;
-  font-weight: 500;
+.display-tight { letter-spacing: -0.04em; line-height: 0.9; }
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   color: var(--color-muted);
 }
-.spec-item-body { margin: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
-.spec-item-value { font-size: 16px; font-weight: 600; line-height: 1.35; }
-.spec-item-note { font-size: 13.5px; line-height: 1.5; color: var(--color-muted); max-width: 52ch; }
-@media (max-width: 640px) {
-  .spec-list { padding: 4px 16px 8px; }
-  .spec-item { grid-template-columns: 36px minmax(0, 1fr); gap: 4px 12px; }
-  .spec-item-icon { width: 36px; height: 36px; grid-row: span 2; }
-  .spec-item-label { padding-top: 0; font-size: 12px; }
-  .spec-item-body { grid-column: 2; padding-top: 0; }
-  .spec-item-value { font-size: 15px; }
+
+.spec {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
-.detail-chip {
+
+/* Shelf-tag labels: lot numbers, counters, sticker text. Mono, tiny. */
+.tag-label {
+  font-family: var(--font-tag);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The scribbled margin note. Sparingly. */
+.hand {
+  font-family: var(--font-hand);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.lede {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--color-muted);
+  text-wrap: pretty;
+}
+
+.prose-body p { font-size: 15px; line-height: 1.7; color: var(--color-ink-soft); }
+
+/* Underlined inline link, underline in signal orange. */
+.link,
+.inline-link {
+  color: var(--color-ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-signal);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.link:hover,
+.inline-link:hover { color: var(--color-deal); }
+
+/* A text link with an arrow that nudges on hover. */
+.arrow-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--color-ink);
+  transition: color 0.15s, gap 0.2s var(--ease-out-soft);
+}
+.arrow-link::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 0.2s var(--ease-out-soft);
+}
+.arrow-link:hover { color: var(--color-deal); }
+.arrow-link:hover::after { transform: translateX(3px); }
+
+/* =====================================================================
+   Buttons — keycaps. A small bottom lip that compresses when pressed,
+   because the people buying here spend their evenings on keyboards.
+===================================================================== */
+.btn {
+  --btn-bg: var(--color-card);
+  --btn-fg: var(--color-ink);
+  --btn-lip: rgba(23, 21, 15, 0.14);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: inset 0 -2.5px 0 var(--btn-lip), var(--shadow-sm);
+  transition:
+    transform 0.14s var(--ease-out-soft),
+    box-shadow 0.14s var(--ease-out-soft),
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    filter 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 -1px 0 var(--btn-lip);
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+  transform: none;
+}
+.btn svg { flex-shrink: 0; }
+.btn .btn-arrow { transition: transform 0.2s var(--ease-out-soft); }
+.btn:hover .btn-arrow { transform: translateX(3px); }
+
+.btn-primary {
+  --btn-bg: var(--color-signal);
+  --btn-fg: var(--color-signal-ink);
+  --btn-lip: rgba(80, 20, 0, 0.32);
+  box-shadow: inset 0 -2.5px 0 var(--btn-lip), 0 8px 20px -10px color-mix(in srgb, var(--color-signal) 80%, transparent);
+}
+.btn-primary:hover { filter: brightness(1.05) saturate(1.05); }
+
+.btn-dark {
+  --btn-bg: var(--color-ink);
+  --btn-fg: var(--color-paper);
+  --btn-lip: rgba(0, 0, 0, 0.45);
+}
+html.dark .btn-dark { --btn-lip: rgba(0, 0, 0, 0.3); }
+.btn-dark:hover { filter: brightness(1.15); }
+
+.btn-outline {
+  --btn-bg: var(--color-card);
+  border-color: var(--color-line-strong);
+  --btn-lip: color-mix(in srgb, var(--color-line-strong) 70%, transparent);
+}
+.btn-outline:hover { border-color: var(--color-ink); }
+
+.btn-ghost {
+  --btn-bg: transparent;
+  box-shadow: none;
+}
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-ink) 7%, transparent); transform: none; }
+.btn-ghost:active { box-shadow: none; }
+
+.btn-danger {
+  --btn-bg: var(--color-danger);
+  --btn-fg: #fff;
+  --btn-lip: rgba(60, 0, 10, 0.35);
+}
+html.dark .btn-danger { --btn-fg: #1a0508; }
+
+.btn-green {
+  --btn-bg: var(--color-trust);
+  --btn-fg: #fff;
+  --btn-lip: rgba(0, 40, 20, 0.35);
+}
+html.dark .btn-green { --btn-fg: #06180f; }
+
+.btn-sm { height: 36px; padding: 0 13px; font-size: 13px; border-radius: 9px; gap: 6px; }
+.btn-xs { height: 30px; padding: 0 10px; font-size: 12.5px; border-radius: 8px; gap: 5px; }
+.btn-lg { height: 52px; padding: 0 24px; font-size: 16px; border-radius: 12px; }
+.btn-block { display: flex; width: 100%; }
+.btn-icon { width: 40px; padding: 0; }
+
+/* Spinner for busy buttons. */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 99px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =====================================================================
+   Surfaces
+===================================================================== */
+.panel {
   border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
   background: var(--color-card);
-  font-size: 12.5px;
+  box-shadow: var(--shadow-sm);
+}
+.panel-pad { padding: 20px; }
+@media (min-width: 640px) { .panel-pad { padding: 24px; } }
+
+.panel-inset {
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-paper);
 }
 
-/* Narrow cards (two-per-row on phones): stack the parts grid and shorten labels. */
-.tilt-card { container-type: inline-size; }
+/* Interactive card: lifts, border darkens. No rainbow. */
+.card-hover,
+.card-lift {
+  transition: transform 0.25s var(--ease-out-soft), box-shadow 0.25s var(--ease-out-soft), border-color 0.2s;
+}
+.card-hover:hover,
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-ink) 28%, var(--color-line));
+  box-shadow: var(--shadow-md);
+}
+
+/* Dotted "perfboard" backdrop — the prototyping board every PC part
+   started life on. */
+.perfboard {
+  background-image: var(--perfboard);
+  background-size: 14px 14px;
+}
+
+/* Dashed rule, like a tear-off line on a receipt. */
+.rule-dashed {
+  border: 0;
+  border-top: 1.5px dashed var(--color-line-strong);
+}
+
+/* =====================================================================
+   Forms
+===================================================================== */
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--color-ink);
+}
+.hint {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 16px;
+  background: var(--color-card);
+  color: var(--color-ink);
+  box-shadow: inset 0 1px 2px rgba(23, 21, 15, 0.05);
+  transition: border-color 0.15s, box-shadow 0.2s, background-color 0.15s;
+}
+.input::placeholder { color: color-mix(in srgb, var(--color-muted) 80%, transparent); }
+.input:hover { border-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-line-strong)); }
+.input:focus {
+  outline: none;
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-signal) 22%, transparent);
+}
+.input:disabled { opacity: 0.6; }
+.input[aria-invalid="true"] { border-color: var(--color-danger); }
+textarea.input { min-height: 110px; line-height: 1.55; resize: vertical; }
+select.input {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b665a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-signal);
+}
+@media (min-width: 640px) {
+  .input { font-size: 14.5px; }
+}
+
+.search-input {
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-card);
+  color: var(--color-ink);
+}
+.search-input::placeholder { color: var(--color-muted); }
+
+/* Segmented control (login mode, fulfilment choice…) */
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-line);
+}
+.seg > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 13.5px;
+  font-weight: 650;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.seg > *:hover { color: var(--color-ink); }
+.seg > [aria-pressed="true"],
+.seg > [aria-selected="true"],
+.seg > .is-on {
+  background: var(--color-card);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--color-line);
+}
+
+/* =====================================================================
+   Badges, stickers, alerts
+===================================================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.35;
+  white-space: nowrap;
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+.badge-green { background: var(--color-trust-soft); color: var(--color-trust); }
+.badge-orange { background: var(--color-deal-soft); color: var(--color-deal); }
+.badge-gold { background: var(--color-gold-soft); color: var(--color-gold); }
+.badge-danger { background: var(--color-danger-soft); color: var(--color-danger); }
+.badge-ink { background: var(--color-ink); color: var(--color-paper); }
+.badge-outline { background: transparent; box-shadow: inset 0 0 0 1px var(--color-line-strong); color: var(--color-muted); }
+
+/* A peel-off sticker: signal orange, slightly askew. */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 3px;
+  border-radius: 6px;
+  background: var(--color-signal);
+  color: var(--color-signal-ink);
+  font-family: var(--font-tag);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), 0 6px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+.alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-line);
+  background: var(--color-paper);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.alert > svg { flex-shrink: 0; margin-top: 1px; }
+.alert-info { background: var(--color-trust-soft); border-color: color-mix(in srgb, var(--color-trust) 30%, transparent); }
+.alert-info > svg { color: var(--color-trust); }
+.alert-warn { background: var(--color-deal-soft); border-color: color-mix(in srgb, var(--color-deal) 30%, transparent); }
+.alert-warn > svg { color: var(--color-deal); }
+.alert-danger { background: var(--color-danger-soft); border-color: color-mix(in srgb, var(--color-danger) 30%, transparent); }
+.alert-danger > svg { color: var(--color-danger); }
+.alert-success { background: var(--color-trust-soft); border-color: color-mix(in srgb, var(--color-good) 35%, transparent); }
+.alert-success > svg { color: var(--color-good); }
+
+.kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--color-line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--color-card);
+  color: var(--color-muted);
+  font-family: var(--font-tag);
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+/* =====================================================================
+   Tabs (underline) — selling, buying, company pages
+===================================================================== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-line);
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 12px 13px;
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 550;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2.5px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-signal);
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease-out-soft);
+}
+.tab:hover { color: var(--color-ink); }
+.tab[aria-selected="true"],
+.tab[aria-current="page"],
+.tab.is-on {
+  color: var(--color-ink);
+  font-weight: 650;
+}
+.tab[aria-selected="true"]::after,
+.tab[aria-current="page"]::after,
+.tab.is-on::after { transform: scaleX(1); }
+.tab-count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  font-size: 11.5px;
+  font-weight: 650;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tab[aria-selected="true"] .tab-count { background: var(--color-ink); color: var(--color-paper); }
+
+/* =====================================================================
+   Loading + empty states
+===================================================================== */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-line) 70%, transparent);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-card) 70%, transparent), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+.empty-state svg.empty-art { width: 148px; height: auto; margin-bottom: 18px; }
+
+/* =====================================================================
+   Toasts (components/ui/Toast.tsx)
+===================================================================== */
+.toast-stack {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  width: min(420px, calc(100vw - 32px));
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 14px;
+  font-weight: 550;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: toast-in 0.4s var(--ease-spring) both;
+}
+.toast.is-leaving { animation: toast-out 0.25s ease-in both; }
+.toast-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 99px; background: var(--color-signal); }
+.toast-dot.is-good { background: #5fd0a0; }
+.toast a, .toast button { margin-left: auto; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; background: none; border: 0; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(10px) scale(0.98); } }
+
+/* =====================================================================
+   Theme toggle (components/ThemeToggle.tsx)
+===================================================================== */
+.theme-switch {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink);
+  transition: background 0.15s;
+}
+.theme-switch:hover { background: color-mix(in srgb, var(--color-ink) 8%, transparent); }
+.theme-switch svg { transition: transform 0.6s var(--ease-spring); }
+.theme-switch .sun-rays { transform-origin: 12px 12px; transition: transform 0.5s var(--ease-spring), opacity 0.3s; }
+.theme-switch .moon-cut { transition: transform 0.5s var(--ease-spring); }
+html.dark .theme-switch svg { transform: rotate(-40deg); }
+html.dark .theme-switch .sun-rays { transform: scale(0.3) rotate(45deg); opacity: 0; }
+html.dark .theme-switch .moon-cut { transform: translate(-7px, 5px); }
+
+/* =====================================================================
+   Listing card (components/ProductCard.tsx)
+===================================================================== */
+.listing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 7px;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: var(--color-card);
+  box-shadow: var(--shadow-sm);
+  container-type: inline-size;
+  transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s var(--ease-out-soft), border-color 0.2s;
+}
+.listing-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-ink) 25%, var(--color-line));
+  box-shadow: var(--shadow-md);
+}
+.listing-card:active { transform: translateY(-1px); }
+.listing-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--color-chrome);
+}
+.listing-photo img { transition: transform 0.7s var(--ease-out-soft); }
+.listing-card:hover .listing-photo img { transform: scale(1.045); }
+.listing-body { display: flex; flex: 1; flex-direction: column; padding: 11px 6px 6px; }
+.listing-price {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-variation-settings: "wdth" 85, "opsz" 48;
+  letter-spacing: -0.02em;
+  font-size: 21px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.condition-chip {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 252, 246, 0.94);
+  color: #17150f;
+  font-size: 11.5px;
+  font-weight: 650;
+  backdrop-filter: blur(6px);
+}
+.condition-chip i { width: 6px; height: 6px; border-radius: 99px; background: #11754f; }
+.condition-chip i[data-c="Used"] { background: #b8860b; }
+.condition-chip i[data-c="For parts"] { background: #c42a3c; }
+.condition-chip i[data-c="Like new"] { background: #2f9e6e; }
+
+/* Hide the long perf labels in narrow cards. */
 .p2p-short { display: none; }
 @container (max-width: 200px) {
-  /* Stay 2x2 like Jawa; just tighten so both columns fit. */
   .spec-grid > div { gap: 4px; font-size: 10.5px; }
   .spec-grid > div:nth-child(odd) { padding-right: 5px; }
   .spec-grid > div:nth-child(even) { padding-left: 5px; }
@@ -459,105 +861,66 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   .spec-grid svg { width: 11px; height: 11px; }
   .p2p-long { display: none; }
   .p2p-short { display: inline; }
+  .listing-price { font-size: 18px; }
+}
+@container (min-width: 340px) {
+  .listing-card h3 { font-size: 15.5px; }
+  .listing-price { font-size: 25px; }
+  .spec-grid > div { font-size: 13px; padding-top: 10px; padding-bottom: 10px; }
+  .spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
+  .spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
+  .spec-grid svg { width: 15px; height: 15px; }
+  .perf-bar { height: 9px; }
 }
 
-/* ---------------------------------------------------------------------
-   Rainbow hover, site-wide. Cards, tiles and tag pills get the same
-   moving RGB gradient as the header links instead of a flat purple ring.
-   The frame is a masked ::after drawn *inside* the element, so it also
-   works on cards with overflow-hidden (ProductCard).
---------------------------------------------------------------------- */
-.tilt-card,
-.card-hover,
-.deal-card,
-.rgb-frame {
+/* Two-by-two spec cross (listing cards, hero deal) */
+.spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 12px 0 0;
+}
+.spec-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  font-size: 11.5px;
+  color: var(--color-ink-soft);
+}
+.spec-grid > div:nth-child(odd) { padding-left: 0; border-right: 1px solid var(--color-line); }
+.spec-grid > div:nth-child(even) { padding-right: 0; }
+.spec-grid:has(> :nth-child(3)) > div:nth-child(-n + 2) { border-bottom: 1px solid var(--color-line); }
+.spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
+.spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
+.spec-grid:not(:has(> :nth-child(3))) > div { padding-bottom: 0; }
+.spec-grid dd { margin: 0; }
+
+/* Performance meters: segmented like a VU / LED meter. */
+.perf-bar {
   position: relative;
+  height: 8px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-line) 80%, transparent);
+  overflow: hidden;
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 7px, transparent 7px 9px);
+  mask: repeating-linear-gradient(90deg, #000 0 7px, transparent 7px 9px);
 }
-.tilt-card::after,
-.card-hover::after,
-.deal-card::after,
-.rgb-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  border-radius: inherit;
-  padding: 2px;
-  background: var(--rgb-gradient);
-  background-size: 200% 100%;
-  animation: rgb-cycle 3s linear infinite;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
+.perf-fill {
+  display: block;
+  height: 100%;
+  transform-origin: left;
+  animation: perf-grow 1.1s var(--ease-out-soft) both;
 }
-.tilt-card:hover::after,
-.card-hover:hover::after,
-.deal-stage:hover .deal-card::after,
-.rgb-frame:hover::after,
-.group:hover > .rgb-frame::after {
-  opacity: 1;
-}
-.tilt-card:hover,
-.card-hover:hover {
-  border-color: transparent;
-  box-shadow:
-    -10px 10px 28px -18px rgba(255, 95, 109, 0.55),
-    0 16px 30px -18px rgba(74, 222, 128, 0.45),
-    10px 10px 28px -18px rgba(56, 189, 248, 0.55),
-    0 22px 40px -24px rgba(167, 139, 250, 0.6);
-}
-.deal-stage:hover .deal-card {
-  box-shadow:
-    -14px 18px 40px -26px rgba(255, 95, 109, 0.55),
-    14px 18px 40px -26px rgba(56, 189, 248, 0.55),
-    0 30px 60px -32px rgba(167, 139, 250, 0.6);
-}
+.perf-score { background: linear-gradient(90deg, #0c6a4a, #2fb57d 70%, #9be15d); }
+.perf-value { background: linear-gradient(90deg, #c2410c, #ff5b1f 60%, #ffb13b); }
+html.dark .perf-score { background: linear-gradient(90deg, #2c8f67, #5fd0a0 70%, #b6f07a); }
+@keyframes perf-grow { from { transform: scaleX(0); } }
 
-/* Tag pills (category subcategories, hero quick picks): same masked rainbow
-   frame, 1px, so it doesn't fight the pills' own entrance animation. */
-.cat-subs a,
-.chip {
-  position: relative;
-}
-.cat-subs a::after,
-.chip::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: 999px;
-  padding: 1.5px;
-  background: var(--rgb-gradient);
-  background-size: 200% 100%;
-  animation: rgb-cycle 3s linear infinite;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-.cat-subs a:hover::after,
-.chip:hover::after {
-  opacity: 1;
-}
-.cat-subs a:hover,
-.chip:hover {
-  color: var(--color-ink);
-  border-color: transparent;
-  background: var(--color-card);
-}
-
-/* Listing card photo arrows + dots (components/ProductCard.tsx). Arrows
-   fade in on hover with a mouse; always visible on touch screens. */
+/* Photo carousel inside a card */
 .card-track {
   display: flex;
   height: 100%;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.45s var(--ease-out-soft);
 }
 .card-slide { flex: 0 0 100%; height: 100%; overflow: hidden; }
 .card-arrow {
@@ -572,22 +935,21 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   margin-top: -15px;
   border: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #111;
+  background: rgba(255, 252, 246, 0.94);
+  color: #17150f;
   box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.45);
-  cursor: pointer;
   opacity: 0;
   transform: scale(0.85);
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s;
+  transition: opacity 0.2s ease, transform 0.2s var(--ease-spring), background 0.2s;
 }
 .card-arrow:hover { background: #fff; transform: scale(1.08); }
-.tilt-card:hover .card-arrow,
+.listing-card:hover .card-arrow,
 .card-arrow:focus-visible { opacity: 1; transform: scale(1); }
 @media (hover: none) { .card-arrow { opacity: 0.9; transform: none; } }
 .card-dots {
   position: absolute;
   left: 50%;
-  bottom: 34px;
+  top: 10px;
   z-index: 5;
   display: flex;
   gap: 4px;
@@ -600,23 +962,72 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.55);
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
-  transition: width 0.25s ease, background 0.25s;
+  transition: width 0.25s var(--ease-out-soft), background 0.25s;
 }
 .card-dots span.is-on { width: 14px; background: #fff; }
 
-/* Wide cards (3-per-row full systems on a big screen, ~350px+): scale the
-   text up a touch so it reads like Jawa's larger cards. */
-@container (min-width: 340px) {
-  .tilt-card h3 { font-size: 15.5px; }
-  .tilt-card .display { font-size: 22px; }
-  .spec-grid > div { font-size: 13px; padding-top: 10px; padding-bottom: 10px; }
-  .spec-grid > div:nth-child(-n + 2) { padding-top: 0; }
-  .spec-grid > div:nth-child(n + 3) { padding-bottom: 0; }
-  .spec-grid svg { width: 15px; height: 15px; }
-  .perf-bar { height: 9px; }
+/* =====================================================================
+   Listing page spec sheet (app/product/[id]/[slug]/page.tsx)
+===================================================================== */
+.spec-list {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  padding: 4px 22px;
+  margin-bottom: 0;
+  box-shadow: var(--shadow-sm);
+}
+.spec-item {
+  display: grid;
+  grid-template-columns: 40px 140px minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+  padding: 15px 0;
+}
+.spec-item + .spec-item { border-top: 1px dashed var(--color-line); }
+.spec-item-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--color-trust-soft);
+  color: var(--color-trust);
+  transition: transform 0.3s var(--ease-spring), background 0.2s, color 0.2s;
+}
+.spec-item-icon svg { color: currentColor; }
+.spec-item:hover .spec-item-icon { transform: rotate(-6deg) scale(1.06); background: var(--color-signal); color: var(--color-signal-ink); }
+.spec-item-label {
+  padding-top: 11px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--color-muted);
+}
+.spec-item-body { margin: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+.spec-item-value { font-size: 16px; font-weight: 650; line-height: 1.35; }
+.spec-item-note { font-size: 13.5px; line-height: 1.5; color: var(--color-muted); max-width: 52ch; }
+@media (max-width: 640px) {
+  .spec-list { padding: 4px 16px 8px; }
+  .spec-item { grid-template-columns: 36px minmax(0, 1fr); gap: 4px 12px; }
+  .spec-item-icon { width: 36px; height: 36px; grid-row: span 2; }
+  .spec-item-label { padding-top: 0; font-size: 12px; }
+  .spec-item-body { grid-column: 2; padding-top: 0; }
+  .spec-item-value { font-size: 15px; }
+}
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+  font-size: 12.5px;
 }
 
-/* Sign-in page backdrop (app/login/page.tsx): blurred wall of listings. */
+/* =====================================================================
+   Sign-in page backdrop (app/login/page.tsx): a slow wall of listings.
+===================================================================== */
 .login-wall-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(220px, 1fr));
@@ -624,15 +1035,66 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   width: 130%;
   margin-left: -15%;
   padding-top: 20px;
-  filter: blur(6px) saturate(1.1);
-  opacity: 0.55;
-  transform: rotate(-4deg) scale(1.08);
-  animation: login-drift 40s ease-in-out infinite alternate;
+  filter: blur(3px) saturate(0.9);
+  opacity: 0.35;
+  transform: rotate(-6deg) scale(1.08);
+  animation: login-drift 60s ease-in-out infinite alternate;
 }
-@keyframes login-drift { to { transform: rotate(-4deg) scale(1.08) translateY(-120px); } }
+@keyframes login-drift { to { transform: rotate(-6deg) scale(1.08) translateY(-160px); } }
 .login-wall-fade {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 70% at 50% 45%, color-mix(in srgb, var(--color-paper) 55%, transparent), var(--color-paper) 85%);
+  background:
+    radial-gradient(ellipse 55% 65% at 50% 45%, color-mix(in srgb, var(--color-paper) 80%, transparent), var(--color-paper) 80%);
 }
 @media (max-width: 640px) { .login-wall-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); } }
+
+/* =====================================================================
+   Legacy hooks. The old design's RGB classes are still referenced by a
+   few components; they now resolve to the new, calmer language.
+===================================================================== */
+.rgb-ring { position: relative; }
+.rgb-text { color: var(--color-signal); }
+.rgb-underline { position: relative; }
+.rgb-frame { position: relative; }
+.bg-ink.text-white { color: var(--color-paper); }
+
+/* =====================================================================
+   Logo (components/ui/Logo.tsx)
+===================================================================== */
+.logo-word { letter-spacing: -0.035em; line-height: 1; font-variation-settings: "wdth" 80, "opsz" 36; }
+.logo-mark .logo-arrow-a,
+.logo-mark .logo-arrow-b { transition: transform 0.45s var(--ease-spring); }
+.logo-link:hover .logo-arrow-a { transform: translateX(2px); }
+.logo-link:hover .logo-arrow-b { transform: translateX(-2px); }
+.logo-link:hover .logo-mark { animation: chip-nudge 0.5s var(--ease-spring); }
+@keyframes chip-nudge { 40% { transform: rotate(-8deg); } }
+/* On dark board surfaces the chip turns bone, arrows stay legible. */
+.logo-light .logo-mark rect { fill: #f3efe6; }
+.logo-light .logo-mark g[stroke] { stroke: #f3efe6; }
+.logo-light .logo-mark .logo-arrow-b { stroke: #101814; }
+.logo-light .logo-word { color: #f3efe6; }
+
+/* Small pop-over menus (account menu etc.) */
+.menu-pop { animation: menu-pop 0.22s var(--ease-out-soft) both; transform-origin: top right; }
+@keyframes menu-pop { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
+
+.footer-link {
+  position: relative;
+  color: #cfd6cf;
+  transition: color 0.15s, padding 0.25s var(--ease-out-soft);
+}
+.footer-link::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 2px;
+  background: #ff6a2e;
+  transition: width 0.25s var(--ease-out-soft);
+}
+.footer-link:hover { color: #fff; padding-left: 14px; }
+.footer-link:hover::before { width: 8px; }
+
+} /* @layer components */

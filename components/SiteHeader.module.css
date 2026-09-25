@@ -1,0 +1,238 @@
+/* Site header (SiteHeader.tsx). */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.3s var(--ease-out-soft);
+}
+
+/* The blur lives on the bar, not the <header>, so the mobile menu sheet
+   (a fixed-position child) isn't trapped inside a new containing block. */
+.bar {
+  background: color-mix(in srgb, var(--color-paper) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--color-line);
+  transition: box-shadow 0.3s, background 0.3s;
+}
+.scrolled .bar {
+  background: color-mix(in srgb, var(--color-paper) 94%, transparent);
+  box-shadow: 0 10px 30px -24px rgba(23, 21, 15, 0.45);
+}
+
+/* Search pill */
+.search {
+  flex: 1;
+  max-width: 560px;
+  height: 42px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 14px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: var(--color-card);
+  transition: border-color 0.15s, box-shadow 0.2s, max-width 0.35s var(--ease-out-soft);
+}
+.search:hover { border-color: color-mix(in srgb, var(--color-ink) 35%, var(--color-line-strong)); }
+.search:focus-within {
+  max-width: 640px;
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-signal) 20%, transparent);
+}
+.search input {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  border: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  font-size: 14.5px;
+}
+.searchMobile { display: flex; max-width: none; height: 42px; }
+.searchMobile input { font-size: 16px; }
+
+.textLink {
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--color-ink);
+  transition: background 0.15s;
+}
+.textLink:hover { background: color-mix(in srgb, var(--color-ink) 7%, transparent); }
+
+/* No `display` here: callers set it with Tailwind (grid / hidden sm:grid),
+   since this unlayered module rule would otherwise beat the utilities. */
+.iconBtn {
+  position: relative;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-ink);
+  transition: background 0.15s, transform 0.15s;
+}
+.iconBtn:hover { background: color-mix(in srgb, var(--color-ink) 7%, transparent); }
+.iconBtn:active { transform: scale(0.94); }
+.dot {
+  position: absolute;
+  top: 3px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-signal);
+  color: var(--color-signal-ink);
+  font-size: 10.5px;
+  font-weight: 750;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--color-paper);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Category row */
+.catRow { border-top: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent); }
+.cat {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 10px;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--color-ink-soft);
+  transition: color 0.15s;
+}
+.cat::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2.5px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-signal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-out-soft);
+}
+.cat:hover { color: var(--color-ink); }
+.cat:hover::after { transform: scaleX(0.4); }
+.cat[aria-current="page"] { color: var(--color-ink); font-weight: 650; }
+.cat[aria-current="page"]::after { transform: scaleX(1); }
+.catHot { color: var(--color-deal); }
+.catHot:hover { color: var(--color-deal); }
+
+.menu {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 60;
+  display: none;
+  min-width: 250px;
+  padding: 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: var(--color-card);
+  box-shadow: var(--shadow-lg);
+  animation: menuIn 0.22s var(--ease-out-soft) both;
+}
+@media (min-width: 1024px) { .menu { display: block; } }
+@keyframes menuIn { from { opacity: 0; transform: translateY(-6px) scale(0.98); } }
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 14px;
+  color: var(--color-ink);
+  transition: background 0.15s, padding 0.2s var(--ease-out-soft);
+}
+.menuItem:hover { background: var(--color-paper); padding-left: 15px; }
+.menuArrow { opacity: 0; transform: translateX(-4px); transition: opacity 0.15s, transform 0.2s var(--ease-out-soft); color: var(--color-deal); }
+.menuItem:hover .menuArrow { opacity: 1; transform: none; }
+.menuAll { margin-top: 4px; border-top: 1px dashed var(--color-line); border-radius: 0 0 9px 9px; font-weight: 650; }
+
+.trustNote {
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--color-trust);
+  transition: color 0.15s;
+}
+.trustNote:hover { color: var(--color-ink); }
+
+/* Mobile menu sheet */
+.sheetWrap { position: fixed; inset: 0; z-index: 120; }
+.sheetBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(10, 12, 11, 0.45);
+  animation: fade 0.25s ease both;
+}
+@keyframes fade { from { opacity: 0; } }
+.sheet {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 88vw);
+  background: var(--color-card);
+  box-shadow: 20px 0 60px -30px rgba(0, 0, 0, 0.5);
+  animation: sheetIn 0.35s var(--ease-out-soft) both;
+}
+@keyframes sheetIn { from { transform: translateX(-100%); } }
+.quick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.quick:hover { border-color: var(--color-ink); }
+.acc summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  list-style: none;
+  font-size: 15.5px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-line);
+}
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary svg { transition: transform 0.25s var(--ease-out-soft); color: var(--color-muted); }
+.acc[open] summary svg { transform: rotate(180deg); }
+.accLink {
+  display: block;
+  padding: 8px 0;
+  font-size: 14.5px;
+  color: var(--color-ink-soft);
+}
+.accLink:hover { color: var(--color-deal); }
+
+@media (prefers-reduced-motion: reduce) {
+  .menu, .sheet, .sheetBackdrop { animation: none; }
+}

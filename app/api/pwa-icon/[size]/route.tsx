@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextResponse } from "next/server";
+import { IconMark } from "@/lib/icon-mark";
 
 /**
  * PWA manifest icons (app/manifest.ts references /api/pwa-icon/192 and
@@ -18,25 +19,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ size: s
   if (!ALLOWED_SIZES.includes(size))
     return NextResponse.json({ error: "Unsupported icon size." }, { status: 400 });
 
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#080808",
-          fontFamily: "system-ui, sans-serif",
-          fontWeight: 800,
-          fontSize: size * 0.6,
-          color: "#f6f6f6",
-        }}
-      >
-        S
-      </div>
-    ),
-    { width: size, height: size }
-  );
+  return new ImageResponse(<IconMark size={size} padded />, { width: size, height: size });
 }

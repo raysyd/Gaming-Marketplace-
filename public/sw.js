@@ -8,7 +8,7 @@
 // and auth flows; caching any of that would be actively wrong, not just
 // unhelpful.
 
-const CACHE_NAME = "sidegrade-v1";
+const CACHE_NAME = "sidegrade-v2";
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (event) => {

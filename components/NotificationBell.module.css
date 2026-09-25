@@ -5,20 +5,20 @@
 .bell {
   position: relative;
   display: flex;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #fff;
+  color: var(--color-ink);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
 }
-.bell:hover { background: var(--color-chrome-2); }
-.bellOpen { background: #fff; color: #111; }
-.bellOpen:hover { background: #fff; }
+.bell:hover { background: color-mix(in srgb, var(--color-ink) 7%, transparent); }
+.bell:active { transform: scale(0.94); }
+.bellOpen, .bellOpen:hover { background: var(--color-ink); color: var(--color-paper); }
 .ringing svg { animation: ring 0.9s ease; transform-origin: 50% 10%; }
 @keyframes ring {
   0%, 100% { transform: rotate(0); }
@@ -30,20 +30,20 @@
 }
 .count {
   position: absolute;
-  top: -3px;
-  right: -4px;
-  min-width: 19px;
-  height: 19px;
+  top: 3px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
   padding: 0 5px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #e41e3f;
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 700;
+  background: var(--color-signal);
+  color: var(--color-signal-ink);
+  font-size: 10.5px;
+  font-weight: 750;
   line-height: 1;
-  box-shadow: 0 0 0 2px var(--color-chrome);
+  box-shadow: 0 0 0 2px var(--color-paper);
 }
 
 /* Drawer ------------------------------------------------------------- */
@@ -51,8 +51,8 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  /* Like Jawa: the page stays visible (no dimming); clicking it closes the panel. */
-  background: transparent;
+  background: rgba(10, 12, 11, 0.28);
+  animation: fade 0.25s ease both;
 }
 @keyframes fade { from { opacity: 0; } }
 @keyframes fadeOut { to { opacity: 0; } }
@@ -69,6 +69,7 @@
   max-width: 100vw;
   background: var(--color-card);
   color: var(--color-ink);
+  border-left: 1px solid var(--color-line);
   box-shadow: -18px 0 50px -20px rgba(0, 0, 0, 0.45);
   animation: slideIn 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -83,7 +84,7 @@
   gap: 12px;
   padding: 18px 18px 6px;
 }
-.title { margin: 0; font-size: 24px; font-weight: 700; }
+.title { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 750; letter-spacing: -0.03em; font-variation-settings: "wdth" 88; }
 .close {
   display: grid;
   place-items: center;
@@ -111,12 +112,12 @@
   transition: background 0.15s, color 0.15s;
 }
 .tab:hover { background: var(--color-paper); }
-.tabOn, .tabOn:hover { background: var(--color-trust-soft); color: var(--color-trust); }
+.tabOn, .tabOn:hover { background: var(--color-ink); color: var(--color-paper); }
 .markAll {
   border: 0;
   background: none;
   padding: 0;
-  color: var(--color-trust);
+  color: var(--color-deal);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -124,7 +125,7 @@
 .markAll:hover { text-decoration: underline; }
 
 .scroll { flex: 1; overflow-y: auto; padding: 0 10px 16px; }
-.section { margin: 0; padding: 14px 8px 6px; font-size: 15px; font-weight: 600; }
+.section { margin: 0; padding: 16px 8px 6px; font-size: 11.5px; font-weight: 650; letter-spacing: 0.09em; text-transform: uppercase; color: var(--color-muted); }
 .list { list-style: none; margin: 0; padding: 0; }
 
 .row {
@@ -145,31 +146,32 @@
 }
 @keyframes rowIn { from { opacity: 0; transform: translateX(14px); } }
 .row:hover { background: var(--color-paper); }
-.unread { background: color-mix(in srgb, var(--color-trust-soft) 60%, transparent); }
-.unread:hover { background: var(--color-trust-soft); }
+.unread { background: color-mix(in srgb, var(--color-deal-soft) 55%, transparent); }
+.unread:hover { background: var(--color-deal-soft); }
 .text { min-width: 0; flex: 1; font-size: 14px; line-height: 1.4; }
 .text b { font-weight: 600; }
 .quote { display: block; margin-top: 2px; color: var(--color-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .age { display: block; margin-top: 3px; font-size: 12.5px; color: var(--color-muted); }
-.ageNew { color: var(--color-trust); font-weight: 600; }
-.dot { width: 12px; height: 12px; flex-shrink: 0; border-radius: 999px; background: var(--color-trust); }
+.ageNew { color: var(--color-deal); font-weight: 650; }
+.dot { width: 10px; height: 10px; flex-shrink: 0; border-radius: 999px; background: var(--color-signal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-signal) 25%, transparent); }
 
 .avatarWrap { position: relative; flex-shrink: 0; }
 .avatar {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 999px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   object-fit: cover;
-  color: #fff;
+  color: #f3efe6;
+  font-family: var(--font-display);
   font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #7b5cff, #5a39d6);
+  font-weight: 750;
+  background: #1b2821;
 }
-.k_offer { background: linear-gradient(135deg, #22c55e, #0d8055); }
-.k_liked_sold { background: linear-gradient(135deg, #fb7185, #e11d48); }
-.k_price_drop { background: linear-gradient(135deg, #fbbf24, #d86f00); }
+.k_offer { background: #0c6a4a; }
+.k_liked_sold { background: #c42a3c; }
+.k_price_drop { background: #ff5b1f; color: #1d0d03; }
 .badge {
   position: absolute;
   right: -3px;
@@ -224,7 +226,7 @@
   border: 1px solid var(--color-line);
   border-radius: 10px;
   background: var(--color-card);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-lg);
   animation: fade 0.15s ease both;
 }
 .menuItem {
@@ -244,4 +246,4 @@
 .menuItem:hover { background: var(--color-paper); }
 .menuItem:disabled { opacity: 0.45; cursor: default; background: transparent; }
 .filterNote { padding: 2px 18px 6px; font-size: 12.5px; color: var(--color-muted); }
-.filterNote button { border: 0; background: none; padding: 0; color: var(--color-trust); font: inherit; font-weight: 600; cursor: pointer; }
+.filterNote button { border: 0; background: none; padding: 0; color: var(--color-deal); font: inherit; font-weight: 600; cursor: pointer; }

@@ -2,32 +2,44 @@
    panel; a CSS module so it ships as its own content-hashed file. */
 
 .cartBtn {
-  margin-left: 2px;
-  display: flex;
+  position: relative;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-radius: 6px;
-  background: var(--color-chrome-2);
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.cartBtn:hover { background: #333; }
-.cartCount {
   border-radius: 999px;
-  padding: 2px 6px;
-  background: var(--color-deal);
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.2;
+  background: transparent;
+  color: var(--color-ink);
+  transition: background 0.15s, transform 0.15s;
+}
+.cartBtn:hover { background: color-mix(in srgb, var(--color-ink) 7%, transparent); }
+.cartBtn:active { transform: scale(0.94); }
+.cartBtn[aria-expanded="true"] { background: var(--color-ink); color: var(--color-paper); }
+.cartCount {
+  position: absolute;
+  top: 3px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-signal);
+  color: var(--color-signal-ink);
+  font-size: 10.5px;
+  font-weight: 750;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--color-paper);
+  font-variant-numeric: tabular-nums;
 }
 .bump { animation: bump 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
-@keyframes bump { 40% { transform: scale(1.35); } }
+@keyframes bump { 40% { transform: scale(1.45); } }
 
-.backdrop { position: fixed; inset: 0; z-index: 100; background: transparent; }
+.backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(10, 12, 11, 0.28); animation: fadeIn 0.25s ease both; }
+@keyframes fadeIn { from { opacity: 0; } }
 .drawer {
   position: fixed;
   top: 0;
@@ -36,9 +48,10 @@
   z-index: 101;
   display: flex;
   flex-direction: column;
-  width: 420px;
+  width: 430px;
   max-width: 100vw;
   background: var(--color-card);
+  border-left: 1px solid var(--color-line);
   color: var(--color-ink);
   box-shadow: -18px 0 50px -20px rgba(0, 0, 0, 0.45);
   animation: slideIn 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
@@ -48,7 +61,7 @@
 @keyframes slideOut { to { transform: translateX(100%); } }
 
 .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 18px 10px; border-bottom: 1px solid var(--color-line); }
-.title { margin: 0; font-size: 24px; font-weight: 700; }
+.title { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 750; letter-spacing: -0.03em; font-variation-settings: "wdth" 88; }
 .title span { font-size: 15px; font-weight: 500; color: var(--color-muted); margin-left: 6px; }
 .iconBtn {
   display: grid;
@@ -74,11 +87,11 @@
 .item + .item { border-top: 1px solid var(--color-line); }
 @keyframes rowIn { from { opacity: 0; transform: translateX(14px); } }
 .thumb { position: relative; flex-shrink: 0; width: 84px; height: 63px; overflow: hidden; border-radius: 8px; background: var(--color-ink); }
-.thumbBlank { display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 20px; background: linear-gradient(135deg, #7b5cff, #5a39d6); }
+.thumbBlank { display: grid; place-items: center; color: var(--color-signal-ink); font-weight: 700; font-size: 20px; background: var(--color-signal); }
 .info { min-width: 0; flex: 1; }
 .name { display: block; font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--color-ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .name:hover { color: var(--color-trust); }
-.price { margin-top: 4px; font-size: 15px; font-weight: 700; color: var(--color-trust); }
+.price { margin-top: 4px; font-family: var(--font-display); font-size: 17px; font-weight: 750; letter-spacing: -0.02em; color: var(--color-ink); }
 .controls { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; }
 .stepper { display: inline-flex; align-items: center; border: 1px solid var(--color-line); border-radius: 999px; overflow: hidden; }
 .stepper button {
@@ -95,14 +108,15 @@
 .stepper button:disabled { opacity: 0.35; cursor: default; }
 .stepper span { min-width: 22px; text-align: center; font-size: 13.5px; font-weight: 600; }
 .remove { border: 0; background: none; padding: 0; color: var(--color-muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; }
-.remove:hover { color: #e11d48; }
+.remove:hover { color: var(--color-danger); }
 
-.warn { margin: 10px 0 4px; padding: 10px 12px; border-radius: 8px; background: var(--color-deal-soft); font-size: 12.5px; line-height: 1.45; }
+.warn { margin: 10px 0 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--color-deal) 30%, transparent); background: var(--color-deal-soft); font-size: 12.5px; line-height: 1.45; }
 
-.foot { padding: 14px 18px 18px; border-top: 1px solid var(--color-line); background: var(--color-card); }
+.foot { padding: 16px 18px 18px; border-top: 1px solid var(--color-line); background: var(--color-paper); }
 .line { display: flex; justify-content: space-between; font-size: 14px; color: var(--color-muted); }
 .line + .line { margin-top: 6px; }
-.total { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--color-line); color: var(--color-ink); font-size: 17px; font-weight: 700; }
+.total { margin-top: 10px; padding-top: 10px; border-top: 1.5px dashed var(--color-line-strong); color: var(--color-ink); font-size: 17px; font-weight: 700; align-items: baseline; }
+.total span:last-child { font-family: var(--font-display); font-size: 24px; letter-spacing: -0.02em; }
 .go {
   margin-top: 14px;
   display: flex;
@@ -123,11 +137,12 @@
 .go:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .keep { margin-top: 10px; display: block; width: 100%; border: 0; background: none; color: var(--color-muted); font-size: 13.5px; font-weight: 500; cursor: pointer; }
 .keep:hover { color: var(--color-ink); text-decoration: underline; }
-.note { margin-top: 10px; text-align: center; font-size: 12px; color: var(--color-muted); }
+.note { margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; text-align: center; font-size: 12px; color: var(--color-trust); }
+.emptyArt { width: 150px; height: auto; margin-bottom: 6px; }
 
 .empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 30px 120px; text-align: center; color: var(--color-muted); }
 .emptyTitle { margin: 6px 0 0; font-size: 17px; font-weight: 700; color: var(--color-ink); }
 .emptyText { margin: 0; font-size: 13.5px; }
 .browse { margin-top: 8px; padding: 10px 20px; border: 0; border-radius: 999px; background: var(--color-ink); color: var(--color-paper); font-size: 14px; font-weight: 600; cursor: pointer; }
 
-@media (prefers-reduced-motion: reduce) { .drawer, .drawerOut, .item, .bump { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .drawer, .drawerOut, .item, .bump, .backdrop { animation: none; } }

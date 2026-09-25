@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Icon } from "./ui/Icon";
 
 /**
  * On phones the filter rail becomes a slide-up sheet. The rail itself is
@@ -32,11 +33,12 @@ export function MobileFilters({
     <div className="lg:hidden">
       <button
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-md border border-line bg-card py-2.5 text-[13px] font-semibold"
+        className="btn btn-outline btn-block"
       >
+        <Icon name="filter" size={17} />
         Filters
         {activeCount > 0 && (
-          <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
+          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-signal px-1.5 text-[11px] font-bold text-signal-ink">
             {activeCount}
           </span>
         )}
@@ -47,14 +49,15 @@ export function MobileFilters({
           <button
             aria-label="Close filters"
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-ink/50"
+            className="sheet-backdrop absolute inset-0 bg-[#0a0c0b]/50"
           />
-          <div className="relative max-h-[85vh] overflow-y-auto rounded-t-2xl bg-paper p-4 pb-8">
+          <div className="sheet-up relative max-h-[85vh] overflow-y-auto rounded-t-[22px] bg-card p-5 pb-10">
+            <span className="mx-auto mb-4 block h-1 w-10 rounded-full bg-line-strong" aria-hidden="true" />
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="display text-[20px]">Filters</h2>
+              <h2 className="display text-[26px]">Filters</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded border border-line px-3 py-1.5 text-[13px]"
+                className="btn btn-dark btn-sm"
               >
                 Done
               </button>

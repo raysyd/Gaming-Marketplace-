@@ -56,7 +56,7 @@ export function PriceHistoryChart({ points }: { points: PricePoint[] }) {
     new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 
   return (
-    <div className="mt-3">
+    <div className="mt-4">
       <p className="eyebrow mb-1.5">Price history</p>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -64,10 +64,10 @@ export function PriceHistoryChart({ points }: { points: PricePoint[] }) {
         role="img"
         aria-label={`Price history from ${money(points[0].price)} to ${money(last.price)}`}
       >
-        <path d={path} fill="none" stroke="var(--color-trust)" strokeWidth={2} strokeLinejoin="round" />
+        <path d={path} fill="none" stroke="var(--color-ink)" strokeWidth={2} strokeLinejoin="round" />
         {points.map((p, i) => (
           <g key={p.recordedAt + i}>
-            <circle cx={x(p.recordedAt)} cy={y(p.price)} r={3.5} fill="var(--color-trust)">
+            <circle cx={x(p.recordedAt)} cy={y(p.price)} r={3.5} fill="var(--color-card)" stroke="var(--color-ink)" strokeWidth={1.8}>
               <title>
                 {money(p.price)} — {dateFmt(p.recordedAt)}
               </title>
@@ -90,7 +90,7 @@ export function PriceHistoryChart({ points }: { points: PricePoint[] }) {
           </g>
         ))}
       </svg>
-      <p className="spec text-muted">
+      <p className="text-[12.5px] text-muted">
         Listed {dateFmt(points[0].recordedAt)} at {money(points[0].price)} · now {money(last.price)}
       </p>
     </div>

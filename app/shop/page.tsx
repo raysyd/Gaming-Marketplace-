@@ -8,6 +8,7 @@ import { Pagination } from "@/components/Pagination";
 import { MobileFilters } from "@/components/MobileFilters";
 import { DemoBanner } from "@/components/DemoBanner";
 import { SaveSearchButton } from "@/components/SaveSearchButton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { ListingQuery } from "@/lib/types";
 import { attrsFromSearchParams } from "@/lib/attributes";
 
@@ -72,79 +73,82 @@ export default async function ShopPage({
     return qs ? `/shop?${qs}` : "/shop";
   };
 
+  const crumbs: [string, string?][] = [["Marketplace", sp.category || sp.sub || sp.q ? "/shop" : undefined]];
+  if (sp.category) crumbs.push([findTop(sp.category)?.name ?? sp.category, sp.sub ? hrefWith({ sub: undefined, page: undefined }) : undefined]);
+  if (sp.sub) crumbs.push([findSub(sp.sub)?.name ?? sp.sub]);
+
+  const bigCards =
+    sp.category === "full-systems" || ["gaming-pcs", "gaming-laptops", "workstations", "mini-pcs"].includes(sp.sub ?? "");
+
   return (
-    <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6">
+    <div className="mx-auto max-w-[1480px] px-4 pb-8 pt-8 lg:px-8 lg:pt-10">
       {isDemo && <DemoBanner />}
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <nav className="spec text-muted">
-            <Link href="/shop" className="hover:text-ink">
-              Marketplace
-            </Link>
-            {sp.category && (
-              <>
-                {" / "}
-                <Link href={hrefWith({ sub: undefined, page: undefined })} className="hover:text-ink">
-                  {findTop(sp.category)?.name}
-                </Link>
-              </>
-            )}
-            {sp.sub && <> / {findSub(sp.sub)?.name}</>}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+        <div className="min-w-0">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-muted">
+            {crumbs.map(([label, href], i) => (
+              <span key={label + i} className="inline-flex items-center gap-1.5">
+                {i > 0 && <span aria-hidden="true" className="text-line-strong">/</span>}
+                {href ? (
+                  <Link href={href} className="transition hover:text-ink">{label}</Link>
+                ) : (
+                  <span className="text-ink">{label}</span>
+                )}
+              </span>
+            ))}
           </nav>
-          <h1 className="display mt-1.5 text-[30px]">{heading}</h1>
-          <p className="spec mt-1 text-muted">
-            {total.toLocaleString()} {total === 1 ? "listing" : "listings"}
-            {pages > 1 && ` · page ${page} of ${pages}`}
-          </p>
-          {(activeFilterCount > 0 || sp.q) && (
-            <div className="mt-2">
+          <h1 className="display mt-2 text-[clamp(30px,4vw,46px)]">{heading}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p className="text-[13.5px] text-muted">
+              <span className="font-semibold text-ink tabular-nums">{total.toLocaleString()}</span>{" "}
+              {total === 1 ? "listing" : "listings"}
+              {pages > 1 && ` · page ${page} of ${pages}`}
+            </p>
+            {(activeFilterCount > 0 || sp.q) && (
               <Suspense fallback={null}>
                 <SaveSearchButton defaultLabel={heading} />
               </Suspense>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="no-scrollbar -mx-4 flex w-screen gap-1 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:overflow-visible">
-          {SORTS.map(([v, label]) => (
-            <Link
-              key={v}
-              href={hrefWith({ sort: v, page: undefined })}
-              className={`shrink-0 whitespace-nowrap rounded px-2.5 py-1.5 text-[12.5px] transition ${
-                (sp.sort ?? "new") === v
-                  ? "bg-ink font-semibold text-white"
-                  : "border border-line hover:border-ink/40"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        <nav aria-label="Sort" className="no-scrollbar -mx-4 flex w-screen items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:overflow-visible sm:px-0">
+          <span className="hidden text-[12.5px] text-muted sm:inline">Sort</span>
+          <div className="seg w-max shrink-0 !auto-cols-max">
+            {SORTS.map(([v, label]) => (
+              <Link
+                key={v}
+                href={hrefWith({ sort: v, page: undefined })}
+                aria-current={(sp.sort ?? "new") === v ? "true" : undefined}
+                className={`whitespace-nowrap ${(sp.sort ?? "new") === v ? "is-on" : ""}`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </nav>
       </div>
 
       <MobileFilters activeCount={activeFilterCount}>
         <FilterRail sp={sp} counts={counts} />
       </MobileFilters>
 
-      <div className="mt-4 grid gap-6 lg:mt-0 lg:grid-cols-[210px_1fr]">
+      <div className="mt-4 grid gap-8 lg:mt-0 lg:grid-cols-[236px_1fr]">
         <div className="hidden lg:block">
           <FilterRail sp={sp} counts={counts} />
         </div>
 
         <div>
           {items.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-line bg-card p-12 text-center">
-              <h2 className="display text-[20px]">Nothing matches those filters</h2>
-              <p className="mt-2 text-[14px] text-muted">
-                Widen the price band or clear a category to see more.
-              </p>
-              <Link
-                href="/shop"
-                className="mt-4 inline-block rounded-md bg-ink px-5 py-2.5 text-[13px] font-semibold text-white"
-              >
-                Clear filters
-              </Link>
-            </div>
+            <EmptyState
+              title="Nothing matches those filters"
+              body="Widen the price band or clear a category to see more. Or save this search and we'll tell you when something lands."
+              action={
+                <Link href="/shop" className="btn btn-dark">
+                  Clear filters
+                </Link>
+              }
+            />
           ) : (
             <>
               {/* Full systems (gaming PCs, laptops, workstations, mini PCs) get 3
@@ -152,13 +156,15 @@ export default async function ShopPage({
                   room; everything else stays at 4. */}
               <div
                 className={`grid ${
-                  (sp.category === "full-systems" || ["gaming-pcs", "gaming-laptops", "workstations", "mini-pcs"].includes(sp.sub ?? ""))
-                    ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                    : "grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+                  bigCards
+                    ? "grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                    : "grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4"
                 }`}
               >
-                {items.map((l) => (
-                  <ProductCard key={l.id} listing={l} />
+                {items.map((l, i) => (
+                  <div key={l.id} className="rise" style={{ animationDelay: `${Math.min(i, 11) * 35}ms` }}>
+                    <ProductCard listing={l} />
+                  </div>
                 ))}
               </div>
               <Pagination

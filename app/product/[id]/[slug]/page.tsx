@@ -20,6 +20,7 @@ import { ProductGallery } from "@/components/ProductGallery";
 import { BuyBox } from "@/components/BuyBox";
 import { WishlistButton } from "@/components/WishlistButton";
 import { RecentlySold } from "@/components/RecentlySold";
+import { Icon } from "@/components/ui/Icon";
 
 export const revalidate = 120;
 export const dynamicParams = true;
@@ -81,31 +82,31 @@ export default async function ProductPage({
   const pairing = perf?.kind === "system" ? pairingNote(gpuSpec, cpuSpec) : null;
 
   return (
-    <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6">
+    <div className="mx-auto max-w-[1480px] px-4 pb-8 pt-8 lg:px-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(productSchema(listing, `/product/${listing.id}/${listing.slug}`)),
         }}
       />
-      <nav className="spec mb-5 text-muted">
-        <Link href="/shop" className="hover:text-ink">
+      <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-[12.5px] text-muted">
+        <Link href="/shop" className="transition hover:text-ink">
           Marketplace
         </Link>
         {top && (
           <>
-            {" / "}
-            <Link href={`/shop?category=${top.slug}`} className="hover:text-ink">
+            <span aria-hidden="true" className="text-line-strong">/</span>
+            <Link href={`/shop?category=${top.slug}`} className="transition hover:text-ink">
               {top.name}
             </Link>
           </>
         )}
         {sub && (
           <>
-            {" / "}
+            <span aria-hidden="true" className="text-line-strong">/</span>
             <Link
               href={`/shop?category=${listing.categorySlug}&sub=${sub.slug}`}
-              className="hover:text-ink"
+              className="transition hover:text-ink"
             >
               {sub.name}
             </Link>
@@ -123,15 +124,15 @@ export default async function ProductPage({
         `lg:mt-8`), which is what reproduces the desktop layout exactly as
         it was — one set of markup, no duplicated JSX per breakpoint.
       */}
-      <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-12">
         <div className="contents lg:block">
           <div className="order-2">
             <ProductGallery listing={listing} />
           </div>
 
-          <section className="order-6 lg:mt-8">
-            <h2 className="eyebrow">Full specification</h2>
-            <dl className="spec-list mt-3">
+          <section className="order-6 lg:mt-12">
+            <SectionTitle>Full specification</SectionTitle>
+            <dl className="spec-list mt-4">
               {[...keySpecs, ...otherSpecs].map((s) => {
                 const note = specNote(s.label, s.value);
                 return (
@@ -154,7 +155,7 @@ export default async function ProductPage({
                 ["Ships from", listing.location],
               ].map(([k, v]) => (
                 <span key={k} className="detail-chip">
-                  <SpecIcon label={k} />
+                  <span className="text-trust"><SpecIcon label={k} /></span>
                   <span className="text-muted">{k}</span>
                   <b className="font-semibold">{v}</b>
                 </span>
@@ -163,8 +164,8 @@ export default async function ProductPage({
 
             {(listing.benchmarkImages?.length ?? 0) > 0 && (
               <div className="mt-4">
-                <p className="spec inline-block rounded bg-good/10 px-2 py-1 font-semibold text-good">
-                  ✓ Performance Verified
+                <p className="badge badge-green">
+                  <Icon name="check-circle" size={14} /> Performance verified
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {listing.benchmarkImages!.map((src, i) => (
@@ -173,7 +174,7 @@ export default async function ProductPage({
                       href={src}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative block h-24 w-32 overflow-hidden rounded border border-line bg-ink"
+                      className="relative block h-24 w-32 overflow-hidden rounded-[10px] border border-line bg-chrome transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
                     >
                       <Image src={src} alt="Benchmark screenshot" fill sizes="128px" className="object-cover" />
                     </a>
@@ -186,33 +187,43 @@ export default async function ProductPage({
             )}
           </section>
 
-          <section className="order-7 lg:mt-8">
-            <h2 className="eyebrow">From the seller</h2>
-            <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed">
-              {listing.description}
-            </p>
+          <section className="order-7 lg:mt-12">
+            <SectionTitle>From the seller</SectionTitle>
+            <figure className="relative mt-4 rounded-[14px] border border-line bg-card p-6 pl-14 shadow-[var(--shadow-sm)]">
+              <span aria-hidden="true" className="display absolute left-5 top-3 text-[54px] leading-none text-signal">&ldquo;</span>
+              <blockquote className="max-w-2xl whitespace-pre-line text-[15px] leading-[1.7] text-ink-soft">
+                {listing.description}
+              </blockquote>
+              <figcaption className="mt-4 flex items-center gap-2 text-[13px] text-muted">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-ink text-[11px] font-bold text-paper">{listing.sellerName[0]}</span>
+                {listing.sellerName}, {listing.location}
+              </figcaption>
+            </figure>
           </section>
         </div>
 
         <div className="contents lg:block lg:space-y-4">
           <div className="order-1">
             <div className="flex items-start justify-between gap-3">
-              <p className="eyebrow">
-                {listing.brand} · listed {timeAgo(listing.createdAt)}
-                {listing.watchers > 0 && ` · ${listing.watchers} watching`}
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-muted">
+                <span className="badge badge-outline">{listing.brand}</span>
+                <span>Listed {timeAgo(listing.createdAt)}</span>
+                {listing.watchers > 0 && (
+                  <span className="inline-flex items-center gap-1"><Icon name="eye" size={13} /> {listing.watchers} watching</span>
+                )}
               </p>
-              <WishlistButton id={listing.id} />
+              <WishlistButton id={listing.id} size="md" />
             </div>
-            <h1 className="display mt-2 text-[26px] leading-tight">
+            <h1 className="display mt-3 text-[clamp(28px,3vw,38px)] leading-[1.02]">
               {listing.title}
             </h1>
             <ViewerCount listingId={listing.id} />
           </div>
 
           {listing.fps1080p && (
-            <div className="order-3 rounded-[10px] border border-line bg-card p-4">
+            <div className="order-3 panel p-4">
               <FpsBar fps={listing.fps1080p} />
-              <p className="spec mt-2 text-muted">
+              <p className="mt-2 text-[12.5px] text-muted">
                 Estimated from the GPU and CPU pairing across common titles.
               </p>
             </div>
@@ -222,33 +233,40 @@ export default async function ProductPage({
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
           </div>
 
-          <div className="order-5 rounded-[10px] border border-line bg-card p-5">
+          <div className="order-5 panel p-5">
             <h2 className="eyebrow">Seller</h2>
-            <Link href={`/seller/${listing.sellerId}`} className="mt-3 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-[15px] font-semibold text-white">
+            <Link href={`/seller/${listing.sellerId}`} className="group mt-3 flex items-center gap-3.5">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-chrome-2 font-[family-name:var(--font-display)] text-[20px] font-bold text-[#f3efe6] transition group-hover:-rotate-6">
                 {listing.sellerName[0]}
               </div>
-              <div>
-                <p className="flex items-center gap-1.5 text-[14px] font-semibold hover:text-trust">
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-1.5 text-[15px] font-semibold transition group-hover:text-deal">
                   {listing.sellerName}
                   {listing.sellerVerified && (
-                    <span className="spec rounded bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
-                      Verified
+                    <span className="badge badge-green">
+                      <Icon name="shield" size={13} /> Verified
                     </span>
                   )}
                 </p>
-                <p className="spec text-muted">
-                  {listing.sellerReviewCount > 0
-                    ? `★ ${listing.sellerRating.toFixed(1)} (${listing.sellerReviewCount} reviews)`
-                    : "No reviews yet"}{" "}
-                  · {listing.sellerSales} sales · {listing.location}
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12.5px] text-muted">
+                  {listing.sellerReviewCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-ink-soft">
+                      <Icon name="star" size={13} filled className="text-gold" />
+                      {listing.sellerRating.toFixed(1)} ({listing.sellerReviewCount} reviews)
+                    </span>
+                  ) : (
+                    "No reviews yet"
+                  )}
+                  <span>· {listing.sellerSales} sales</span>
+                  <span>· {listing.location}</span>
                 </p>
               </div>
+              <Icon name="chevron-right" size={18} className="text-muted transition group-hover:translate-x-0.5" />
             </Link>
           </div>
 
           {perf && (
-            <div className="order-5 rounded-[10px] border border-line bg-card p-5">
+            <div className="order-5 panel p-5">
               <h2 className="eyebrow">Performance</h2>
               <div className="mt-3 flex items-baseline justify-between text-[13.5px]">
                 <span className="text-muted">{perf.kind === "system" ? "Total Performance" : perf.kind === "gpu" ? "GPU Performance" : "CPU Performance"}</span>
@@ -264,12 +282,12 @@ export default async function ProductPage({
                 <div className="mt-4 flex flex-wrap items-center gap-2 text-[12.5px]">
                   <span className="text-muted">Comfortable at</span>
                   {res.map((r) => (
-                    <span key={r} className="rounded-full bg-trust-soft px-2.5 py-1 font-semibold text-trust">{r}</span>
+                    <span key={r} className="badge badge-green">{r}</span>
                   ))}
                 </div>
               )}
               {pairing && (
-                <p className="mt-3 rounded-md bg-deal-soft px-3 py-2 text-[12.5px] leading-snug text-ink">{pairing}</p>
+                <p className="alert alert-warn mt-3 !text-[12.5px]"><Icon name="info" size={15} />{pairing}</p>
               )}
               <p className="mt-3 text-[12px] leading-snug text-muted">
                 Estimates from the listed parts using typical benchmark results. Higher Price-to-Performance means more performance per dollar.
@@ -280,13 +298,20 @@ export default async function ProductPage({
       </div>
 
       {related.length > 0 && (
-        <section className="mt-14">
-          <h2 className="display mb-4 text-[24px]">More {sub?.name}</h2>
+        <section className="mt-20">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h2 className="display text-[clamp(26px,3vw,38px)]">More {sub?.name}</h2>
+            {sub && (
+              <Link href={`/shop?category=${listing.categorySlug}&sub=${sub.slug}`} className="arrow-link">
+                See all
+              </Link>
+            )}
+          </div>
           <div
             className={`grid ${
               listing.categorySlug === "full-systems"
                 ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                : "grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+                : "grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
             }`}
           >
             {related.map((l) => (
@@ -298,5 +323,14 @@ export default async function ProductPage({
 
       <RecentlySold items={recentlySold} title={`Recently sold — ${sub?.name ?? "this category"}`} />
     </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[0.09em] text-muted">
+      {children}
+      <span className="h-px flex-1 bg-line" aria-hidden="true" />
+    </h2>
   );
 }

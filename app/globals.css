@@ -1149,4 +1149,14 @@ html.dark .perf-score { background: linear-gradient(90deg, #2c8f67, #5fd0a0 70%,
   .rail { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 }
 
+/* Bottom sheets (mobile filters) */
+.sheet-up { animation: sheet-up 0.4s var(--ease-out-soft) both; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+.sheet-backdrop { animation: fade-in 0.25s ease both; }
+@keyframes fade-in { from { opacity: 0; } }
+
+.gallery-swap { animation: gallery-in 0.45s var(--ease-out-soft) both; }
+@keyframes gallery-in { from { opacity: 0.4; transform: scale(1.015); } }
+.group:hover > .card-arrow, .group:focus-within > .card-arrow { opacity: 1; transform: scale(1); }
+
 } /* @layer components */

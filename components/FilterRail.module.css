@@ -26,7 +26,7 @@
   font-weight: 500;
   transition: color 0.15s, gap 0.2s;
 }
-.back:hover { color: var(--color-trust); gap: 5px; }
+.back:hover { color: var(--color-deal); gap: 5px; }
 
 .search {
   display: flex;
@@ -34,35 +34,35 @@
   gap: 8px;
   height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--color-line);
-  border-radius: 8px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 10px;
   background: var(--color-card);
   color: var(--color-muted);
   transition: border-color 0.15s, box-shadow 0.2s;
 }
-.search:focus-within { border-color: var(--color-trust); box-shadow: 0 0 0 3px var(--color-trust-soft); }
+.search:focus-within { border-color: var(--color-ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-signal) 20%, transparent); }
 .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--color-ink); font-size: 14px; }
 
 .filterBy { margin-top: 16px; }
 .filterByHead { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; }
-.clearAll { text-decoration: underline; text-underline-offset: 3px; color: var(--color-ink); }
-.clearAll:hover { color: var(--color-trust); }
+.clearAll { text-decoration: underline; text-decoration-color: var(--color-signal); text-decoration-thickness: 2px; text-underline-offset: 3px; color: var(--color-ink); font-weight: 600; }
+.clearAll:hover { color: var(--color-deal); }
 .chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 9px 4px 11px;
-  border: 1px solid var(--color-trust);
+  border: 1px solid var(--color-ink);
   border-radius: 999px;
-  background: var(--color-trust-soft);
-  color: var(--color-trust);
+  background: var(--color-ink);
+  color: var(--color-paper);
   font-size: 12.5px;
   font-weight: 600;
   line-height: 1.3;
   transition: background 0.15s, color 0.15s;
 }
-.chip:hover { background: var(--color-trust); color: #fff; }
+.chip:hover { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
 
 .section { border-top: 1px solid var(--color-line); }
 .section:first-of-type { margin-top: 14px; }
@@ -113,36 +113,39 @@
 }
 .treeGroup + .treeGroup { margin-top: 8px; }
 .treeTop { display: block; padding: 4px 0; font-size: 15px; font-weight: 500; }
-.treeTop:hover { color: var(--color-trust); }
+.treeTop:hover { color: var(--color-deal); }
 .treeSub { display: flex; justify-content: space-between; padding: 4px 0 4px 10px; font-size: 14px; color: var(--color-ink); opacity: 0.85; transition: color 0.15s, padding 0.2s, opacity 0.15s; }
-.treeSub:hover { color: var(--color-trust); opacity: 1; padding-left: 14px; }
+.treeSub:hover { color: var(--color-deal); opacity: 1; padding-left: 14px; }
 .count { font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
 /* Sub-category picker (inside a category) */
 .pick { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 8px; font-size: 14px; transition: background 0.15s, color 0.15s; }
 .pick:hover { background: var(--color-paper); }
-.pickOn, .pickOn:hover { background: var(--color-trust-soft); color: var(--color-trust); font-weight: 600; }
+.pickOn, .pickOn:hover { background: var(--color-ink); color: var(--color-paper); font-weight: 600; }
+.pickOn .count { color: inherit; opacity: 0.7; }
 
 /* Price */
 .price { display: grid; gap: 8px; }
-.money { display: flex; height: 42px; overflow: hidden; border: 1px solid var(--color-line); border-radius: 8px; background: var(--color-card); transition: border-color 0.15s, box-shadow 0.2s; }
-.money:focus-within { border-color: var(--color-trust); box-shadow: 0 0 0 3px var(--color-trust-soft); }
-.money span { display: grid; place-items: center; width: 40px; flex-shrink: 0; background: var(--color-trust-soft); color: var(--color-trust); font-weight: 600; }
+.money { display: flex; height: 42px; overflow: hidden; border: 1px solid var(--color-line-strong); border-radius: 10px; background: var(--color-card); transition: border-color 0.15s, box-shadow 0.2s; }
+.money:focus-within { border-color: var(--color-ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-signal) 20%, transparent); }
+.money span { display: grid; place-items: center; width: 36px; flex-shrink: 0; border-right: 1px solid var(--color-line); background: var(--color-paper); color: var(--color-muted); font-weight: 600; }
 .money input { flex: 1; min-width: 0; padding: 0 12px; border: 0; outline: 0; background: transparent; color: var(--color-ink); font-size: 14px; -moz-appearance: textfield; }
 .money input::-webkit-outer-spin-button, .money input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.apply { height: 38px; border: 0; border-radius: 8px; background: var(--color-ink); color: var(--color-paper); font-size: 13.5px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-.apply:hover { opacity: 0.88; }
+.apply { height: 38px; border: 0; border-radius: 10px; background: var(--color-ink); color: var(--color-paper); font-size: 13.5px; font-weight: 650; cursor: pointer; box-shadow: inset 0 -2px 0 rgba(0,0,0,.4); transition: transform 0.14s, filter 0.15s; }
+.apply:hover { filter: brightness(1.15); }
+.apply:active { transform: translateY(1px); }
 .bands, .states { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
 .band { padding: 5px 10px; border: 1px solid var(--color-line); border-radius: 999px; font-size: 12.5px; transition: border-color 0.15s, background 0.15s, color 0.15s; }
-.band:hover { border-color: var(--color-trust); color: var(--color-trust); }
-.bandOn, .bandOn:hover { border-color: var(--color-trust); background: var(--color-trust); color: #fff; }
+.band:hover { border-color: var(--color-ink); }
+.bandOn, .bandOn:hover { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-paper); }
 
 /* Checkbox rows */
 .check { display: flex; align-items: center; gap: 10px; padding: 6px 2px; font-size: 14px; transition: color 0.15s; }
-.check:hover { color: var(--color-trust); }
-.box { display: grid; place-items: center; width: 18px; height: 18px; flex-shrink: 0; border: 1.5px solid var(--color-line); border-radius: 5px; background: var(--color-card); transition: border-color 0.15s, background 0.15s; }
-.check:hover .box { border-color: var(--color-trust); }
+.check:hover { color: var(--color-ink); }
+.box { display: grid; place-items: center; width: 18px; height: 18px; flex-shrink: 0; border: 1.5px solid var(--color-line-strong); border-radius: 5px; background: var(--color-card); transition: border-color 0.15s, background 0.15s; }
+.check:hover .box { border-color: var(--color-ink); }
 .checkOn { font-weight: 600; }
-.checkOn .box { border-color: var(--color-trust); background: var(--color-trust); }
+.checkOn .box { border-color: var(--color-signal); background: var(--color-signal); }
+.checkOn .box svg { stroke: var(--color-signal-ink); }
 
 .foot { margin: 8px 0 0; padding-top: 12px; border-top: 1px solid var(--color-line); font-size: 12px; color: var(--color-muted); }

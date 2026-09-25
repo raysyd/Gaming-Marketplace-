@@ -11,6 +11,7 @@ import { estimateShippingCentsForListing } from "@/lib/shipping/estimate";
 import { useCart } from "./CartProvider";
 import { useAuth } from "./AuthProvider";
 import { PriceHistoryChart } from "./PriceHistoryChart";
+import { Icon } from "./ui/Icon";
 
 export function BuyBox({
   listing,
@@ -77,29 +78,40 @@ export function BuyBox({
   };
 
   return (
-    <div className="rounded-[10px] border border-line bg-card p-5">
-      <div className="flex items-end gap-3">
-        <span className="display text-[34px]">{money(listing.price)}</span>
+    <div className="panel relative overflow-hidden p-5 sm:p-6">
+      <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+        <span className="display text-[44px] leading-none tabular-nums">{money(listing.price)}</span>
         {listing.compareAt && (
-          <span className="spec pb-2 text-muted">
-            <span className="line-through">{money(listing.compareAt)}</span>{" "}
-            <span className="font-semibold text-deal">
+          <span className="pb-1 text-[13px] text-muted">
+            <span className="line-through decoration-deal/60">{money(listing.compareAt)}</span>{" "}
+            <span className="sticker ml-1 !rotate-[-2deg] align-middle">
               save {money(listing.compareAt - listing.price)}
             </span>
           </span>
         )}
       </div>
 
-      <p className="spec mt-1 text-muted">
-        {listing.shipsFree ? "Free shipping" : `+ ${money(BRAND.shippingFlatRate)} shipping`} ·{" "}
-        {listing.location}
-        {listing.pickupAvailable && " · Local pickup available"}
-      </p>
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        <span className={`badge ${listing.shipsFree ? "badge-green" : ""}`}>
+          <Icon name="truck" size={14} />
+          {listing.shipsFree ? "Free shipping" : `+ ${money(BRAND.shippingFlatRate)} shipping`}
+        </span>
+        <span className="badge">
+          <Icon name="pin" size={14} />
+          {listing.location}
+        </span>
+        {listing.pickupAvailable && (
+          <span className="badge">
+            <Icon name="handshake" size={14} />
+            Local pickup available
+          </span>
+        )}
+      </div>
       {!listing.shipsFree && (
-        <p className="spec mt-1 text-muted">
-          Australia Post's own posted rate for something this size is about{" "}
+        <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+          Australia Post&apos;s own posted rate for something this size is about{" "}
           {money(estimateShippingCentsForListing(listing.subcategorySlug, listing.weightGrams) / 100)} —
-          an estimate, not what's charged above.
+          an estimate, not what&apos;s charged above.
         </p>
       )}
 
@@ -107,12 +119,17 @@ export function BuyBox({
           90 days — omitted entirely (not "0 sales") below ~5 comparable
           sales, since a range built on noise is worse than no range. */}
       {priceStats && (
-        <p className="spec mt-2 rounded-md border border-line bg-paper px-3 py-2 text-muted">
-          {BRAND.name} market value: {money(priceStats.low)}–{money(priceStats.high)}
+        <div className="panel-inset mt-4 flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 text-[13px]">
+          <span className="text-muted">
+            {BRAND.name} market value{" "}
+            <b className="font-semibold text-ink">{money(priceStats.low)}–{money(priceStats.high)}</b>
+          </span>
           {listing.price <= priceStats.low && (
-            <span className="ml-1.5 font-semibold text-good">Good deal ✓</span>
+            <span className="badge badge-green">
+              <Icon name="check" size={13} strokeWidth={2.6} /> Good deal
+            </span>
           )}
-        </p>
+        </div>
       )}
 
       {priceHistory && <PriceHistoryChart points={priceHistory} />}
@@ -121,78 +138,82 @@ export function BuyBox({
           normal single unit, a nudge when stock is getting low, and the
           sold-out branch below already covers zero. */}
       {listing.status === "active" && listing.stock > 1 && listing.stock <= 5 && (
-        <p className="spec mt-1 font-semibold text-deal">Only {listing.stock} left</p>
+        <p className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-deal">
+          <Icon name="flame" size={14} /> Only {listing.stock} left
+        </p>
       )}
       {listing.status === "active" && listing.stock > 5 && (
-        <p className="spec mt-1 text-muted">{listing.stock} in stock</p>
+        <p className="mt-3 text-[13px] text-muted">{listing.stock} in stock</p>
       )}
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-5 space-y-2">
         {ownListing ? (
-          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
+          <p className="panel-inset px-3 py-3 text-center text-[13.5px] text-muted">
             This is your listing.
           </p>
         ) : listing.status === "sold" ? (
-          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
+          <p className="panel-inset px-3 py-3 text-center text-[13.5px] font-semibold text-muted">
             Sold out
           </p>
         ) : (
-          <button
-            onClick={addToCart}
-            className="w-full rounded-md bg-deal py-3 text-[14px] font-semibold text-white transition hover:brightness-110"
-          >
-            {added ? "Added to cart" : "Add to cart"}
+          <button onClick={addToCart} className="btn btn-primary btn-lg btn-block">
+            {added ? (
+              <>
+                <Icon name="check" size={18} strokeWidth={2.6} /> Added to cart
+              </>
+            ) : (
+              <>
+                <Icon name="bag" size={18} /> Add to cart
+              </>
+            )}
           </button>
         )}
         {added && !unavailable && !ownListing && (
-          <button
-            onClick={() => router.push("/cart")}
-            className="w-full rounded-md bg-ink py-3 text-[14px] font-semibold text-white transition hover:bg-chrome-2"
-          >
+          <button onClick={() => router.push("/cart")} className="btn btn-dark btn-block">
             Go to cart
+            <Icon name="arrow-right" size={16} strokeWidth={2.4} className="btn-arrow" />
           </button>
         )}
         {!ownListing && (
           <button
             onClick={() => router.push(`/messages?listing=${listing.id}`)}
-            className="w-full rounded-md border border-ink/20 py-3 text-[14px] font-semibold transition hover:border-ink/50"
+            className="btn btn-outline btn-block"
           >
+            <Icon name="chat" size={17} />
             Message {listing.sellerName.split(" ")[0]}
           </button>
         )}
         {listing.acceptsOffers && !unavailable && !ownListing && !offering && (
-          <button
-            onClick={() => setOffering(true)}
-            className="w-full rounded-md border border-line py-3 text-[13px] font-medium text-muted transition hover:border-ink/40 hover:text-ink"
-          >
+          <button onClick={() => setOffering(true)} className="btn btn-ghost btn-block text-muted hover:text-ink">
+            <Icon name="tag" size={16} />
             Make an offer
           </button>
         )}
       </div>
 
       {offering && (
-        <div className="mt-4 rounded-md border border-line bg-paper p-3">
-          <label htmlFor="offer" className="eyebrow">
+        <div className="rise mt-4 rounded-[12px] border border-line bg-paper p-4">
+          <label htmlFor="offer" className="label">
             Your offer
           </label>
-          <div className="mt-2 flex gap-2">
-            <input
-              id="offer"
-              value={offer}
-              onChange={(e) => setOffer(e.target.value.replace(/[^0-9]/g, ""))}
-              inputMode="numeric"
-              className="w-full rounded border border-line px-3 py-2 text-[14px]"
-            />
-            <button
-              onClick={sendOffer}
-              disabled={busy}
-              className="whitespace-nowrap rounded bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
-            >
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-semibold text-muted">$</span>
+              <input
+                id="offer"
+                value={offer}
+                onChange={(e) => setOffer(e.target.value.replace(/[^0-9]/g, ""))}
+                inputMode="numeric"
+                className="input !pl-7 tabular-nums"
+              />
+            </div>
+            <button onClick={sendOffer} disabled={busy} className="btn btn-dark h-[46px]">
+              {busy ? <span className="spinner" aria-hidden="true" /> : null}
               {busy ? "Sending…" : "Send offer"}
             </button>
           </div>
-          {error && <p className="spec mt-2 text-deal">{error}</p>}
-          <p className="spec mt-2 text-muted">
+          {error && <p className="mt-2 text-[12.5px] font-medium text-danger">{error}</p>}
+          <p className="hint">
             The seller has 48 hours to accept. Nothing is charged until they do.
           </p>
         </div>
@@ -204,12 +225,17 @@ export function BuyBox({
         single listing. One line, doing just enough to reassure without
         reciting the whole policy again.
       */}
-      <p className="spec mt-5 border-t border-line pt-4 text-muted">
-        Payment is held until delivery is confirmed.{" "}
-        <Link href="/trust" className="font-semibold text-trust hover:underline">
-          How buyer protection works →
-        </Link>
-      </p>
+      <div className="mt-5 flex items-start gap-3 border-t-[1.5px] border-dashed border-line-strong pt-4">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[9px] bg-trust-soft text-trust">
+          <Icon name="lock" size={16} />
+        </span>
+        <p className="text-[13px] leading-relaxed text-muted">
+          Payment is held until delivery is confirmed.{" "}
+          <Link href="/trust" className="inline-link">
+            How buyer protection works
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "./ui/Icon";
 
 export function Pagination({
   page,
@@ -16,10 +17,10 @@ export function Pagination({
   for (let i = start; i < start + 5 && i <= pages; i++) window.push(i);
 
   return (
-    <nav className="mt-8 flex items-center justify-center gap-1" aria-label="Pagination">
+    <nav className="mt-12 flex flex-wrap items-center justify-center gap-1.5" aria-label="Pagination">
       {page > 1 && (
-        <Link href={makeHref(page - 1)} className="rounded border border-line px-3 py-2 text-[13px] hover:border-ink/40">
-          Previous
+        <Link href={makeHref(page - 1)} className="btn btn-outline btn-sm" aria-label="Previous page">
+          <Icon name="arrow-left" size={15} /> <span className="hidden sm:inline">Previous</span>
         </Link>
       )}
       {start > 1 && <span className="spec px-2 text-muted">…</span>}
@@ -28,19 +29,15 @@ export function Pagination({
           key={p}
           href={makeHref(p)}
           aria-current={p === page ? "page" : undefined}
-          className={`rounded px-3 py-2 text-[13px] ${
-            p === page
-              ? "bg-ink font-semibold text-white"
-              : "border border-line hover:border-ink/40"
-          }`}
+          className={`btn btn-sm !w-9 !px-0 tabular-nums ${p === page ? "btn-dark" : "btn-ghost"}`}
         >
           {p}
         </Link>
       ))}
       {start + 5 <= pages && <span className="spec px-2 text-muted">…</span>}
       {page < pages && (
-        <Link href={makeHref(page + 1)} className="rounded border border-line px-3 py-2 text-[13px] hover:border-ink/40">
-          Next
+        <Link href={makeHref(page + 1)} className="btn btn-outline btn-sm" aria-label="Next page">
+          <span className="hidden sm:inline">Next</span> <Icon name="arrow-right" size={15} className="btn-arrow" />
         </Link>
       )}
     </nav>

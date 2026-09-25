@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/config";
+import { Icon } from "./ui/Icon";
 
 /**
  * Genuinely live — Supabase Realtime **Presence** (distinct from the
@@ -38,8 +39,8 @@ export function ViewerCount({ listingId }: { listingId: string }) {
 
   if (count < 2) return null;
   return (
-    <p className="spec mt-1 font-semibold text-deal">
-      🔥 {count} people viewing this right now
+    <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-deal-soft px-2.5 py-1 text-[12.5px] font-semibold text-deal">
+      <Icon name="flame" size={14} /> {count} people viewing this right now
     </p>
   );
 }

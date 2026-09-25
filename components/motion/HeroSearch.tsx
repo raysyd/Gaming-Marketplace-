@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 
 const EXAMPLES = ["RTX 4090", "PS5 Slim", "Ryzen 7 7800X3D", "144Hz monitor", "gaming laptop", "Steam Deck"];
 const CHIPS: [string, string][] = [
@@ -53,10 +54,7 @@ export function HeroSearch() {
         }}
         className={`hero-search ${focused ? "is-focused" : ""}`}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" className="shrink-0 text-muted">
-          <circle cx="11" cy="11" r="7" />
-          <path d="M20 20l-3.5-3.5" />
-        </svg>
+        <Icon name="search" size={20} strokeWidth={2} className="text-muted" />
         <label htmlFor="hero-q" className="sr-only">Search listings</label>
         <div className="relative flex-1">
           <input
@@ -66,26 +64,29 @@ export function HeroSearch() {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             autoComplete="off"
-            className="w-full bg-transparent py-3 text-[16px] outline-none"
+            className="w-full bg-transparent py-3 text-[16.5px] outline-none"
           />
           {!q && (
-            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-[16px] text-muted">
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 flex items-center truncate text-[16.5px] text-muted">
               Search &ldquo;{hint}<span className="caret" />&rdquo;
             </span>
           )}
         </div>
-        <button type="submit" className="rgb-ring shrink-0 rounded-md bg-deal px-5 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-110">
-          Search
+        <button type="submit" className="btn btn-primary shrink-0">
+          <span className="hidden sm:inline">Search</span>
+          <Icon name="arrow-right" size={17} strokeWidth={2.4} className="btn-arrow" />
+          <span className="sr-only sm:hidden">Search</span>
         </button>
       </form>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="mr-1 text-[12.5px] text-muted">Popular:</span>
         {CHIPS.map(([label, href], i) => (
           <button
             key={label}
             type="button"
             onClick={() => router.push(href)}
             className="chip"
-            style={{ animationDelay: `${0.5 + i * 0.07}s` }}
+            style={{ animationDelay: `${0.6 + i * 0.07}s` }}
           >
             {label}
           </button>

@@ -30,8 +30,8 @@ export function SiteFooter() {
           ))}
         </ul>
 
-        <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-12 sm:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
             <Link href="/" className="logo-link inline-block" aria-label={`${BRAND.name} home`}>
               <Logo size={30} tone="light" />
             </Link>

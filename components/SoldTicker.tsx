@@ -40,19 +40,25 @@ export function SoldTicker({ initial }: { initial: SoldListing[] }) {
         href={`/product/${s.listingId}/${s.slug}`}
         tabIndex={hidden ? -1 : undefined}
         aria-hidden={hidden || undefined}
-        className="spec shrink-0 whitespace-nowrap text-muted transition hover:text-ink"
+        className="shrink-0 whitespace-nowrap text-[13px] text-[#9aa59d] transition hover:text-white"
       >
-        <span className="live-dot mr-2 align-middle" aria-hidden="true" />
-        <span className="text-ink">{s.title}</span> sold for{" "}
-        <span className="font-semibold text-good">{money(s.price)}</span>
+        <span className="tag-label mr-2 text-[#d4a73a]">Sold</span>
+        <span className="text-[#f3efe6]">{s.title}</span>{" "}
+        <span className="font-semibold text-[#5fd0a0]">{money(s.price)}</span>
       </Link>
     ));
 
   return (
-    <div className="ticker border-y border-line bg-paper py-2.5">
-      <div className="ticker-track flex w-max gap-10 px-4">
+    <div className="flex items-center bg-chrome">
+      <span className="z-10 hidden shrink-0 items-center gap-2 border-r border-white/10 py-3 pl-4 pr-4 text-[12.5px] font-semibold text-[#f3efe6] sm:inline-flex lg:pl-8">
+        <span className="live-dot" aria-hidden="true" />
+        Just sold
+      </span>
+      <div className="ticker flex-1 py-3">
+      <div className="ticker-track flex w-max gap-12 px-4">
         {row(false)}
         {row(true)}
+      </div>
       </div>
     </div>
   );

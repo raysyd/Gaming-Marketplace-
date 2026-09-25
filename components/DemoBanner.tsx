@@ -18,9 +18,10 @@ export function DemoBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-3 rounded-[10px] border border-trust/40 bg-trust-soft px-4 py-2.5">
-      <p className="spec text-trust">
-        Preview — sample listings, not real inventory.
+    <div className="mb-4 flex items-center justify-between gap-3 rounded-[10px] border border-dashed border-line-strong bg-card px-4 py-2.5">
+      <p className="flex items-center gap-2.5 text-[13px] text-ink-soft">
+        <span className="tag-label shrink-0 rounded bg-ink px-1.5 py-0.5 text-paper">Preview</span>
+        Sample listings — not real inventory.
       </p>
       <button
         type="button"
@@ -31,7 +32,7 @@ export function DemoBanner() {
           } catch {}
         }}
         aria-label="Dismiss"
-        className="spec shrink-0 text-trust hover:underline"
+        className="inline-link shrink-0 text-[13px]"
       >
         Dismiss
       </button>

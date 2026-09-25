@@ -7,6 +7,7 @@ import { ProductImage } from "./ProductImage";
 import { estimatePerformance, SCORE_MAX, VALUE_MAX } from "@/lib/performance";
 import { WishlistButton } from "./WishlistButton";
 import { SpecIcon } from "./SpecIcon";
+import { Icon } from "./ui/Icon";
 
 export function ProductCard({ listing }: { listing: Listing }) {
   const save = listing.compareAt ? listing.compareAt - listing.price : 0;
@@ -36,26 +37,12 @@ export function ProductCard({ listing }: { listing: Listing }) {
   return (
     <Link
       href={`/product/${listing.id}/${listing.slug}`}
-      onMouseMove={(e) => {
-        // Pointer position drives a small 3D tilt and a moving shine (CSS in globals.css).
-        const el = e.currentTarget, r = el.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-        el.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
-        el.style.setProperty("--ry", `${((x - 0.5) * 6).toFixed(2)}deg`);
-        el.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
-        el.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
-      }}
       onMouseEnter={() => setWarm(true)}
       onFocus={() => setWarm(true)}
       onTouchStart={() => setWarm(true)}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.setProperty("--rx", "0deg");
-        e.currentTarget.style.setProperty("--ry", "0deg");
-      }}
-      className="tilt-card group flex flex-col overflow-hidden rounded-[10px] border border-line bg-card transition hover:border-trust/40"
+      className="listing-card group"
     >
-      <span className="tilt-shine" aria-hidden="true" />
-      <div className="relative aspect-[4/3] overflow-hidden bg-ink">
+      <div className="listing-photo">
         {/* All photos sit side by side in one strip that slides, so moving to
             the next photo is a smooth slide with the image already loaded,
             rather than a fresh image popping in. */}
@@ -68,7 +55,7 @@ export function ProductCard({ listing }: { listing: Listing }) {
                 alt={i === 0 ? listing.title : ""}
                 category={listing.category}
                 seed={i ? `${listing.id}-${i}` : listing.id}
-                className="h-full w-full transition duration-500 group-hover:scale-[1.04]"
+                className="h-full w-full"
                 showStockBadge={false}
                 onFallback={i === 0 ? setIsStockPhoto : undefined}
               />}
@@ -78,10 +65,10 @@ export function ProductCard({ listing }: { listing: Listing }) {
         {photos.length > 1 && (
           <>
             <button type="button" aria-label="Previous photo" onClick={(e) => step(e, -1)} className="card-arrow left-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+              <Icon name="chevron-left" size={15} strokeWidth={2.6} />
             </button>
             <button type="button" aria-label="Next photo" onClick={(e) => step(e, 1)} className="card-arrow right-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              <Icon name="chevron-right" size={15} strokeWidth={2.6} />
             </button>
             <div className="card-dots" aria-hidden="true">
               {photos.slice(0, 8).map((_, i) => (
@@ -91,48 +78,51 @@ export function ProductCard({ listing }: { listing: Listing }) {
           </>
         )}
         {pct > 0 && (
-          <span className="spec absolute left-2 top-2 rounded bg-deal px-1.5 py-1 font-semibold text-white">
-            {pct}% off
-          </span>
+          <span className="sticker absolute left-2.5 top-2.5 z-[3]">−{pct}%</span>
         )}
-        <WishlistButton id={listing.id} className="absolute right-2 top-2" />
-        {/* Background is a fixed white regardless of theme, so the text
-            has to be fixed dark too — text-ink flips light in dark mode
-            and would land as near-invisible light-on-white. */}
-        <span className="spec absolute bottom-2 left-2 rounded bg-white/92 px-1.5 py-1 font-medium text-[#111111]">
+        <WishlistButton id={listing.id} className="absolute right-2 top-2 z-[3]" />
+        {/* Fixed light chip regardless of theme, so its text is fixed dark
+            too — the photo underneath doesn't change with the theme. */}
+        <span className="condition-chip">
+          <i data-c={listing.condition} aria-hidden="true" />
           {listing.condition}
-          {isStockPhoto && " · Stock photo"}
+          {isStockPhoto && <span className="font-medium text-[#6b665a]">· Stock photo</span>}
         </span>
         {listing.watchers > 120 && !isStockPhoto && (
-          <span className="spec absolute bottom-2 right-2 rounded bg-ink/85 px-1.5 py-1 font-medium text-white">
-            {listing.watchers} watching
+          <span className="absolute bottom-2 right-2 z-[2] inline-flex items-center gap-1 rounded-md bg-[#17150f]/80 px-2 py-1 text-[11.5px] font-semibold text-white backdrop-blur-sm">
+            <Icon name="eye" size={13} />
+            {listing.watchers}
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-3">
-        <h3 className="line-clamp-2 text-[14px] font-semibold leading-snug">
+      <div className="listing-body">
+        <h3 className="line-clamp-2 text-[14.5px] font-semibold leading-snug transition-colors group-hover:text-deal">
           {listing.title}
         </h3>
-        <div className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[12.5px] text-muted">
           <span className="truncate">{listing.sellerName}</span>
           {listing.sellerVerified && <VerifiedTick />}
           {listing.sellerReviewCount > 0 && (
-            <span className="shrink-0 text-good">
-              ★ {listing.sellerRating.toFixed(1)} ({listing.sellerReviewCount})
+            <span className="inline-flex shrink-0 items-center gap-0.5 font-medium text-ink-soft">
+              <Icon name="star" size={12} filled className="text-gold" />
+              {listing.sellerRating.toFixed(1)}
+              <span className="text-muted">({listing.sellerReviewCount})</span>
             </span>
           )}
         </div>
-        <div className="mt-2 flex flex-wrap items-baseline gap-x-2">
-          <span className="display text-[20px] text-trust">{money(listing.price)}</span>
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="listing-price">{money(listing.price)}</span>
           {listing.compareAt && (
-            <>
-              <span className="text-[12.5px] text-muted line-through">{money(listing.compareAt)}</span>
-              <span className="text-[12.5px] font-medium text-deal">({pct}% off)</span>
-            </>
+            <span className="text-[12.5px] text-muted line-through decoration-deal/60">{money(listing.compareAt)}</span>
+          )}
+          {listing.shipsFree && (
+            <span className="ml-auto inline-flex items-center gap-1 text-[12px] font-semibold text-good">
+              <Icon name="truck" size={14} />
+              Free
+            </span>
           )}
         </div>
-        {listing.shipsFree && <div className="mt-0.5 text-[12px] font-medium text-good">Free shipping</div>}
 
         <SpecGrid listing={listing} />
         <PerfBars listing={listing} />
@@ -144,8 +134,8 @@ export function ProductCard({ listing }: { listing: Listing }) {
 function VerifiedTick() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" aria-label="Verified seller" className="shrink-0">
-      <circle cx="12" cy="12" r="11" fill="var(--color-icon)" />
-      <path d="M7 12.4l3.2 3.2L17 8.8" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3 1 3-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3L2.6 15.8l1-3-1-3 2.6-1.9 1-3 3.2.1Z" fill="var(--color-trust)" />
+      <path d="M7.5 12.4l3 3L16.5 9" fill="none" stroke="var(--color-card)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -177,17 +167,17 @@ function PerfBars({ listing }: { listing: Listing }) {
   if (!perf) return null;
   const scoreLabel = perf.kind === "system" ? "Total Performance" : perf.kind === "gpu" ? "GPU Performance" : "CPU Performance";
   return (
-    <div className="mt-auto pt-3" title="Estimated from the listed parts using typical benchmark results">
-      <div className="flex items-baseline justify-between text-[12.5px]">
+    <div className="mt-auto pt-3.5" title="Estimated from the listed parts using typical benchmark results">
+      <div className="flex items-baseline justify-between text-[12px]">
         <span className="truncate text-muted"><span className="p2p-long">{scoreLabel}</span><span className="p2p-short">Performance</span></span>
-        <span className="shrink-0 pl-2 font-semibold tabular-nums">{perf.score.toLocaleString()}</span>
+        <span className="shrink-0 pl-2 font-semibold tabular-nums text-ink">{perf.score.toLocaleString()}</span>
       </div>
       <div className="perf-bar mt-1">
         <span className="perf-fill perf-score" style={{ width: `${Math.min(100, (perf.score / SCORE_MAX) * 100)}%` }} />
       </div>
-      <div className="mt-2 flex items-baseline justify-between text-[12.5px]">
+      <div className="mt-2 flex items-baseline justify-between text-[12px]">
         <span className="truncate text-muted"><span className="p2p-long">Price-to-Performance</span><span className="p2p-short">Value score</span></span>
-        <span className="shrink-0 pl-2 font-semibold tabular-nums">{perf.value.toFixed(1)}</span>
+        <span className="shrink-0 pl-2 font-semibold tabular-nums text-ink">{perf.value.toFixed(1)}</span>
       </div>
       <div className="perf-bar mt-1">
         <span className="perf-fill perf-value" style={{ width: `${Math.min(100, (perf.value / VALUE_MAX) * 100)}%` }} />

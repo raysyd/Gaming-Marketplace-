@@ -14,7 +14,7 @@ export function SpecStrip({
       {specs.slice(0, max).map((s) => (
         <div
           key={s.label}
-          className="spec flex items-center gap-1 rounded border border-line bg-paper px-1.5 py-0.5"
+          className="spec flex items-center gap-1 rounded-md border border-line bg-paper px-1.5 py-0.5"
         >
           <SpecIcon label={s.label} size={12} />
           <dt className="text-muted">{s.label}</dt>
@@ -31,13 +31,10 @@ export function FpsBar({ fps }: { fps: number }) {
     <div>
       <div className="flex items-baseline justify-between">
         <span className="eyebrow">Est. 1080p high</span>
-        <span className="spec font-semibold text-ink">{fps} fps</span>
+        <span className="text-[13px] font-semibold tabular-nums text-ink">{fps} fps</span>
       </div>
-      <div className="mt-1 h-1.5 w-full rounded-full bg-line">
-        <div
-          className="h-1.5 rounded-full bg-deal"
-          style={{ width: `${pct}%` }}
-        />
+      <div className="perf-bar mt-1.5">
+        <span className="perf-fill perf-value" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );

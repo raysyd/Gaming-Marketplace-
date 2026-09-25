@@ -44,6 +44,7 @@ export function Messenger({
   );
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [showListOnMobile, setShowListOnMobile] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -56,7 +57,13 @@ export function Messenger({
   useEffect(() => {
     if (!deepListing || !ME) return;
     const listing = listings.find((l) => l.id === deepListing);
-    if (!listing) return;
+    if (!listing) {
+      // Sold, taken down, or a bad link — say so instead of doing nothing.
+      if (!initialConversations.some((c) => c.listingId === deepListing))
+        setSendError("That listing isn't available to message about any more.");
+      else setActiveId(initialConversations.find((c) => c.listingId === deepListing)!.id);
+      return;
+    }
 
     const convId = `c-${deepListing}`;
 
@@ -287,6 +294,15 @@ export function Messenger({
         .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
     );
     setDraft("");
+    setSendError("");
+    // Take the optimistic bubble back out and restore what was typed —
+    // failures used to be swallowed, leaving a message that looked sent
+    // but never reached the other person.
+    const fail = (reason: string) => {
+      setMessages((p) => ({ ...p, [activeId]: (p[activeId] ?? []).filter((m) => m.id !== msg.id) }));
+      setDraft(body);
+      setSendError(reason);
+    };
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -297,7 +313,8 @@ export function Messenger({
           body,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) fail(data.error ?? "Message didn't send. Try again.");
       // A brand-new thread (opened via "Message seller") only ever has a
       // locally-fabricated id up to this point — /api/messages creates
       // the real conversation row server-side and hands back its actual
@@ -314,7 +331,7 @@ export function Messenger({
         setActiveId(realId);
       }
     } catch {
-      // Message stays in the thread; the send is retried on the next action.
+      fail("Couldn't reach the server. Check your connection and try again.");
     }
     setSending(false);
   };
@@ -696,6 +713,7 @@ export function Messenger({
           </div>
 
           <div className="border-t border-line p-3">
+            {sendError && <p className="spec mb-2 text-deal">{sendError}</p>}
             <div className="flex gap-2">
               <textarea
                 value={draft}

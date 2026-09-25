@@ -30,6 +30,7 @@ export function BuyBox({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const ownListing = user?.id === listing.sellerId;
+  const listingPath = `/product/${listing.id}/${listing.slug}`;
   const unavailable = listing.status && listing.status !== "active" && !ownListing;
 
   const addToCart = () => {
@@ -61,14 +62,31 @@ export function BuyBox({
       setError("That's above the asking price — just buy it now.");
       return;
     }
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(listingPath)}`);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
-      await fetch("/api/offers", {
+      const res = await fetch("/api/offers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ listingId: listing.id, amount }),
       });
+      const data = await res.json().catch(() => ({}));
+      // The response used to be ignored entirely — a rejected offer (signed
+      // out, listing gone, offers off) still navigated to the inbox as if it
+      // had gone through, where nothing had actually happened.
+      if (res.status === 401) {
+        router.push(`/login?next=${encodeURIComponent(listingPath)}`);
+        return;
+      }
+      if (!res.ok) {
+        setError(data.error ?? "Offer didn't send. Try again.");
+        setBusy(false);
+        return;
+      }
       router.push(`/messages?listing=${listing.id}&offer=${amount}`);
     } catch {
       setError("Offer didn't send. Check your connection and try again.");

@@ -1,5 +1,6 @@
-import type { Conversation, Message } from "./types";
+import type { Conversation, Listing, Message } from "./types";
 import { getAuthedUser } from "./supabase/server";
+import { rowToListing } from "./data";
 
 /**
  * Real conversations + messages for the signed-in user, as either buyer or
@@ -87,4 +88,33 @@ export async function queryMessengerData(): Promise<{
   }
 
   return { conversations, messages };
+}
+
+/**
+ * Just the listings the inbox can actually show: the ones behind the
+ * viewer's conversations, the one a "Message seller"/offer deep link points
+ * at, and the viewer's own active listings (a buyer can open a brand-new
+ * thread on any of those at any moment, see Messenger's realtime handler).
+ * Replaces loading the first 200 active listings on every visit — which
+ * was both slow and wrong: a thread about any listing outside that first
+ * page (or one that had since sold) couldn't be opened at all.
+ */
+export async function queryMessengerListings(
+  conversations: Conversation[],
+  deepListingId?: string
+): Promise<Listing[]> {
+  const { supabase, user } = await getAuthedUser();
+  if (!supabase || !user) return [];
+
+  const ids = [...new Set([...conversations.map((c) => c.listingId), deepListingId].filter(Boolean))];
+  const uuid = /^[0-9a-f-]{36}$/i;
+  const idFilter = ids.filter((id) => uuid.test(id as string)).join(",");
+  const own = `and(seller_id.eq.${user.id},status.eq.active)`;
+
+  const { data } = await supabase
+    .from("listings")
+    .select("*")
+    .or(idFilter ? `id.in.(${idFilter}),${own}` : own)
+    .limit(500);
+  return (data ?? []).map((r) => rowToListing(r));
 }

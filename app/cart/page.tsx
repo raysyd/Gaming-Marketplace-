@@ -39,15 +39,19 @@ export default function CartPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items, fulfillmentMethod: pickupOffered ? fulfillment : "shipping" }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (data.url) {
         window.location.href = data.url;
         return;
       }
-      setNote(
-        data.message ??
-          "Checkout isn't connected yet. Add your Stripe keys to switch it on."
-      );
+      if (res.status === 401) {
+        window.location.href = "/login?next=/cart";
+        return;
+      }
+      // The server's actual reason — the old fallback reported "Stripe
+      // isn't connected" for every failure (seller without payouts, an item
+      // that sold, a stale cart), which hid what was really wrong.
+      setNote(data.error ?? data.message ?? "Checkout didn't start. Try again in a moment.");
     } catch {
       setNote("Couldn't reach checkout. Try again in a moment.");
     }

@@ -28,13 +28,15 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   // /cart included: a guest can still fill the side panel, but opening the
   // cart signs them in first — CartProvider then merges that guest cart
-  // into the account's own.
-  const guarded = ["/sell", "/dashboard", "/account", "/orders", "/buying", "/selling", "/builds/new", "/cart"];
+  // into the account's own. /messages too: signed out, "Message seller" and
+  // "Make an offer" used to land on an empty inbox with nothing happening.
+  const guarded = ["/sell", "/dashboard", "/account", "/orders", "/buying", "/selling", "/builds/new", "/cart", "/messages"];
 
   if (!user && guarded.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", path);
+    url.search = "";
+    url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

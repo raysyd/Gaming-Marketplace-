@@ -18,9 +18,9 @@ import { SellForm } from "@/components/SellForm";
 export default async function SellPage({
   searchParams,
 }: {
-  searchParams: Promise<{ draft?: string }>;
+  searchParams: Promise<{ draft?: string; edit?: string }>;
 }) {
-  const { draft: draftId } = await searchParams;
+  const { draft: draftId, edit: editId } = await searchParams;
   const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
   const [profile, plan, listings, draft] = await Promise.all([
     stripeConfigured ? getSellerProfile() : null,
@@ -28,6 +28,10 @@ export default async function SellPage({
     querySellerListings(),
     draftId ? getOwnListing(draftId) : null,
   ]);
+  // Editing a live listing — getOwnListing is already scoped to this
+  // seller, so someone else's id just falls through to a blank form.
+  const editable = editId ? await getOwnListing(editId) : null;
+  const editing = editable?.status === "active" ? editable : null;
   const payoutStatus = profile?.stripeAccountId
     ? await getConnectAccountStatus(profile.stripeAccountId)
     : "none";
@@ -51,8 +55,9 @@ export default async function SellPage({
       listingLimit={listingLimit}
       activeListingCount={activeCount}
       premium={premium}
-      initialDraft={resumableDraft ?? undefined}
+      initialDraft={editing ? undefined : resumableDraft ?? undefined}
       staleDraftParam={staleDraftParam}
+      editing={editing ?? undefined}
     />
   );
 }

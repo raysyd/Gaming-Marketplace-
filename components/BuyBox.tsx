@@ -147,9 +147,14 @@ export function BuyBox({
 
       <div className="mt-4 space-y-2">
         {ownListing ? (
-          <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center text-muted">
-            This is your listing.
-          </p>
+          <div className="rounded-md border border-line bg-paper px-3 py-2.5 text-center">
+            <p className="spec text-muted">This is your listing.</p>
+            {listing.status === "active" && (
+              <Link href={`/sell?edit=${listing.id}`} className="spec mt-1 inline-block font-semibold text-trust hover:underline">
+                Edit listing →
+              </Link>
+            )}
+          </div>
         ) : listing.status === "sold" ? (
           <p className="spec rounded-md border border-line bg-paper px-3 py-2.5 text-center font-semibold text-muted">
             Sold out

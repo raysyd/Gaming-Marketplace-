@@ -113,3 +113,24 @@ export function attrsFromSearchParams(
   }
   return out;
 }
+
+/**
+ * The inverse of how SellForm saves attributes: they're stored as ordinary
+ * {label, value} specs, so a draft being resumed (or a live listing being
+ * edited) has to pull them back out into their own fields — otherwise the
+ * required ones read as missing and re-saving would duplicate them.
+ */
+export function splitAttrSpecs(
+  sub: string,
+  specs: { label: string; value: string }[]
+): { attrs: Record<string, string>; rest: { label: string; value: string }[] } {
+  const defs = attributesFor(sub);
+  const attrs: Record<string, string> = {};
+  const rest = specs.filter((s) => {
+    const def = defs.find((d) => d.label === s.label && !(d.key in attrs));
+    if (!def) return true;
+    attrs[def.key] = s.value;
+    return false;
+  });
+  return { attrs, rest };
+}

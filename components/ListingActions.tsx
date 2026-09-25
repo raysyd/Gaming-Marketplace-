@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -22,6 +23,13 @@ export function ListingActions({ id, active }: { id: string; active: boolean }) 
   };
 
   return (
+    <div className="flex items-center gap-2">
+    <Link
+      href={`/sell?edit=${id}`}
+      className="spec rounded border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft"
+    >
+      Edit
+    </Link>
     <button
       type="button"
       onClick={takeDown}
@@ -30,5 +38,6 @@ export function ListingActions({ id, active }: { id: string; active: boolean }) 
     >
       {busy ? "Taking down..." : "Take down"}
     </button>
+    </div>
   );
 }

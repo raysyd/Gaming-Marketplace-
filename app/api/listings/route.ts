@@ -55,7 +55,12 @@ async function assertPublishable(
   supabase: SupabaseClient,
   userId: string,
   row: ReturnType<typeof rowFromPayload>,
-  photoCount: number
+  photoCount: number,
+  /** Saving changes to a listing that's already live: it already passed
+   * the payout gate and already holds its slot, so re-checking either
+   * would block an edit that doesn't change them (a seller at their limit
+   * could never fix a typo). */
+  alreadyLive = false
 ): Promise<{ error: string; status: number } | null> {
   if (!row.title || !row.price)
     return { error: "A title and a price are required.", status: 400 };
@@ -68,7 +73,7 @@ async function assertPublishable(
     .eq("id", userId)
     .maybeSingle();
 
-  if (process.env.STRIPE_SECRET_KEY) {
+  if (process.env.STRIPE_SECRET_KEY && !alreadyLive) {
     const status = profile?.stripe_account_id
       ? await getConnectAccountStatus(profile.stripe_account_id)
       : "none";
@@ -87,6 +92,8 @@ async function assertPublishable(
       error: `Listings can have up to ${maxPhotos} photos${premium ? "" : " on the free plan"}.`,
       status: 400,
     };
+
+  if (alreadyLive) return null;
 
   const listingLimit = premium ? plan.premiumListingLimit : plan.freeListingLimit;
   const { count: activeCount } = await supabase
@@ -271,7 +278,8 @@ export async function PATCH(req: Request) {
   if (payload.status === "active") {
     const row = rowFromPayload(payload);
     const photoCount = (row.image ? 1 : 0) + ((row.images as string[])?.length ?? 0);
-    const publishError = await assertPublishable(supabase, user.id, row, photoCount);
+    const alreadyLive = existing.status === "active";
+    const publishError = await assertPublishable(supabase, user.id, row, photoCount, alreadyLive);
     if (publishError) return NextResponse.json({ error: publishError.error }, { status: publishError.status });
 
     const { data, error } = await supabase
@@ -284,6 +292,7 @@ export async function PATCH(req: Request) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     revalidatePath("/");
     revalidateTag("listings", { expire: 0 });
+    if (data.slug) revalidatePath(`/product/${data.id}/${data.slug}`);
     return NextResponse.json({ ok: true, id: data.id, slug: data.slug ?? "" });
   }
 

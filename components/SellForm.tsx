@@ -7,7 +7,7 @@ import { money } from "@/lib/format";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { TAXONOMY, findTop, findSub, slugify } from "@/lib/taxonomy";
 import { SUGGESTED_SPECS } from "@/lib/specs";
-import { attributesFor } from "@/lib/attributes";
+import { attributesFor, splitAttrSpecs } from "@/lib/attributes";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
 import { ListingUsageBar } from "@/components/ListingUsageBar";
 import { AU_STATES } from "@/lib/au-states";
@@ -46,6 +46,7 @@ export function SellForm({
   premium = false,
   initialDraft,
   staleDraftParam = false,
+  editing,
 }: {
   payoutsReady: boolean;
   payoutStatus?: "none" | "pending" | "active" | "unknown";
@@ -59,32 +60,39 @@ export function SellForm({
   /** A ?draft= id was given but didn't resolve to a real, still-draft
    * listing of this seller's — see the auto-resume effect below. */
   staleDraftParam?: boolean;
+  /** Editing a listing that's already live (app/sell/page.tsx?edit=<id>) —
+   * saves straight back to it, with no drafts and no new-listing limits. */
+  editing?: Listing;
 }) {
   const router = useRouter();
-  const atListingLimit = activeListingCount >= listingLimit;
+  const editMode = Boolean(editing);
+  const initial = editing ?? initialDraft;
+  // An edit doesn't take up a new slot, so the limit never blocks it.
+  const atListingLimit = !editMode && activeListingCount >= listingLimit;
+  const initialSpecs = splitAttrSpecs(initial?.subcategorySlug ?? DEFAULT_SUB, initial?.specs ?? []);
   const [form, setForm] = useState({
-    title: initialDraft?.title ?? "",
-    categorySlug: initialDraft?.categorySlug ?? DEFAULT_TOP,
-    subcategorySlug: initialDraft?.subcategorySlug ?? DEFAULT_SUB,
-    condition: initialDraft?.condition ?? "Used",
-    price: initialDraft?.price ? String(initialDraft.price) : "",
-    quantity: initialDraft ? String(initialDraft.stock || 1) : "1",
-    location: initialDraft?.location ?? "",
-    stateCode: initialDraft?.state ?? "",
-    weightGrams: initialDraft?.weightGrams ? String(initialDraft.weightGrams) : "",
-    description: initialDraft?.description ?? "",
-    shipsFree: initialDraft?.shipsFree ?? true,
-    acceptsOffers: initialDraft?.acceptsOffers ?? true,
-    pickupAvailable: initialDraft?.pickupAvailable ?? false,
+    title: initial?.title ?? "",
+    categorySlug: initial?.categorySlug ?? DEFAULT_TOP,
+    subcategorySlug: initial?.subcategorySlug ?? DEFAULT_SUB,
+    condition: initial?.condition ?? "Used",
+    price: initial?.price ? String(initial.price) : "",
+    quantity: initial ? String(initial.stock || 1) : "1",
+    location: initial?.location ?? "",
+    stateCode: initial?.state ?? "",
+    weightGrams: initial?.weightGrams ? String(initial.weightGrams) : "",
+    description: initial?.description ?? "",
+    shipsFree: initial?.shipsFree ?? true,
+    acceptsOffers: initial?.acceptsOffers ?? true,
+    pickupAvailable: initial?.pickupAvailable ?? false,
   });
   const [specs, setSpecs] = useState(
-    initialDraft?.specs?.length ? initialDraft.specs : [{ label: "", value: "" }]
+    initialSpecs.rest.length ? initialSpecs.rest : [{ label: "", value: "" }]
   );
-  const [attrs, setAttrs] = useState<Record<string, string>>({});
+  const [attrs, setAttrs] = useState<Record<string, string>>(initialSpecs.attrs);
   const [photos, setPhotos] = useState<string[]>(
-    initialDraft ? [initialDraft.image, ...(initialDraft.images ?? [])].filter(Boolean) : []
+    initial ? [initial.image, ...(initial.images ?? [])].filter(Boolean) : []
   );
-  const [benchmarkPhotos, setBenchmarkPhotos] = useState<string[]>(initialDraft?.benchmarkImages ?? []);
+  const [benchmarkPhotos, setBenchmarkPhotos] = useState<string[]>(initial?.benchmarkImages ?? []);
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [error, setErrorMsg] = useState("");
   const [listingId, setListingId] = useState("");
@@ -95,6 +103,16 @@ export function SellForm({
   const [draftId, setDraftId] = useState(initialDraft?.id ?? "");
   const [draftState, setDraftState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [draftError, setDraftError] = useState("");
+  // The autosave timer, the tab-close beacon and publish all need the
+  // *current* draft id, not whichever one existed when their closure was
+  // created — reading draftId state from a stale closure is what made a
+  // save that fired mid-request create a second draft. Saves also run one
+  // at a time (saveChain), so a second save always sees the first's id.
+  const draftIdRef = useRef(draftId);
+  const saveChain = useRef<Promise<void>>(Promise.resolve());
+  const saveInFlight = useRef(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const upgrade = async () => {
     setUpgradeBusy(true);
@@ -178,24 +196,40 @@ export function SellForm({
    * below fired on its own, so there's exactly one save path to reason
    * about.
    */
-  const persistDraft = async () => {
-    if (!form.title.trim()) return;
-    setDraftState("saving");
-    setDraftError("");
-    try {
-      const res = await fetch("/api/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...buildPayload(), status: "draft", id: draftId || undefined }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      if (data.id) setDraftId(data.id);
-      setDraftState("saved");
-    } catch (e) {
-      setDraftError(e instanceof Error && e.message ? e.message : "Couldn't save the draft.");
-      setDraftState("error");
-    }
+  const persistDraft = () => {
+    if (editMode || !form.title.trim()) return saveChain.current;
+    const payload = buildPayload();
+    saveChain.current = saveChain.current.then(async () => {
+      // Published (or mid-publish) while this was queued — nothing to save.
+      if (stateRef.current === "done" || stateRef.current === "saving") return;
+      saveInFlight.current = true;
+      setDraftState("saving");
+      setDraftError("");
+      try {
+        const res = await fetch("/api/listings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // keepalive: a first save still in flight when the tab closes
+          // finishes on its own, so the beacon below doesn't need to
+          // create a second row for it.
+          keepalive: true,
+          body: JSON.stringify({ ...payload, status: "draft", id: draftIdRef.current || undefined }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        if (data.id) {
+          draftIdRef.current = data.id;
+          setDraftId(data.id);
+        }
+        setDraftState("saved");
+      } catch (e) {
+        setDraftError(e instanceof Error && e.message ? e.message : "Couldn't save the draft.");
+        setDraftState("error");
+      } finally {
+        saveInFlight.current = false;
+      }
+    });
+    return saveChain.current;
   };
 
   // Auto-resume: a bare /sell visit (no ?draft= in the URL) with a draft
@@ -205,7 +239,7 @@ export function SellForm({
   // published or discarded elsewhere) gets forgotten instead of retried
   // forever — see staleDraftParam's comment in app/sell/page.tsx.
   useEffect(() => {
-    if (initialDraft) return;
+    if (initialDraft || editMode) return;
     try {
       if (staleDraftParam) {
         localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -227,6 +261,7 @@ export function SellForm({
   // something to come back to. Cleared once published — there's no draft
   // left to resume at that point.
   useEffect(() => {
+    if (editMode) return;
     try {
       if (draftId && state !== "done") localStorage.setItem(DRAFT_STORAGE_KEY, draftId);
       else if (state === "done") localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -239,7 +274,7 @@ export function SellForm({
   // "done") or mid-publish ("saving") — nothing left to draft-save at
   // that point.
   useEffect(() => {
-    if (!form.title.trim() || state === "done" || state === "saving") return;
+    if (editMode || !form.title.trim() || state === "done" || state === "saving") return;
     const timer = setTimeout(() => {
       persistDraft();
     }, AUTOSAVE_DEBOUNCE_MS);
@@ -258,9 +293,13 @@ export function SellForm({
   // ~1.5s), the resulting draft still saves, it's just only discoverable
   // from the Drafts tab rather than auto-resumed by this effect above.
   useEffect(() => {
+    if (editMode) return;
     const flush = () => {
-      if (!form.title.trim() || state === "done") return;
-      const body = JSON.stringify({ ...buildPayload(), status: "draft", id: draftId || undefined });
+      if (!form.title.trim() || state === "done" || state === "saving") return;
+      // A first save is still creating the row (and will finish — it's
+      // keepalive); a beacon without an id now would be a duplicate.
+      if (!draftIdRef.current && saveInFlight.current) return;
+      const body = JSON.stringify({ ...buildPayload(), status: "draft", id: draftIdRef.current || undefined });
       navigator.sendBeacon?.("/api/listings", new Blob([body], { type: "application/json" }));
     };
     const onVisibility = () => {
@@ -276,7 +315,7 @@ export function SellForm({
   }, [form, specs, attrs, photos, benchmarkPhotos, draftId, state]);
 
   const submit = async () => {
-    if (!payoutsReady) {
+    if (!payoutsReady && !editMode) {
       setErrorMsg("Finish payout setup before publishing — see above.");
       setState("error");
       return;
@@ -305,13 +344,17 @@ export function SellForm({
     }
     setState("saving");
     try {
-      // A draft being published updates its existing row and flips it to
-      // "active" (PATCH) rather than inserting a second, duplicate one.
-      const res = draftId
+      // Let a draft save that's already running finish first, so publishing
+      // updates that row instead of inserting a second one next to it.
+      await saveChain.current;
+      const targetId = editing?.id ?? draftIdRef.current;
+      // A draft being published — or a live listing being edited — updates
+      // its existing row (PATCH) rather than inserting a duplicate.
+      const res = targetId
         ? await fetch("/api/listings", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: draftId, status: "active", ...buildPayload() }),
+            body: JSON.stringify({ id: targetId, status: "active", ...buildPayload() }),
           })
         : await fetch("/api/listings", {
             method: "POST",
@@ -320,7 +363,7 @@ export function SellForm({
           });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setListingId(data.id ?? draftId ?? "");
+      setListingId(data.id ?? targetId ?? "");
       setState("done");
     } catch (e) {
       setErrorMsg(e instanceof Error && e.message ? e.message : "Couldn't publish. Try again.");
@@ -331,8 +374,10 @@ export function SellForm({
   if (state === "done")
     return (
       <div className="mx-auto max-w-[560px] px-4 py-24 text-center">
-        <p className="eyebrow text-good">Listing live</p>
-        <h1 className="display mt-2 text-[30px]">{form.title} is on the market.</h1>
+        <p className="eyebrow text-good">{editMode ? "Changes saved" : "Listing live"}</p>
+        <h1 className="display mt-2 text-[30px]">
+          {editMode ? `${form.title} is updated.` : `${form.title} is on the market.`}
+        </h1>
         <p className="mt-3 text-[14px] text-muted">
           Buyers can message you from the listing. You&apos;ll get{" "}
           {money(price - fee)} once delivery is confirmed.
@@ -352,20 +397,22 @@ export function SellForm({
               View listing
             </Link>
           )}
-          <button
-            onClick={() => setState("idle")}
-            className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
-          >
-            List another
-          </button>
+          {!editMode && (
+            <button
+              onClick={() => setState("idle")}
+              className="rounded-md border border-line px-5 py-2.5 text-[13px] font-semibold"
+            >
+              List another
+            </button>
+          )}
         </div>
       </div>
     );
 
   return (
     <div className="mx-auto max-w-[1240px] px-4 py-10 lg:px-6">
-      <p className="eyebrow">Sell{draftId && " · editing draft"}</p>
-      <h1 className="display mt-2 text-[36px]">List an item</h1>
+      <p className="eyebrow">Sell{editMode ? " · editing live listing" : draftId && " · editing draft"}</p>
+      <h1 className="display mt-2 text-[36px]">{editMode ? "Edit listing" : "List an item"}</h1>
       <p className="mt-2 max-w-lg text-[15px] text-muted">
         Listing is free. {BRAND.name} takes {BRAND.feePercent}% only when the item
         sells and the buyer confirms delivery.
@@ -375,7 +422,7 @@ export function SellForm({
         <ListingUsageBar count={activeListingCount} limit={listingLimit} />
       </div>
 
-      {!payoutsReady && (
+      {!payoutsReady && !editMode && (
         <div className="mt-6 rounded-[10px] border border-trust bg-trust/5 p-5">
           <p className="text-[14px] font-semibold">Finish payout setup to publish</p>
           <p className="mt-1 max-w-lg text-[13.5px] text-muted">
@@ -644,6 +691,7 @@ export function SellForm({
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
+            {!editMode && (
             <button
               type="button"
               onClick={persistDraft}
@@ -652,26 +700,27 @@ export function SellForm({
             >
               {draftState === "saving" ? "Saving…" : "Save now"}
             </button>
+            )}
             <button
               onClick={submit}
               disabled={
                 state === "saving" ||
                 photos.length < MIN_PHOTOS ||
                 !!missingAttr ||
-                !payoutsReady ||
+                (!payoutsReady && !editMode) ||
                 atListingLimit
               }
               className="rgb-ring h-[50px] flex-1 rounded-[10px] bg-deal text-[15px] font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
             >
               {state === "saving"
-                ? "Publishing…"
-                : !payoutsReady
+                ? editMode ? "Saving…" : "Publishing…"
+                : !payoutsReady && !editMode
                   ? "Finish payout setup first"
                   : atListingLimit
                     ? "Listing limit reached"
                     : photos.length < MIN_PHOTOS
                       ? `Add ${MIN_PHOTOS - photos.length} more photo${MIN_PHOTOS - photos.length === 1 ? "" : "s"}`
-                      : "Publish listing"}
+                      : editMode ? "Save changes" : "Publish listing"}
             </button>
           </div>
         </div>

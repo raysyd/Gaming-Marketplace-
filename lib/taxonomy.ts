@@ -66,6 +66,31 @@ export const ALL_SUBS = TAXONOMY.flatMap((t) =>
 export const findSub = (slug: string) => ALL_SUBS.find((s) => s.slug === slug);
 export const findTop = (slug: string) => TAXONOMY.find((t) => t.slug === slug);
 
+/**
+ * The subcategory is the source of truth for where a listing lives — its
+ * top-level category is always that subcategory's parent. Trusting a
+ * separately-submitted category let the two disagree, and a listing whose
+ * category_slug didn't match its subcategory never showed up when browsing
+ * that category from the header.
+ */
+export function resolveCategory(subSlug: unknown, topSlug: unknown) {
+  const sub = findSub(String(subSlug ?? ""));
+  return {
+    subcategorySlug: sub?.slug ?? "graphics-cards",
+    categorySlug: sub?.parent ?? findTop(String(topSlug ?? ""))?.slug ?? "pc-parts-and-components",
+  };
+}
+
+/** PostgREST `or` filter for "listed under this top-level category" —
+ * matches on category_slug OR any of its subcategories, so rows saved
+ * before resolveCategory() existed still appear in the right section. */
+export function categoryOrFilter(topSlug: string): string | null {
+  const top = findTop(topSlug);
+  if (!top) return null;
+  const subs = top.children.map((c) => c.slug).join(",");
+  return `category_slug.eq.${top.slug},subcategory_slug.in.(${subs})`;
+}
+
 /** Which art to draw for a subcategory. */
 export function artKindFor(sub: string): string {
   if (["gaming-pcs", "workstations", "mini-pcs"].includes(sub)) return "Prebuilt PCs";

@@ -3,7 +3,7 @@ import type { Listing, ListingPage, ListingQuery } from "./types";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
-import { artKindFor, slugify } from "./taxonomy";
+import { artKindFor, categoryOrFilter, findSub, slugify } from "./taxonomy";
 import { getSellerStats, type SellerStats } from "./reviews-data";
 
 export const PER_PAGE = 24;
@@ -32,7 +32,10 @@ async function queryListingsUncached(q: ListingQuery = {}): Promise<ListingPage>
     .eq("status", q.status ?? "active");
 
   if (q.sub) sel = sel.eq("subcategory_slug", q.sub);
-  else if (q.category) sel = sel.eq("category_slug", q.category);
+  else if (q.category) {
+    const inCategory = categoryOrFilter(q.category);
+    sel = inCategory ? sel.or(inCategory) : sel.eq("category_slug", q.category);
+  }
   if (q.sellerId) sel = sel.eq("seller_id", q.sellerId);
   if (q.conditions?.length) sel = sel.in("condition", q.conditions);
   if (q.minPrice != null) sel = sel.gte("price", q.minPrice);
@@ -162,7 +165,8 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
   const needle = q.q?.trim().toLowerCase();
   let out = DEMO_LISTINGS.filter((l) => {
     if (q.sub && l.subcategorySlug !== q.sub) return false;
-    if (!q.sub && q.category && l.categorySlug !== q.category) return false;
+    if (!q.sub && q.category && l.categorySlug !== q.category && findSub(l.subcategorySlug)?.parent !== q.category)
+      return false;
     if (q.sellerId && l.sellerId !== q.sellerId) return false;
     if (q.conditions?.length && !q.conditions.includes(l.condition)) return false;
     if (q.minPrice != null && l.price < q.minPrice) return false;
@@ -212,7 +216,7 @@ export function rowToListing(r: any, stats?: SellerStats): Listing {
     id: r.id,
     slug: r.slug ?? slugify(r.title ?? ""),
     title: r.title,
-    categorySlug: r.category_slug ?? "full-systems",
+    categorySlug: findSub(sub)?.parent ?? r.category_slug ?? "full-systems",
     subcategorySlug: sub,
     category: artKindFor(sub) as Listing["category"],
     price: Number(r.price),

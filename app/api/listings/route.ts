@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
-import { slugify, findTop, findSub } from "@/lib/taxonomy";
+import { slugify, findSub, resolveCategory } from "@/lib/taxonomy";
 import { getConnectAccountStatus } from "@/lib/stripe";
 import { nameFromEmail } from "@/lib/profile-name";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
@@ -18,10 +18,7 @@ const MIN_PHOTOS = 5;
  * never drift into two different shapes.
  */
 function rowFromPayload(payload: Record<string, unknown>) {
-  const sub = findSub(payload.subcategorySlug as string);
-  const subcategorySlug = sub?.slug ?? "graphics-cards";
-  const categorySlug =
-    findTop(payload.categorySlug as string)?.slug ?? sub?.parent ?? "pc-parts-and-components";
+  const { subcategorySlug, categorySlug } = resolveCategory(payload.subcategorySlug, payload.categorySlug);
   const quantity = Math.trunc(Number(payload.quantity));
 
   return {

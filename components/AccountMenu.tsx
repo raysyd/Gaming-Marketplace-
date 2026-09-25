@@ -129,10 +129,14 @@ export function AccountMenu() {
             Security (2FA)
           </Link>
 
+          {/* No onClick={closeMenu} here: closing the menu unmounts this
+              form during the click, and a browser silently cancels the
+              submission of a form that's no longer in the document — which
+              is exactly why Sign out used to do nothing. The POST reloads
+              the page anyway, so the menu goes away on its own. */}
           <form action="/auth/signout" method="post" className="border-t border-line">
             <button
               type="submit"
-              onClick={closeMenu}
               className="w-full px-4 py-2 text-left text-[13px] text-ink transition hover:bg-paper"
             >
               Sign out

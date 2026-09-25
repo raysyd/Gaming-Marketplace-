@@ -60,8 +60,10 @@ export function MobileFilters({
               </button>
             </div>
             {/* Close after picking a filter link, but not when typing in the
-                price or search boxes (those submit their own form). */}
-            <div onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)} onSubmit={() => setOpen(false)}>{children}</div>
+                price or search boxes (those submit their own form). No
+                onSubmit close: unmounting a form mid-submit makes the browser
+                cancel it, and the native GET reloads the page regardless. */}
+            <div onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>{children}</div>
           </div>
         </div>
       )}

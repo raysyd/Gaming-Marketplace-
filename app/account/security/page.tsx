@@ -46,6 +46,15 @@ export default function SecuritySettingsPage() {
     if (!supabase) return;
     setBusy(true);
     setError("");
+    // A previous attempt that was cancelled (or abandoned by closing the
+    // tab) leaves an unverified factor behind, and Supabase rejects a new
+    // enrolment whose friendly name matches it — same-day retries always
+    // collided, so the flow could never be finished. Clear those first.
+    const { data: existing } = await supabase.auth.mfa.listFactors();
+    for (const f of existing?.all ?? []) {
+      if (f.factor_type === "totp" && f.status === "unverified")
+        await supabase.auth.mfa.unenroll({ factorId: f.id });
+    }
     const { data, error: enrollError } = await supabase.auth.mfa.enroll({
       factorType: "totp",
       friendlyName: `${BRAND.name} — ${new Date().toLocaleDateString()}`,
@@ -165,24 +174,36 @@ export default function SecuritySettingsPage() {
           <label htmlFor="totp-code" className="eyebrow mt-4 block">
             6-digit code
           </label>
-          <div className="mt-1.5 flex gap-2">
+          {/* A real form, so Enter in the code box confirms too — the
+              button alone left keyboard users with nothing happening. */}
+          <form
+            className="mt-1.5 flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!busy && code.length === 6) verifyEnroll();
+            }}
+          >
             <input
               id="totp-code"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
               inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
               placeholder="123456"
               className="input w-32"
             />
             <button
-              type="button"
-              onClick={verifyEnroll}
+              type="submit"
               disabled={busy || code.length !== 6}
               className="rounded-md bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
             >
               {busy ? "Verifying…" : "Confirm"}
             </button>
-          </div>
+          </form>
+          {code.length > 0 && code.length < 6 && (
+            <p className="spec mt-1.5 text-muted">Enter all 6 digits from your authenticator app.</p>
+          )}
           <button
             type="button"
             onClick={() => setEnrolling(null)}

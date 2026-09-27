@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReportButton } from "@/components/ReportButton";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { queryListings } from "@/lib/data";
@@ -117,6 +118,9 @@ export default async function SellerProfilePage({
               {profile.contactLink.replace(/^https?:\/\//, "")} ↗
             </a>
           )}
+          <div className="mt-2 max-w-sm">
+            <ReportButton userId={id} label="Report this seller" />
+          </div>
         </div>
       </div>
 

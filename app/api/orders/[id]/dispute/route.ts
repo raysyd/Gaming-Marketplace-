@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { notifyOrder } from "@/lib/orders/notify";
 
 /**
  * Buyer reports a problem instead of confirming — funds stay held (no
@@ -15,7 +16,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const limited = rateLimit(`order-dispute:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`order-dispute:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -59,5 +60,6 @@ export async function POST(
     .eq("id", id);
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
+  await notifyOrder(admin, id, "disputed");
   return NextResponse.json({ ok: true });
 }

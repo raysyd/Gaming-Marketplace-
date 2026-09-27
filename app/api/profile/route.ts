@@ -12,7 +12,7 @@ import { isValidUsername } from "@/lib/validation";
  * a bug here ever changing it later.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`profile:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`profile:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

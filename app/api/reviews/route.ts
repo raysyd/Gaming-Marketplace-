@@ -9,7 +9,7 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
  * just for a clean error message instead of a raw Postgres one.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`reviews:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`reviews:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

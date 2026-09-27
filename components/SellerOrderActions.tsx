@@ -8,7 +8,7 @@ export function SellerOrderActions({
   showDeliver = false,
 }: {
   id: string;
-  /** Shows "Mark delivered" — the manual AusPost fallback (see lib/shipping/auspost.ts). */
+  /** Shows "Check delivery" — asks Australia Post tracking (see lib/orders/tracking.ts). A seller can't mark their own order delivered. */
   showDeliver?: boolean;
 }) {
   const router = useRouter();
@@ -39,11 +39,11 @@ export function SellerOrderActions({
       {showDeliver && (
         <button
           type="button"
-          onClick={() => post("deliver", "Mark this order delivered? This starts the buyer's confirmation window.")}
+          onClick={() => post("deliver", "Check Australia Post tracking for this parcel?")}
           disabled={busy}
           className="spec rounded-lg border border-trust px-2.5 py-1.5 font-medium text-trust transition hover:bg-trust-soft disabled:opacity-50"
         >
-          Mark delivered
+          Check delivery
         </button>
       )}
       <div>

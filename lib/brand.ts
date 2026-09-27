@@ -22,4 +22,15 @@ export const BRAND = {
   // by the order-lifecycle logic and every place that states this in copy
   // (/trust, the buy box) so there's exactly one number on the record.
   orderWindowHours: 48,
+  // A shipped parcel with no confirmed delivery (AusPost tracking isn't
+  // wired up yet, and a seller can no longer mark their own order
+  // delivered) auto-releases this many days after posting, unless the
+  // buyer reports a problem first. Long enough for any domestic parcel.
+  shippedAutoReleaseDays: 14,
+  // Pickup orders never auto-release: the buyer confirms collection. A
+  // pickup the seller hasn't handed over within this many days refunds.
+  pickupHandoverDays: 7,
 };
+
+/** The platform fee in basis points — the one number the charge, the payout and the copy all use. */
+export const PLATFORM_FEE_BPS = BRAND.feePercent * 100;

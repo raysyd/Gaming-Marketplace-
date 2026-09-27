@@ -122,9 +122,9 @@ export async function POST(req: Request) {
   // actual listing creation.
   const autosaveId = asDraft && typeof payload.id === "string" ? payload.id : null;
 
-  const limited = autosaveId
+  const limited = await (autosaveId
     ? rateLimit(`listings-autosave:${clientKey(req)}`, { limit: 60 })
-    : rateLimit(`listings:${clientKey(req)}`, { limit: 10 });
+    : rateLimit(`listings:${clientKey(req)}`, { limit: 10 }));
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const limited = rateLimit(`listings-patch:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`listings-patch:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -322,7 +322,7 @@ export async function PATCH(req: Request) {
  * listing has to go through "Take down" (PATCH, status: inactive)
  * instead, which keeps its history rather than erasing it. */
 export async function DELETE(req: Request) {
-  const limited = rateLimit(`listings-delete:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`listings-delete:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

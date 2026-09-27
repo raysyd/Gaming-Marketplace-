@@ -15,7 +15,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const limited = rateLimit(`order-release:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`order-release:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

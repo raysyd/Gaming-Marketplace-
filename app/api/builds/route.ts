@@ -5,7 +5,7 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 const MAX_PHOTOS = 10;
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`builds:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`builds:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

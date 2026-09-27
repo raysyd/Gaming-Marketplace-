@@ -15,7 +15,7 @@ import { siteUrlFrom } from "@/lib/site-url";
  * 08-premium-seller.sql.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`identity:${clientKey(req)}`, { limit: 5 });
+  const limited = await rateLimit(`identity:${clientKey(req)}`, { limit: 5 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

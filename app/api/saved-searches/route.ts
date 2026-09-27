@@ -24,7 +24,7 @@ function sanitizeQuery(input: unknown): ListingQuery {
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`saved-searches:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`saved-searches:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

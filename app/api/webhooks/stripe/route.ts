@@ -4,8 +4,9 @@ import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { purchaseConfirmationEmail, saleNotificationEmail } from "@/lib/email/templates";
-import { BRAND } from "@/lib/brand";
+import { BRAND, PLATFORM_FEE_BPS } from "@/lib/brand";
 import { revalidateTag } from "next/cache";
+import { notifyOrder } from "@/lib/orders/notify";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
       // Order is created and held here — this fires once the buyer's card
       // is authorised, before capture. Money moves to the seller later,
       // when /api/orders/[id]/release captures the PaymentIntent.
-      const feeBps = Number(process.env.PLATFORM_FEE_BPS ?? 800);
+      const feeBps = PLATFORM_FEE_BPS;
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         limit: 100,
       });
@@ -105,7 +106,13 @@ export async function POST(req: Request) {
       const { error } = await admin
         .from("orders")
         .upsert(rows, { onConflict: "stripe_payment_intent,listing_id", ignoreDuplicates: true });
-      if (error) console.error("Stripe webhook: order insert failed —", error.message);
+      // The buyer has already been charged — if the order row didn't save,
+      // answer non-2xx so Stripe retries the event (the upsert above makes
+      // the retry safe) instead of leaving a paid checkout with no order.
+      if (error) {
+        console.error("Stripe webhook: order insert failed —", error.message);
+        return NextResponse.json({ error: "Order insert failed." }, { status: 500 });
+      }
 
       // An accepted offer's price was honored above (see the
       // offerPriceByListing lookup in app/api/checkout/route.ts) — mark it
@@ -195,34 +202,80 @@ export async function POST(req: Request) {
     }
 
     case "charge.refunded": {
+      // Refunds made in the app (lib/orders/refund.ts) already marked their
+      // own row refunded and restocked it, and are partial — one order row
+      // of a possibly multi-item checkout. This handles the rest: a charge
+      // refunded in full from the Stripe dashboard marks every order on it
+      // that isn't refunded yet, and restocks just those rows, so nothing
+      // is ever put back twice. A partial refund made outside the app can't
+      // be matched to a row, so it's logged for support instead.
       const charge = event.data.object as Stripe.Charge;
       const paymentIntent =
         typeof charge.payment_intent === "string"
           ? charge.payment_intent
           : charge.payment_intent?.id;
-      if (paymentIntent) {
-        const { data: refundedOrders, error } = await admin
-          .from("orders")
-          .update({ status: "refunded" })
-          .eq("stripe_payment_intent", paymentIntent)
-          .select("listing_id, quantity");
-        if (error) console.error("Stripe webhook: refund update failed —", error.message);
+      if (!paymentIntent) break;
+      if (!charge.refunded) {
+        console.warn(
+          `Stripe webhook: partial refund on ${paymentIntent} — orders refunded from the app are already updated; anything refunded in the Stripe dashboard needs checking by hand.`
+        );
+        break;
+      }
+      const { data: refundedOrders, error } = await admin
+        .from("orders")
+        .update({ status: "refunded", refunded_at: new Date().toISOString() })
+        .eq("stripe_payment_intent", paymentIntent)
+        .neq("status", "refunded")
+        .select("listing_id, quantity");
+      if (error) {
+        console.error("Stripe webhook: refund update failed —", error.message);
+        return NextResponse.json({ error: "Refund update failed." }, { status: 500 });
+      }
+      const listingIds = (refundedOrders ?? []).map((o) => o.listing_id);
+      const qtys = (refundedOrders ?? []).map((o) => o.quantity ?? 1);
+      if (listingIds.length) {
+        const { error: relistError } = await admin.rpc("release_listing_stock_qty", {
+          ids: listingIds,
+          qtys,
+        });
+        if (relistError)
+          console.error("Stripe webhook: relist-after-refund failed —", relistError.message);
+      }
+      break;
+    }
 
-        // A refunded sale gives the units back — otherwise it's stuck sold
-        // (or under-counted, for a quantity > 1 listing) with no way for
-        // the seller to sell it again. release_listing_stock_qty only flips
-        // status back to "active" if it's currently "sold" — a listing the
-        // seller separately deactivated on purpose stays deactivated.
-        const listingIds = (refundedOrders ?? []).map((o) => o.listing_id);
-        const qtys = (refundedOrders ?? []).map((o) => o.quantity ?? 1);
-        if (listingIds.length) {
-          const { error: relistError } = await admin.rpc("release_listing_stock_qty", {
-            ids: listingIds,
-            qtys,
-          });
-          if (relistError)
-            console.error("Stripe webhook: relist-after-refund failed —", relistError.message);
-        }
+    // Chargebacks — the buyer went to their bank instead of using "Report a
+    // problem". Stripe pulls the money (plus a fee) from the platform's
+    // balance straight away, so the seller's payout must not go out while
+    // it's open: lib/orders/release.ts refuses any order whose
+    // chargeback_status isn't null or "won". Support is emailed to respond
+    // with evidence in the Stripe dashboard.
+    case "charge.dispute.created":
+    case "charge.dispute.updated":
+    case "charge.dispute.closed": {
+      const dispute = event.data.object as Stripe.Dispute;
+      const paymentIntent =
+        typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
+      if (!paymentIntent) break;
+      const { data: affected, error } = await admin
+        .from("orders")
+        .update({ chargeback_status: dispute.status })
+        .eq("stripe_payment_intent", paymentIntent)
+        .select("id, status");
+      if (error) {
+        console.error("Stripe webhook: chargeback sync failed —", error.message);
+        return NextResponse.json({ error: "Chargeback sync failed." }, { status: 500 });
+      }
+      if (event.type === "charge.dispute.created") {
+        // Anything not yet paid out is frozen as disputed so no path (buyer,
+        // cron) tries to release it; support settles it from /admin.
+        const held = (affected ?? []).filter((o) => ["paid", "shipped", "awaiting_confirmation"].includes(o.status));
+        if (held.length)
+          await admin
+            .from("orders")
+            .update({ status: "disputed", dispute_reason: `Chargeback opened with the buyer's bank (${dispute.reason}).` })
+            .in("id", held.map((o) => o.id));
+        for (const o of affected ?? []) await notifyOrder(admin, o.id, "chargeback");
       }
       break;
     }

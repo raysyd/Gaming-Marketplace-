@@ -37,7 +37,7 @@ const RESERVATION_MINUTES = 30;
  * display before checkout.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`checkout:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`checkout:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

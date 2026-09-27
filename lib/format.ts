@@ -46,6 +46,11 @@ export const deadlineLabel = (fromISO: string, hours = BRAND.orderWindowHours) =
   const deadline = new Date(fromISO).getTime() + hours * 3600 * 1000;
   const remainingMs = deadline - Date.now();
   const remainingH = Math.abs(remainingMs) / 3600000;
-  const label = remainingH < 1 ? `${Math.max(1, Math.round(remainingH * 60))}m` : `${Math.ceil(remainingH)}h`;
+  const label =
+    remainingH < 1
+      ? `${Math.max(1, Math.round(remainingH * 60))}m`
+      : remainingH > 48
+        ? `${Math.ceil(remainingH / 24)}d`
+        : `${Math.ceil(remainingH)}h`;
   return remainingMs > 0 ? `${label} left` : `Overdue by ${label}`;
 };

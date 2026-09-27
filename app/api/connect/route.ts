@@ -121,7 +121,7 @@ async function startOnboarding(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const limited = rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`connect:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.redirect(`${siteUrlFrom(req)}/dashboard?connect_error=1`);
 

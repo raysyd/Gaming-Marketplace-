@@ -7,7 +7,7 @@ import { isChatImagePathFor } from "@/lib/chat-images";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`messages:${clientKey(req)}`, { limit: 30 });
+  const limited = await rateLimit(`messages:${clientKey(req)}`, { limit: 30 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

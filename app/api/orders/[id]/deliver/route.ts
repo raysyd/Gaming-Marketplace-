@@ -2,23 +2,24 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { markDeliveredIfTracked } from "@/lib/orders/tracking";
 
 /**
- * Seller marks an order delivered — the manual fallback for the automatic
- * "AusPost reports delivered" trigger described in the brief, since there's
- * no AusPost merchant API account configured yet (see lib/shipping/auspost.ts).
- * shipped -> awaiting_confirmation, which starts the buyer's confirmation
- * window. The buyer doesn't have to wait for this — they can confirm
- * delivery (and release payment) straight from "shipped" themselves,
- * since nobody knows better than they do whether it arrived; this exists
- * for the case where the seller has independent proof (checked tracking
- * on auspost.com.au) and the buyer hasn't acted yet.
+ * Seller asks "has it arrived yet?". This used to let the seller simply
+ * declare an order delivered, which started the buyer's 48-hour clock and
+ * paid the seller automatically when it ran out — with no proof the parcel
+ * ever arrived. Now only Australia Post tracking can move an order to
+ * awaiting_confirmation (see lib/orders/tracking.ts). Without tracking
+ * confirmation the order stays "shipped" and the buyer confirms it, or it
+ * auto-releases BRAND.shippedAutoReleaseDays after posting unless they
+ * report a problem. Pickup orders are never marked delivered by anyone
+ * but the buyer.
  */
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const limited = rateLimit(`order-deliver:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`order-deliver:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -37,15 +38,20 @@ export async function POST(
 
   const { data: order, error } = await supabase
     .from("orders")
-    .select("id, seller_id, status")
+    .select("id, seller_id, status, fulfillment_method")
     .eq("id", id)
     .single();
   if (error || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   if (order.seller_id !== user.id)
-    return NextResponse.json({ error: "Only the seller can mark this delivered." }, { status: 403 });
+    return NextResponse.json({ error: "Only the seller can check delivery." }, { status: 403 });
+  if (order.fulfillment_method === "pickup")
+    return NextResponse.json(
+      { error: "Pickup orders are completed by the buyer confirming collection." },
+      { status: 400 }
+    );
   if (order.status !== "shipped")
     return NextResponse.json(
-      { error: `Can't mark an order in "${order.status}" status as delivered.` },
+      { error: `Can't check delivery on an order in "${order.status}" status.` },
       { status: 400 }
     );
 
@@ -53,11 +59,15 @@ export async function POST(
   if (!admin)
     return NextResponse.json({ error: "Server isn't configured for this write." }, { status: 500 });
 
-  const { error: updateError } = await admin
-    .from("orders")
-    .update({ status: "awaiting_confirmation", delivered_at: new Date().toISOString() })
-    .eq("id", id);
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  const delivered = await markDeliveredIfTracked(admin, id);
+  if (!delivered)
+    return NextResponse.json(
+      {
+        error:
+          "Australia Post hasn't confirmed delivery yet. The buyer can confirm it themselves, or payment releases automatically if they don't report a problem.",
+      },
+      { status: 409 }
+    );
 
   return NextResponse.json({ ok: true });
 }

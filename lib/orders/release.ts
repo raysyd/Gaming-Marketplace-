@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe";
+import { notifyOrder } from "@/lib/orders/notify";
 
 /**
  * The actual "pay the seller" step, shared by two callers that reach it
@@ -16,18 +17,26 @@ import { getStripe } from "@/lib/stripe";
  */
 export async function releaseOrderPayment(
   orderId: string,
-  admin: SupabaseClient
+  admin: SupabaseClient,
+  /** Support settling a dispute in the seller's favour (/admin) — never the buyer or the cron. */
+  { allowDisputed = false }: { allowDisputed?: boolean } = {}
 ): Promise<{ ok: true } | { error: string; status: number }> {
   const { data: order, error } = await admin
     .from("orders")
-    .select("id, seller_id, status, amount, platform_fee, shipping_fee, stripe_payment_intent")
+    .select("id, seller_id, status, amount, platform_fee, shipping_fee, stripe_payment_intent, chargeback_status")
     .eq("id", orderId)
     .single();
   if (error || !order) return { error: "Order not found.", status: 404 };
-  if (!["paid", "shipped", "awaiting_confirmation"].includes(order.status))
+  const releasable = ["paid", "shipped", "awaiting_confirmation", ...(allowDisputed ? ["disputed"] : [])];
+  if (!releasable.includes(order.status))
     return { error: `Can't release an order in "${order.status}" status.`, status: 400 };
   if (!order.stripe_payment_intent)
     return { error: "Order has no payment on file.", status: 400 };
+  // The buyer's bank has an open chargeback on this payment (see the
+  // charge.dispute.* webhook) — paying the seller now would leave the
+  // platform covering the loss if it's lost.
+  if (order.chargeback_status && order.chargeback_status !== "won")
+    return { error: "This payment is under a chargeback, so it can't be released.", status: 409 };
 
   const { data: sellerProfile } = await admin
     .from("profiles")
@@ -82,5 +91,6 @@ export async function releaseOrderPayment(
     .eq("id", orderId);
   if (updateError) return { error: updateError.message, status: 500 };
 
+  await notifyOrder(admin, orderId, "released");
   return { ok: true };
 }

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
-  const limited = rateLimit(`offers:${clientKey(req)}`, { limit: 10 });
+  const limited = await rateLimit(`offers:${clientKey(req)}`, { limit: 10 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -97,7 +97,7 @@ type Action = (typeof ACTIONS)[number];
  * message instead of a raw "0 rows updated" or Postgres error.
  */
 export async function PATCH(req: Request) {
-  const limited = rateLimit(`offers-respond:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`offers-respond:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

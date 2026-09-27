@@ -119,8 +119,15 @@ export function BuyingTabs({
                 )}
                 {o.status === "awaiting_confirmation" && o.deliveredAt && (
                   <p className="spec mt-1 text-trust">
-                    Confirm within {BRAND.orderWindowHours}h of {o.fulfillmentMethod === "pickup" ? "the seller marking it ready" : "delivery"} —{" "}
+                    Australia Post says it was delivered. Confirm or report a problem —{" "}
                     {deadlineLabel(o.deliveredAt)}, then it auto-releases.
+                  </p>
+                )}
+                {o.status === "shipped" && o.shippedAt && (
+                  <p className="spec mt-1 text-trust">
+                    {o.fulfillmentMethod === "pickup"
+                      ? "Ready to collect. Payment is only released when you confirm collection."
+                      : `On its way${o.trackingNumber ? ` · AusPost ${o.trackingNumber}` : ""}. Payment auto-releases unless you report a problem — ${deadlineLabel(o.shippedAt, BRAND.shippedAutoReleaseDays * 24)}.`}
                   </p>
                 )}
               </div>

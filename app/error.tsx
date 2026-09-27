@@ -15,7 +15,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
+    <div className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
       <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
         <p className="eyebrow text-deal">Something went wrong</p>
         <h1 className="display mt-2 text-3xl">This page hit an error</h1>
@@ -30,6 +30,6 @@ export default function GlobalError({
           Try again
         </button>
       </div>
-    </main>
+    </div>
   );
 }

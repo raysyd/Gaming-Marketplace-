@@ -112,11 +112,11 @@ export default function SecuritySettingsPage() {
     refreshFactors();
   };
 
-  if (loading) return <main className="min-h-[55vh]" aria-busy="true" />;
+  if (loading) return <div className="min-h-[55vh]" aria-busy="true" />;
 
   if (!user)
     return (
-      <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
+      <div className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
         <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
           <p className="text-sm text-muted">Sign in to manage account security.</p>
           <Link
@@ -126,13 +126,13 @@ export default function SecuritySettingsPage() {
             Sign in
           </Link>
         </div>
-      </main>
+      </div>
     );
 
   const verifiedFactor = factors?.find((f) => f.status === "verified") ?? null;
 
   return (
-    <main className="mx-auto max-w-[560px] px-4 py-16">
+    <div className="mx-auto max-w-[560px] px-4 py-16">
       <p className="eyebrow">Account</p>
       <h1 className="display mt-2 text-3xl">Two-factor authentication</h1>
       <p className="mt-2 text-sm text-muted">
@@ -228,6 +228,6 @@ export default function SecuritySettingsPage() {
         contact {BRAND.supportEmail} to verify your identity and reset it.
         Enrolling a second device as backup is the more reliable option.
       </p>
-    </main>
+    </div>
   );
 }

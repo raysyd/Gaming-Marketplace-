@@ -95,14 +95,15 @@ export function BuyBox({
   };
 
   return (
-    <div className="rounded-card border border-line bg-card p-5">
-      <div className="flex items-end gap-3">
-        <span className="display text-4xl">{money(listing.price)}</span>
+    <div className="hud-frame p-5">
+      <p className="eyebrow">Price · {BRAND.currency}</p>
+      <div className="mt-1.5 flex flex-wrap items-end gap-x-3 gap-y-1">
+        <span className="price-hud text-4xl text-ink">{money(listing.price)}</span>
         {listing.compareAt && (
-          <span className="spec pb-2 text-muted">
+          <span className="hud pb-1.5 text-xs text-muted">
             <span className="line-through">{money(listing.compareAt)}</span>{" "}
             <span className="font-semibold text-deal">
-              save {money(listing.compareAt - listing.price)}
+              ▼ save {money(listing.compareAt - listing.price)}
             </span>
           </span>
         )}
@@ -125,8 +126,8 @@ export function BuyBox({
           90 days — omitted entirely (not "0 sales") below ~5 comparable
           sales, since a range built on noise is worse than no range. */}
       {priceStats && (
-        <p className="spec mt-2 rounded-lg border border-line bg-paper px-3 py-2 text-muted">
-          {BRAND.name} market value: {money(priceStats.low)}–{money(priceStats.high)}
+        <p className="hud mt-3 rounded-[4px] border border-dashed border-line px-3 py-2 text-xs text-muted">
+          MARKET VALUE <span className="text-trust">{money(priceStats.low)}–{money(priceStats.high)}</span>
           {listing.price <= priceStats.low && (
             <span className="ml-1.5 font-semibold text-good">Good deal ✓</span>
           )}
@@ -186,7 +187,7 @@ export function BuyBox({
         {listing.acceptsOffers && !unavailable && !ownListing && !offering && (
           <button
             onClick={() => setOffering(true)}
-            className="w-full rounded-lg border border-line py-3 text-sm font-medium text-muted transition hover:border-ink/40 hover:text-ink"
+            className="w-full rounded-[4px] border border-dashed border-line py-3 text-sm font-medium text-muted transition hover:border-trust hover:text-ink focus-visible:border-trust"
           >
             Make an offer
           </button>

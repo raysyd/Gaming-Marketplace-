@@ -198,14 +198,14 @@ export default async function ProductPage({
               </p>
               <WishlistButton id={listing.id} />
             </div>
-            <h1 className="display mt-2 text-3xl leading-tight">
+            <h1 className="display mt-2 text-3xl leading-tight sm:text-4xl">
               {listing.title}
             </h1>
             <ViewerCount listingId={listing.id} />
           </div>
 
           {listing.fps1080p && (
-            <div className="order-3 rounded-card border border-line bg-card p-4">
+            <div className="hud-frame order-3 p-4">
               <FpsBar fps={listing.fps1080p} />
               <p className="spec mt-2 text-muted">
                 Estimated from the GPU and CPU pairing across common titles.
@@ -217,7 +217,7 @@ export default async function ProductPage({
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
           </div>
 
-          <div className="glass order-5 rounded-card p-5">
+          <div className="hud-frame order-5 p-5">
             <h2 className="eyebrow">Seller</h2>
             <Link href={`/seller/${listing.sellerId}`} className="group mt-3 flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-trust text-base font-semibold text-white ring-2 ring-deal/50 ring-offset-2 ring-offset-paper">

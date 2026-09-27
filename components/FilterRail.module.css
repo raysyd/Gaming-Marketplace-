@@ -5,7 +5,8 @@
   color: var(--color-ink);
   padding: 16px 16px 12px;
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-card);
+  border-top: 2px solid color-mix(in srgb, var(--color-deal) 70%, transparent);
+  border-radius: 6px;
   background: var(--color-card);
   backdrop-filter: var(--glass-blur);
 }
@@ -80,9 +81,10 @@
   padding: 15px 2px;
   list-style: none;
   cursor: pointer;
-  font-size: 12px;
+  font-family: var(--font-hud);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-muted);
   transition: color 0.15s;
@@ -123,7 +125,7 @@
 .treeTop:hover { color: var(--color-trust); }
 .treeSub { display: flex; justify-content: space-between; padding: 4px 0 4px 10px; font-size: 14px; color: var(--color-ink); opacity: 0.85; transition: color 0.15s, padding 0.2s, opacity 0.15s; }
 .treeSub:hover { color: var(--color-trust); opacity: 1; padding-left: 14px; }
-.count { font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.count { font-family: var(--font-hud); font-size: 11px; color: var(--color-trust); opacity: 0.85; font-variant-numeric: tabular-nums; }
 
 /* Sub-category picker (inside a category) */
 .pick { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 8px; font-size: 14px; transition: background 0.15s, color 0.15s; }
@@ -202,7 +204,7 @@
 .range input[type="range"]:focus-visible { outline: none; }
 .range input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-trust) 55%, transparent); }
 .range input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-trust) 55%, transparent); }
-.rangeLabels { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.rangeLabels { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font-family: var(--font-hud); font-size: 11.5px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
 /* Condition tiers: colour-coded tags (tier colours in app/globals.css). */
 .tiers { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -210,11 +212,15 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 11px;
+  padding: 6px 10px;
   border: 1px solid color-mix(in srgb, var(--tier) 40%, var(--color-line));
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
+  border-left: 3px solid var(--tier);
+  border-radius: 3px;
+  font-family: var(--font-hud);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.2s;
 }
 .tier:hover { border-color: var(--tier); box-shadow: 0 0 14px -4px var(--tier); }

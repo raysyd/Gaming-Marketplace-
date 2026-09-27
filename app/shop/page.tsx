@@ -80,9 +80,9 @@ export default async function ShopPage({
   return (
     <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6">
       {isDemo && <DemoBanner />}
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <nav className="spec text-muted">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <nav className="eyebrow" aria-label="Breadcrumb">
             <Link href="/shop" className="hover:text-ink">
               Marketplace
             </Link>
@@ -96,10 +96,15 @@ export default async function ShopPage({
             )}
             {sp.sub && <> / {findSub(sp.sub)?.name}</>}
           </nav>
-          <h1 className="display mt-1.5 text-3xl">{heading}</h1>
-          <p className="spec mt-1 text-muted">
-            {total.toLocaleString()} {total === 1 ? "listing" : "listings"}
-            {pages > 1 && ` · page ${page} of ${pages}`}
+          <h1 className="display mt-2 text-3xl sm:text-4xl">
+            {heading}
+            <span className="hud-count" aria-label={`${total} ${total === 1 ? "listing" : "listings"}`}>
+              {total.toLocaleString()}
+            </span>
+          </h1>
+          <p className="hud mt-1.5 text-xs text-muted">
+            {total === 1 ? "1 listing" : `${total.toLocaleString()} listings`}
+            {pages > 1 && ` · page ${page}/${pages}`}
           </p>
           {(activeFilterCount > 0 || sp.q) && (
             <div className="mt-2">
@@ -116,7 +121,7 @@ export default async function ShopPage({
               key={v}
               href={hrefWith({ sort: v, page: undefined })}
               aria-current={(sp.sort ?? "new") === v ? "true" : undefined}
-              className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs transition ${
+              className={`hud shrink-0 whitespace-nowrap rounded-[4px] border px-3 py-1.5 text-[11px] uppercase tracking-wider transition ${
                 (sp.sort ?? "new") === v
                   ? "border-deal bg-deal-soft font-semibold text-ink shadow-[var(--glow-a)]"
                   : "glass border-line text-muted hover:border-trust hover:text-ink"
@@ -127,6 +132,8 @@ export default async function ShopPage({
           ))}
         </div>
       </div>
+
+      <div className="hud-rule -mt-3 mb-6" aria-hidden="true" />
 
       <MobileFilters activeCount={activeFilterCount}>
         <FilterRail sp={sp} counts={counts} />

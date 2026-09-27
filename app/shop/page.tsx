@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { FilterRail } from "@/components/FilterRail";
 import { Pagination } from "@/components/Pagination";
 import { MobileFilters } from "@/components/MobileFilters";
+import { CollapsibleRail } from "@/components/CollapsibleRail";
 import { DemoBanner } from "@/components/DemoBanner";
 import { SaveSearchButton } from "@/components/SaveSearchButton";
 import type { ListingQuery } from "@/lib/types";
@@ -114,10 +115,11 @@ export default async function ShopPage({
             <Link
               key={v}
               href={hrefWith({ sort: v, page: undefined })}
-              className={`shrink-0 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs transition ${
+              aria-current={(sp.sort ?? "new") === v ? "true" : undefined}
+              className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs transition ${
                 (sp.sort ?? "new") === v
-                  ? "bg-ink font-semibold text-white"
-                  : "border border-line hover:border-ink/40"
+                  ? "border-deal bg-deal-soft font-semibold text-ink shadow-[var(--glow-a)]"
+                  : "glass border-line text-muted hover:border-trust hover:text-ink"
               }`}
             >
               {label}
@@ -130,14 +132,10 @@ export default async function ShopPage({
         <FilterRail sp={sp} counts={counts} />
       </MobileFilters>
 
-      <div className="mt-4 grid gap-6 lg:mt-0 lg:grid-cols-[210px_1fr]">
-        <div className="hidden lg:block">
-          <FilterRail sp={sp} counts={counts} />
-        </div>
-
-        <div>
+      <div className="mt-4 lg:mt-0">
+        <CollapsibleRail rail={<FilterRail sp={sp} counts={counts} id="shop-filter-rail" />}>
           {items.length === 0 ? (
-            <div className="rounded-card border border-dashed border-line bg-card p-12 text-center">
+            <div className="glass rounded-card border-dashed p-12 text-center">
               <h2 className="display text-xl">Nothing matches those filters</h2>
               <p className="mt-2 text-sm text-muted">
                 Widen the price band or clear a category to see more.
@@ -157,8 +155,8 @@ export default async function ShopPage({
               <div
                 className={`grid ${
                   (sp.category === "full-systems" || ["gaming-pcs", "gaming-laptops", "workstations", "mini-pcs"].includes(sp.sub ?? ""))
-                    ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                    : "grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+                    ? "grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 shop-grid-wide"
+                    : "grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 shop-grid"
                 }`}
               >
                 {items.map((l) => (
@@ -172,7 +170,7 @@ export default async function ShopPage({
               />
             </>
           )}
-        </div>
+        </CollapsibleRail>
       </div>
     </div>
   );

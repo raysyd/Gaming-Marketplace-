@@ -1,24 +1,36 @@
 @import "tailwindcss";
 @import "./motion.css";
 
-@theme {
-  --color-ink: #111111;
-  --color-chrome: #080808;
-  --color-chrome-2: #202020;
-  --color-paper: #f6f6f6;
-  --color-card: #ffffff;
-  --color-line: #e2e6ed;
-  --color-muted: #656e7e;
-  --color-deal: #d86f00;
-  --color-deal-soft: #fff1df;
-  /* Accent for text, links, prices, numbers and performance bars. */
-  --color-trust: #1f6feb;
-  --color-trust-soft: #e7f0ff;
-  /* Icons keep the original purple (SpecIcon, verified tick, trust page). */
-  --color-icon: #5a39d6;
-  --color-good: #0d8055;
+/* static: emit every token below even when no utility uses it (plain CSS
+   such as --color-card-solid and --color-warn reads them too). */
+@theme static {
+  /* Cyber-dark is the default theme (html.dark is server-rendered; see
+     app/layout.tsx). html.light below is the opt-in light theme. */
+  --color-ink: #e7eaf3;
+  --color-chrome: #07090e;
+  --color-chrome-2: #161b26;
+  --color-paper: #0b0e14;
+  /* Glass: surfaces are translucent over the void background. Use
+     --color-card-solid where something must fully cover what's beneath
+     (popovers, drawers) and can't rely on backdrop-filter. */
+  --color-card: rgba(20, 24, 33, 0.7);
+  --color-card-solid: #141821;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-muted: #8e97ab;
+  /* Primary action (Neon A, electric purple). Buttons sit on the deeper
+     --color-deal-strong so white text keeps AA contrast. */
+  --color-deal: #a855f7;
+  --color-deal-strong: #9333ea;
+  --color-deal-soft: rgba(168, 85, 247, 0.14);
+  /* Data (Neon B, cyan): links, prices, numbers, meters. */
+  --color-trust: #06b6d4;
+  --color-trust-soft: rgba(6, 182, 212, 0.12);
+  --color-icon: #a855f7;
+  /* Alerts / top tier (Neon C, volt green). */
+  --color-good: #22c55e;
+  --color-warn: #f59e0b;
 
-  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   /* Labels, specs and small print use the same face as the nav (Inter),
      not a code font. Kept as --font-mono so every existing usage follows. */
@@ -29,28 +41,41 @@
   --radius-card: 14px;
 }
 
-html.dark {
-  --color-ink: #f5f5f5;
-  --color-chrome: #000000;
-  --color-chrome-2: #242424;
-  --color-paper: #050505;
-  --color-card: #111111;
-  --color-line: #3a3a3a;
-  --color-muted: #a8a8a8;
-  --color-deal: #ff8b18;
-  --color-deal-soft: #302011;
-  --color-trust: #5aa2ff;
-  --color-trust-soft: #16263f;
-  --color-icon: #9674ff;
+:root {
+  /* Soft neon glows for hover/focus. Radial, low alpha: a halo, not a flare. */
+  --glow-a: 0 0 0 1px rgba(168, 85, 247, 0.45), 0 10px 34px -12px rgba(168, 85, 247, 0.55);
+  --glow-b: 0 0 0 1px rgba(6, 182, 212, 0.45), 0 10px 34px -12px rgba(6, 182, 212, 0.5);
+  --glass-blur: blur(12px) saturate(1.2);
+}
+
+html.light {
+  --color-ink: #0b0e14;
+  --color-chrome: #0b0e14;
+  --color-chrome-2: #1c2230;
+  --color-paper: #f4f5fa;
+  --color-card: rgba(255, 255, 255, 0.82);
+  --color-card-solid: #ffffff;
+  --color-line: rgba(15, 23, 42, 0.12);
+  --color-muted: #586176;
+  --color-deal: #7e22ce;
+  --color-deal-strong: #7e22ce;
+  --color-deal-soft: #f3e8ff;
+  --color-trust: #0e7490;
+  --color-trust-soft: #e0f7fb;
+  --color-icon: #7e22ce;
+  --color-good: #15803d;
+  --color-warn: #b45309;
+  --glow-a: 0 0 0 1px rgba(126, 34, 206, 0.35), 0 10px 30px -14px rgba(126, 34, 206, 0.45);
+  --glow-b: 0 0 0 1px rgba(14, 116, 144, 0.35), 0 10px 30px -14px rgba(14, 116, 144, 0.4);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* One button system. Four kinds — primary (orange: the page's main
-   action), secondary (outlined), quiet, danger — and two heights. Blue
-   (trust) is for links only. Layout utilities on the element (w-full,
+/* One button system. Four kinds — primary (purple: the page's main
+   action), secondary (glass, outlined), quiet, danger — and two heights.
+   Cyan (trust) is for links and data only. Layout utilities on the element (w-full,
    margins, flex-1) still apply on top. */
 @layer components {
   .btn {
@@ -67,7 +92,7 @@ html {
     line-height: 1;
     white-space: nowrap;
     cursor: pointer;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, filter 150ms ease;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, filter 150ms ease, box-shadow 200ms ease, transform 150ms ease;
   }
   .btn-sm {
     height: 36px;
@@ -79,19 +104,26 @@ html {
     cursor: not-allowed;
   }
   .btn-primary {
-    background: var(--color-deal);
+    background: var(--color-deal-strong);
     color: #fff;
   }
   .btn-primary:not(:disabled):hover {
-    filter: brightness(1.08);
+    filter: brightness(1.1);
+    box-shadow: var(--glow-a);
+  }
+  .btn-primary:not(:disabled):active,
+  .btn-secondary:not(:disabled):active {
+    transform: translateY(1px) scale(0.99);
   }
   .btn-secondary {
     background: var(--color-card);
     border-color: var(--color-line);
     color: var(--color-ink);
+    backdrop-filter: var(--glass-blur);
   }
   .btn-secondary:not(:disabled):hover {
-    border-color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+    border-color: color-mix(in srgb, var(--color-trust) 60%, transparent);
+    box-shadow: var(--glow-b);
   }
   .btn-quiet {
     background: transparent;
@@ -103,11 +135,11 @@ html {
   }
   .btn-danger {
     background: transparent;
-    border-color: var(--color-deal);
-    color: var(--color-deal);
+    border-color: #f43f5e;
+    color: #fb7185;
   }
   .btn-danger:not(:disabled):hover {
-    background: var(--color-deal-soft);
+    background: rgba(244, 63, 94, 0.12);
   }
   .btn:focus-visible {
     outline: 2px solid var(--color-trust);
@@ -123,19 +155,30 @@ html {
 }
 
 body {
-  background: var(--color-paper);
+  /* The void, lit faintly from two corners in the accent colours. */
+  background:
+    radial-gradient(1100px 600px at 8% -12%, rgba(168, 85, 247, 0.09), transparent 60%),
+    radial-gradient(900px 520px at 100% -4%, rgba(6, 182, 212, 0.07), transparent 60%),
+    var(--color-paper);
+  background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
 }
 
-/* The display face carries the retail-signage personality: wide, heavy, tight. */
+/* The display face (Space Grotesk): geometric, bold, slightly tight. */
 .display {
   font-family: var(--font-display);
-  font-variation-settings: "wdth" 112;
-  font-weight: 800;
-  letter-spacing: 0;
-  line-height: 0.98;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+
+/* Glass panel: translucent surface, blurred backdrop, hairline border. */
+.glass {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  backdrop-filter: var(--glass-blur);
 }
 
 .eyebrow {
@@ -183,21 +226,19 @@ body {
 }
 
 /* ---------------------------------------------------------------------
-   RGB accents. Deliberately restrained: a rainbow sweep used as a hover/
-   focus highlight on primary CTAs and cards, not a background theme.
-   Same gradient in both light and dark — it's a thin decorative accent,
-   not body content, so contrast against the page doesn't matter the way
-   it would for text.
+   Neon accents. Deliberately restrained: a purple → cyan → volt sweep used
+   as a hover/focus highlight on primary CTAs and cards, not a background
+   theme. (The class names still say "rgb" because pages across the site
+   use them.)
 --------------------------------------------------------------------- */
 :root {
   --rgb-gradient: linear-gradient(
     90deg,
-    #ff5f6d,
-    #ffc371,
-    #4ade80,
-    #38bdf8,
-    #a78bfa,
-    #ff5f6d
+    #a855f7,
+    #06b6d4,
+    #22c55e,
+    #06b6d4,
+    #a855f7
   );
 }
 
@@ -278,16 +319,7 @@ body {
 }
 .card-hover:hover {
   transform: translateY(-3px);
-  box-shadow:
-    0 0 0 1px var(--color-trust),
-    0 14px 28px -16px rgba(90, 57, 214, 0.4),
-    0 4px 14px -6px rgba(216, 111, 0, 0.25);
-}
-html.dark .card-hover:hover {
-  box-shadow:
-    0 0 0 1px var(--color-trust),
-    0 14px 28px -16px rgba(150, 116, 255, 0.5),
-    0 4px 14px -6px rgba(255, 139, 24, 0.3);
+  box-shadow: var(--glow-a);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -302,11 +334,21 @@ html.dark .card-hover:hover {
 .input {
   width: 100%;
   border: 1px solid var(--color-line);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px 12px;
   font-size: 16px;
   background: var(--color-card);
   color: var(--color-ink);
+  transition: border-color 150ms ease, box-shadow 200ms ease;
+}
+.input:focus,
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-deal);
+  box-shadow: 0 0 0 3px var(--color-deal-soft);
+}
+.input::placeholder {
+  color: var(--color-muted);
 }
 
 .search-input {
@@ -444,10 +486,10 @@ dt {
 .spec-grid dd { margin: 0; }
 .perf-bar { height: 7px; border-radius: 99px; background: var(--color-trust-soft); overflow: hidden; }
 .perf-fill { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: perf-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-.perf-score { background: linear-gradient(90deg, #1f6feb, #4fa3ff); }
+.perf-score { background: linear-gradient(90deg, #06b6d4, #67e8f9); box-shadow: 0 0 10px rgba(6, 182, 212, 0.45); }
 .perf-value { background: linear-gradient(90deg, #f28a8a, #f7b0a4); }
 .perf-bar:has(.perf-value) { background: #fdecea; }
-html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
+html.dark .perf-bar:has(.perf-value) { background: rgba(244, 63, 94, 0.15); }
 @keyframes perf-grow { from { transform: scaleX(0); } }
 
 /* Listing page full specification (app/product/[id]/[slug]/page.tsx):
@@ -480,7 +522,7 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   background: var(--rgb-gradient);
   background-size: 400% 400%;
   animation: spec-rainbow 6s ease-in-out infinite alternate;
-  box-shadow: 0 6px 14px -8px rgba(90, 57, 214, 0.55);
+  box-shadow: 0 6px 16px -8px rgba(168, 85, 247, 0.6);
 }
 .spec-item-icon svg { color: #fff; stroke: #fff; }
 @keyframes spec-rainbow {
@@ -574,16 +616,13 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
 .card-hover:hover {
   border-color: transparent;
   box-shadow:
-    -10px 10px 28px -18px rgba(255, 95, 109, 0.55),
-    0 16px 30px -18px rgba(74, 222, 128, 0.45),
-    10px 10px 28px -18px rgba(56, 189, 248, 0.55),
-    0 22px 40px -24px rgba(167, 139, 250, 0.6);
+    -10px 12px 30px -20px rgba(168, 85, 247, 0.6),
+    10px 12px 30px -20px rgba(6, 182, 212, 0.55);
 }
 .deal-stage:hover .deal-card {
   box-shadow:
-    -14px 18px 40px -26px rgba(255, 95, 109, 0.55),
-    14px 18px 40px -26px rgba(56, 189, 248, 0.55),
-    0 30px 60px -32px rgba(167, 139, 250, 0.6);
+    -14px 18px 40px -26px rgba(168, 85, 247, 0.6),
+    14px 18px 40px -26px rgba(6, 182, 212, 0.55);
 }
 
 /* Tag pills (category subcategories, hero quick picks): same masked rainbow
@@ -705,3 +744,268 @@ html.dark .perf-bar:has(.perf-value) { background: #3a2222; }
   background: radial-gradient(ellipse 60% 70% at 50% 45%, color-mix(in srgb, var(--color-paper) 55%, transparent), var(--color-paper) 85%);
 }
 @media (max-width: 640px) { .login-wall-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); } }
+
+/* ---------------------------------------------------------------------
+   Condition tiers (lib/condition-tier.ts): each sets --tier, which the
+   badge, the filter tag and the listing card's hover glow all read.
+--------------------------------------------------------------------- */
+.tier-new { --tier: #22c55e; }
+.tier-likenew { --tier: #06b6d4; }
+.tier-used { --tier: #a855f7; }
+.tier-parts { --tier: #f59e0b; }
+html.light .tier-new { --tier: #15803d; }
+html.light .tier-likenew { --tier: #0e7490; }
+html.light .tier-used { --tier: #7e22ce; }
+html.light .tier-parts { --tier: #b45309; }
+
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--tier) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #0b0e14 72%, var(--tier));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+.tier-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--tier);
+  box-shadow: 0 0 8px var(--tier);
+}
+
+/* Listing card (components/ProductCard.tsx): glass, and on hover a soft
+   border glow in the listing's tier colour that breathes while hovered. */
+.listing-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  backdrop-filter: var(--glass-blur);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+.listing-card:hover,
+.listing-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--tier) 70%, transparent);
+  animation: tier-breathe 2.4s ease-in-out infinite;
+}
+.listing-card:focus-visible {
+  outline: 2px solid var(--tier);
+  outline-offset: 2px;
+}
+@keyframes tier-breathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--tier) 45%, transparent),
+      0 12px 32px -16px color-mix(in srgb, var(--tier) 70%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--tier) 65%, transparent),
+      0 14px 40px -12px color-mix(in srgb, var(--tier) 80%, transparent);
+  }
+}
+.listing-card:active {
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .listing-card:hover,
+  .listing-card:focus-visible {
+    animation: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tier) 60%, transparent), 0 12px 32px -16px color-mix(in srgb, var(--tier) 70%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Header (components/SiteHeader.tsx): dark glass in both themes.
+--------------------------------------------------------------------- */
+.site-nav {
+  background: rgba(7, 9, 14, 0.8);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.nav-search {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: border-color 150ms ease, box-shadow 200ms ease;
+}
+.nav-search:focus-within {
+  border-color: rgba(168, 85, 247, 0.7);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+.nav-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+.nav-menu {
+  background: var(--color-card-solid);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* Market ticker (components/MarketTicker.tsx). */
+.market-ticker {
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  backdrop-filter: blur(10px);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+.market-ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 34px;
+  padding: 7px 16px;
+  animation: ticker 60s linear infinite;
+}
+.market-ticker:hover .market-ticker-track,
+.market-ticker:focus-within .market-ticker-track {
+  animation-play-state: paused;
+}
+.market-tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--color-muted);
+  transition: color 150ms ease;
+}
+.market-tick b { color: var(--color-ink); font-weight: 600; }
+.market-tick:hover,
+.market-tick:focus-visible { color: var(--color-ink); }
+@media (prefers-reduced-motion: reduce) {
+  .market-ticker { overflow-x: auto; mask-image: none; -webkit-mask-image: none; }
+  .market-ticker-track { animation: none; }
+}
+
+/* Shop layout (components/CollapsibleRail.tsx). */
+.shop-layout { display: grid; gap: 24px; }
+@media (min-width: 1024px) {
+  .shop-layout { grid-template-columns: 250px minmax(0, 1fr); }
+  .shop-layout.is-collapsed { grid-template-columns: auto minmax(0, 1fr); }
+  .shop-layout.is-collapsed .shop-rail > aside { display: none; }
+  /* With the rail folded away the grid gets a column more. */
+  .shop-layout.is-collapsed .shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .shop-layout.is-collapsed .shop-grid-wide { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .shop-layout.is-collapsed .shop-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.rail-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-card);
+  color: var(--color-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: var(--glass-blur);
+  transition: color 150ms ease, border-color 150ms ease, box-shadow 200ms ease;
+}
+.rail-toggle:hover { color: var(--color-ink); border-color: var(--color-trust); box-shadow: var(--glow-b); }
+.is-collapsed .rail-toggle { position: sticky; top: calc(var(--header-offset, 140px) + 16px); }
+
+/* Escrow step tracker (components/EscrowTimeline.tsx). Nodes joined by a
+   rail that fills purple → cyan up to the current step. */
+.escrow-timeline { list-style: none; margin: 0; padding: 0; }
+.escrow-step { position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding-bottom: 14px; }
+.escrow-step:last-child { padding-bottom: 0; }
+.escrow-step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 26px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-line);
+}
+.escrow-step.is-done:not(:last-child)::before { background: linear-gradient(var(--color-deal), var(--color-trust)); box-shadow: 0 0 8px color-mix(in srgb, var(--color-trust) 50%, transparent); }
+.escrow-node {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 99px;
+  border: 1.5px solid var(--color-line);
+  background: var(--color-card-solid);
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.escrow-step.is-done .escrow-node { border-color: var(--color-trust); background: var(--color-trust); color: #04181c; }
+.escrow-step.is-current .escrow-node {
+  border-color: var(--color-deal);
+  color: var(--color-ink);
+  box-shadow: 0 0 0 4px var(--color-deal-soft), 0 0 16px -2px color-mix(in srgb, var(--color-deal) 70%, transparent);
+  animation: escrow-pulse 2.2s ease-in-out infinite;
+}
+@keyframes escrow-pulse { 50% { box-shadow: 0 0 0 6px var(--color-deal-soft), 0 0 22px 0 color-mix(in srgb, var(--color-deal) 60%, transparent); } }
+.escrow-copy { padding-top: 3px; }
+.escrow-title { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--color-ink); }
+.escrow-step.is-next .escrow-title { color: var(--color-muted); }
+.escrow-now { padding: 1px 7px; border-radius: 99px; background: var(--color-deal-soft); color: var(--color-deal); font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.escrow-body { margin: 3px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--color-muted); }
+.escrow-timeline.is-compact .escrow-step { padding-bottom: 10px; }
+
+/* Seller trust badges and reputation meters (components/SellerBadges.tsx). */
+.seller-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.seller-badge {
+  --b: var(--color-deal);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--b) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--b) 12%, transparent);
+  color: var(--b);
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.seller-badge::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--b); box-shadow: 0 0 8px var(--b); }
+.badge-a { --b: var(--color-deal); }
+.badge-b { --b: var(--color-trust); }
+.badge-c { --b: var(--color-good); }
+
+.rep-meters { display: grid; gap: 10px; }
+.rep-meter-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--color-muted); }
+.rep-meter-value { color: var(--color-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.rep-bar { --m: var(--color-trust); margin-top: 5px; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--m) 14%, transparent); overflow: hidden; }
+.rep-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--m) 55%, transparent), var(--m));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--m) 70%, transparent);
+  transform-origin: left;
+  animation: perf-grow 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.meter-b { --m: var(--color-trust); }
+.meter-c { --m: var(--color-good); }
+.rep-foot, .rep-empty { margin: 0; font-size: 12px; color: var(--color-muted); }

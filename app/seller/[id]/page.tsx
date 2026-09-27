@@ -11,6 +11,7 @@ import { listBuildsByUser } from "@/lib/builds-data";
 import { timeAgo, responseTimeLabel } from "@/lib/format";
 import { ProductCard } from "@/components/ProductCard";
 import { RecentlySold } from "@/components/RecentlySold";
+import { SellerBadges, ReputationMeter } from "@/components/SellerBadges";
 import { connection } from "next/server";
 
 
@@ -53,6 +54,7 @@ export default async function SellerProfilePage({
   // onboarding (a soft-launch/demo-data situation, not the normal path).
   const sellerName = profile?.displayName || profile?.username || listings[0]?.sellerName || reviews[0]?.reviewerName || "Seller";
   const location = [profile?.suburb, profile?.state].filter(Boolean).join(", ");
+  const positiveShare = reviews.length ? reviews.filter((r) => r.rating >= 4).length / reviews.length : undefined;
 
   return (
     <div className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
@@ -61,8 +63,9 @@ export default async function SellerProfilePage({
           <Image src={profile.bannerUrl} alt="" fill sizes="(max-width: 1240px) 100vw, 1240px" className="object-cover" />
         </div>
       )}
-      <div className="flex items-center gap-4">
-        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="flex items-start gap-4">
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-trust ring-2 ring-deal/60 ring-offset-2 ring-offset-paper">
           {profile?.avatarUrl ? (
             <Image src={profile.avatarUrl} alt="" fill sizes="56px" className="object-cover" />
           ) : (
@@ -76,11 +79,6 @@ export default async function SellerProfilePage({
             {sellerName}
             {profile?.username && (
               <span className="spec font-normal text-muted">@{profile.username}</span>
-            )}
-            {profile?.verified && (
-              <span className="spec rounded-lg bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
-                Verified
-              </span>
             )}
             {/* Deliberately styled and worded differently from Verified —
                 this is a paid badge, not an identity check, and the two
@@ -96,7 +94,16 @@ export default async function SellerProfilePage({
               </span>
             )}
           </h1>
-          <p className="spec mt-1 text-muted">
+          <div className="mt-2">
+            <SellerBadges
+              verified={profile?.verified}
+              salesCount={stats.salesCount}
+              avgRating={stats.avgRating}
+              reviewCount={stats.reviewCount}
+              responseMinutes={responseMinutes}
+            />
+          </div>
+          <p className="spec mt-2 text-muted">
             {stats.reviewCount > 0
               ? `★ ${stats.avgRating.toFixed(1)} (${stats.reviewCount} review${stats.reviewCount === 1 ? "" : "s"})`
               : "No reviews yet"}{" "}
@@ -123,9 +130,14 @@ export default async function SellerProfilePage({
           </div>
         </div>
       </div>
+      <aside className="glass rounded-card p-5" aria-label="Reputation">
+        <p className="eyebrow mb-3">Reputation</p>
+        <ReputationMeter avgRating={stats.avgRating} reviewCount={stats.reviewCount} positiveShare={positiveShare} />
+      </aside>
+      </div>
 
       {profile?.policyNote && (
-        <div className="mt-6 rounded-card border border-line bg-card p-4">
+        <div className="glass mt-6 rounded-card p-4">
           <p className="eyebrow">Shipping &amp; returns</p>
           <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-muted">{profile.policyNote}</p>
         </div>
@@ -173,7 +185,7 @@ export default async function SellerProfilePage({
       <RecentlySold items={recentlySold} title="Recently sold by this seller" />
 
       {builds.length > 0 && (
-        <div className="mt-6 rounded-card border border-line bg-card p-4">
+        <div className="glass mt-6 rounded-card p-4">
           <p className="text-sm font-semibold">Build showcase</p>
           <p className="spec mt-1 text-muted">
             {sellerName} has posted {builds.length} build{builds.length === 1 ? "" : "s"}.

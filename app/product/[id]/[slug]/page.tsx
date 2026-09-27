@@ -1,3 +1,4 @@
+import { SellerBadges, ReputationMeter } from "@/components/SellerBadges";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -216,29 +217,31 @@ export default async function ProductPage({
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
           </div>
 
-          <div className="order-5 rounded-card border border-line bg-card p-5">
+          <div className="glass order-5 rounded-card p-5">
             <h2 className="eyebrow">Seller</h2>
-            <Link href={`/seller/${listing.sellerId}`} className="mt-3 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-trust text-base font-semibold text-white">
+            <Link href={`/seller/${listing.sellerId}`} className="group mt-3 flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-trust text-base font-semibold text-white ring-2 ring-deal/50 ring-offset-2 ring-offset-paper">
                 {listing.sellerName[0]}
               </div>
-              <div>
-                <p className="flex items-center gap-1.5 text-sm font-semibold hover:text-trust">
-                  {listing.sellerName}
-                  {listing.sellerVerified && (
-                    <span className="spec rounded-lg bg-trust-soft px-1.5 py-0.5 font-semibold text-trust">
-                      Verified
-                    </span>
-                  )}
-                </p>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold group-hover:text-trust">{listing.sellerName}</p>
                 <p className="spec text-muted">
-                  {listing.sellerReviewCount > 0
-                    ? `★ ${listing.sellerRating.toFixed(1)} (${listing.sellerReviewCount} reviews)`
-                    : "No reviews yet"}{" "}
-                  · {listing.sellerSales} sales · {listing.location}
+                  {listing.sellerSales} sale{listing.sellerSales === 1 ? "" : "s"}
+                  {listing.location && ` · ${listing.location}`}
                 </p>
               </div>
             </Link>
+            <div className="mt-3">
+              <SellerBadges
+                verified={listing.sellerVerified}
+                salesCount={listing.sellerSales}
+                avgRating={listing.sellerRating}
+                reviewCount={listing.sellerReviewCount}
+              />
+            </div>
+            <div className="mt-4">
+              <ReputationMeter avgRating={listing.sellerRating} reviewCount={listing.sellerReviewCount} />
+            </div>
             <div className="mt-4 border-t border-line pt-3">
               <ReportButton listingId={listing.id} label="Report this listing" />
             </div>

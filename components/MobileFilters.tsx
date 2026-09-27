@@ -47,9 +47,9 @@ export function MobileFilters({
           <button
             aria-label="Close filters"
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-ink/50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
-          <div className="relative max-h-[85vh] overflow-y-auto rounded-t-2xl bg-paper p-4 pb-8">
+          <div className="relative max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-line bg-paper p-4 pb-8 shadow-[0_-20px_50px_-20px_rgba(168,85,247,0.35)]">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="display text-xl">Filters</h2>
               <button

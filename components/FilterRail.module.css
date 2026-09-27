@@ -1,6 +1,14 @@
 /* Shop filter sidebar (FilterRail.tsx). */
 
-.rail { font-size: 14px; color: var(--color-ink); }
+.rail {
+  font-size: 14px;
+  color: var(--color-ink);
+  padding: 16px 16px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  backdrop-filter: var(--glass-blur);
+}
 @media (min-width: 1024px) {
   /* Stays in view and scrolls on its own, like Jawa's. */
   .rail {
@@ -11,7 +19,6 @@
     max-height: calc(100vh - var(--header-offset, 140px) - 32px);
     transition: top 0.3s ease-out, max-height 0.3s ease-out;
     overflow-y: auto;
-    padding-right: 8px;
     scrollbar-width: thin;
     scrollbar-color: var(--color-line) transparent;
   }
@@ -127,11 +134,11 @@
 .price { display: grid; gap: 8px; }
 .money { display: flex; height: 42px; overflow: hidden; border: 1px solid var(--color-line); border-radius: 8px; background: var(--color-card); transition: border-color 0.15s, box-shadow 0.2s; }
 .money:focus-within { border-color: var(--color-trust); box-shadow: 0 0 0 3px var(--color-trust-soft); }
-.money span { display: grid; place-items: center; width: 40px; flex-shrink: 0; background: var(--color-trust-soft); color: var(--color-trust); font-weight: 600; }
+.money span { display: grid; place-items: center; width: 36px; flex-shrink: 0; background: var(--color-trust-soft); color: var(--color-trust); font-weight: 600; }
 .money input { flex: 1; min-width: 0; padding: 0 12px; border: 0; outline: 0; background: transparent; color: var(--color-ink); font-size: 14px; -moz-appearance: textfield; }
 .money input::-webkit-outer-spin-button, .money input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.apply { height: 38px; border: 0; border-radius: 8px; background: var(--color-ink); color: var(--color-paper); font-size: 13.5px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
-.apply:hover { opacity: 0.88; }
+.apply { height: 38px; border: 0; border-radius: 8px; background: var(--color-deal-strong); color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: filter 0.15s, box-shadow 0.2s; }
+.apply:hover { filter: brightness(1.1); box-shadow: var(--glow-a); }
 .bands, .states { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
 .band { padding: 5px 10px; border: 1px solid var(--color-line); border-radius: 999px; font-size: 12.5px; transition: border-color 0.15s, background 0.15s, color 0.15s; }
 .band:hover { border-color: var(--color-trust); color: var(--color-trust); }
@@ -146,3 +153,81 @@
 .checkOn .box { border-color: var(--color-trust); background: var(--color-trust); }
 
 .foot { margin: 8px 0 0; padding-top: 12px; border-top: 1px solid var(--color-line); font-size: 12px; color: var(--color-muted); }
+
+/* Dual-thumb price slider (PriceRange.tsx): two native ranges stacked on
+   one track; only their thumbs take pointer events. */
+.range { position: relative; height: 46px; margin: 2px 4px 6px; }
+.rangeTrack { position: absolute; left: 0; right: 0; top: 11px; height: 4px; border-radius: 99px; background: var(--color-line); }
+.rangeFill { position: absolute; top: 0; bottom: 0; border-radius: 99px; background: linear-gradient(90deg, var(--color-deal), var(--color-trust)); box-shadow: 0 0 10px color-mix(in srgb, var(--color-deal) 55%, transparent); }
+.range input[type="range"] {
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 3px;
+  width: calc(100% + 4px);
+  height: 20px;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 0 !important;
+}
+.range input[type="range"]::-webkit-slider-runnable-track { background: none; border: 0; }
+.range input[type="range"]::-moz-range-track { background: none; border: 0; }
+.range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  border: 2px solid var(--color-deal);
+  background: var(--color-card-solid);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-deal) 18%, transparent);
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.range input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 99px;
+  border: 2px solid var(--color-deal);
+  background: var(--color-card-solid);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-deal) 18%, transparent);
+  cursor: grab;
+}
+.range input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.1); }
+.range input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; box-shadow: var(--glow-a); }
+.range input[type="range"]:focus-visible { outline: none; }
+.range input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-trust) 55%, transparent); }
+.range input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-trust) 55%, transparent); }
+.rangeLabels { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+/* Condition tiers: colour-coded tags (tier colours in app/globals.css). */
+.tiers { display: flex; flex-wrap: wrap; gap: 6px; }
+.tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, var(--color-line));
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.2s;
+}
+.tier:hover { border-color: var(--tier); box-shadow: 0 0 14px -4px var(--tier); }
+.tierDot { width: 7px; height: 7px; border-radius: 99px; background: var(--tier); box-shadow: 0 0 8px var(--tier); }
+.tierOn, .tierOn:hover { border-color: var(--tier); background: color-mix(in srgb, var(--tier) 18%, transparent); font-weight: 600; box-shadow: 0 0 16px -5px var(--tier); }
+
+/* Switch rows (Seller & delivery). */
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 2px; font-size: 14px; }
+.toggleText { display: flex; flex-direction: column; gap: 1px; }
+.toggleHint { font-size: 11.5px; color: var(--color-muted); }
+.switch { position: relative; flex-shrink: 0; width: 36px; height: 20px; border-radius: 99px; background: var(--color-line); border: 1px solid var(--color-line); transition: background 0.2s, box-shadow 0.2s; }
+.knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 99px; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); transition: transform 0.2s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.toggle:hover .switch { border-color: var(--color-good); }
+.toggleOn .switch { background: var(--color-good); border-color: var(--color-good); box-shadow: 0 0 12px -2px color-mix(in srgb, var(--color-good) 70%, transparent); }
+.toggleOn .knob { transform: translateX(16px); }
+.toggleOn { font-weight: 600; }

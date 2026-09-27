@@ -4,21 +4,29 @@ import { useEffect, useState } from "react";
 
 const KEY = "sidegrade.theme";
 
+/**
+ * Dark is the default (html.dark is server-rendered in app/layout.tsx);
+ * light is an opt-in remembered in localStorage. The inline script in the
+ * layout applies a saved choice before first paint, so this only mirrors
+ * the current class into state and flips both classes on click.
+ */
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(KEY);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const next = saved ? saved === "dark" : prefersDark;
-    document.documentElement.classList.toggle("dark", next);
-    setDark(next);
+    setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggle = () => {
     const next = !dark;
-    document.documentElement.classList.toggle("dark", next);
-    window.localStorage.setItem(KEY, next ? "dark" : "light");
+    const c = document.documentElement.classList;
+    c.toggle("dark", next);
+    c.toggle("light", !next);
+    try {
+      window.localStorage.setItem(KEY, next ? "dark" : "light");
+    } catch {
+      // Private mode or blocked storage: the switch still works for this visit.
+    }
     setDark(next);
   };
 

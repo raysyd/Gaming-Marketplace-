@@ -9,6 +9,7 @@ import { AccountMenu } from "./AccountMenu";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { CartDrawer } from "./CartDrawer";
+import { MarketTicker } from "./MarketTicker";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -73,25 +74,26 @@ export function SiteHeader() {
       className="sticky top-0 z-50 transition-transform duration-300 ease-out"
       style={{ transform: hidden ? "translateY(-100%)" : undefined }}
     >
-      <div className="bg-chrome text-white">
+      <div className="site-nav text-white">
         <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
           <Link href="/" className="shrink-0">
-            <span className="display text-xl text-white">{BRAND.name}</span>
+            <span className="display text-xl tracking-tight text-white">{BRAND.name}</span>
             <span className="rgb-text display text-xl">.</span>
           </Link>
 
-          <div className="ml-2 hidden flex-1 md:flex">
+          <div className="nav-search ml-2 hidden flex-1 md:flex">
+            <svg className="nav-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && search()}
               placeholder="Search GPUs, prebuilts, monitors…"
               aria-label="Search listings"
-              className="search-input h-10 w-full rounded-l-md px-3 text-sm text-ink"
+              className="h-10 w-full rounded-l-lg bg-transparent pl-9 pr-3 text-sm text-white outline-none placeholder:text-white/45"
             />
             <button
               onClick={search}
-              className="h-10 rounded-r-md bg-deal px-5 text-sm font-semibold text-white transition hover:brightness-110"
+              className="h-10 rounded-r-lg bg-deal-strong px-5 text-sm font-semibold text-white transition hover:brightness-110 hover:shadow-[var(--glow-a)]"
             >
               Search
             </button>
@@ -117,7 +119,7 @@ export function SiteHeader() {
               <span className="text-xl leading-none" aria-hidden="true">♡</span>
               <span className="sr-only">Saved</span>
               {saved > 0 && (
-                <span className="spec rounded-full bg-deal px-1.5 py-0.5 font-semibold text-white">
+                <span className="spec rounded-full bg-deal-strong px-1.5 py-0.5 font-semibold text-white">
                   {saved}
                 </span>
               )}
@@ -144,19 +146,19 @@ export function SiteHeader() {
                     href={`/shop?category=${top.slug}`}
                     className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-xs transition ${
                       activeCategory === top.slug
-                        ? "border-deal text-deal"
+                        ? "border-deal text-white"
                         : "rgb-underline border-transparent text-white/80 hover:text-white"
                     }`}
                   >
                     {top.name}
                   </Link>
                   {openMenu === top.slug && (
-                    <div className="absolute left-0 top-full z-50 hidden min-w-[200px] max-w-[80vw] rounded-b-md border border-line bg-card py-1.5 shadow-lg lg:block">
+                    <div className="nav-menu absolute left-0 top-full z-50 hidden min-w-[200px] max-w-[80vw] rounded-b-lg py-1.5 lg:block">
                       {top.children.map((sub) => (
                         <Link
                           key={sub.slug}
                           href={`/shop?category=${top.slug}&sub=${sub.slug}`}
-                          className="block px-4 py-2 text-sm text-ink transition hover:bg-paper"
+                          className="block px-4 py-2 text-sm text-ink transition hover:bg-deal-soft hover:text-deal focus-visible:bg-deal-soft"
                         >
                           {sub.name}
                         </Link>
@@ -178,36 +180,28 @@ export function SiteHeader() {
                 Most watched
               </Link>
             </div>
-            <div className="flex w-full shrink-0 justify-end border-t border-white/10 bg-chrome py-1 md:ml-auto md:w-auto md:border-l md:border-t-0 md:py-0 md:pl-2">
+            <div className="flex w-full shrink-0 justify-end border-t border-white/10 py-1 md:ml-auto md:w-auto md:border-l md:border-t-0 md:py-0 md:pl-2">
               <ThemeToggle />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="border-b border-line bg-trust-soft">
-        <p className="spec mx-auto max-w-[1560px] px-4 py-1.5 lg:px-6 leading-relaxed text-trust">
-          Payment is held until you confirm the item arrived ·{" "}
-          <Link href="/trust" className="underline">
-            How it works
-          </Link>{" "}
-          · Ships anywhere in {BRAND.regionLabel}
-        </p>
-      </div>
+      <MarketTicker />
 
-      <div className="border-b border-line bg-card px-4 py-2 md:hidden">
-        <div className="flex">
+      <div className="site-nav border-b border-white/10 px-4 py-2 md:hidden">
+        <div className="nav-search flex">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && search()}
             placeholder="Search listings"
             aria-label="Search listings"
-            className="search-input h-9 w-full rounded-l-md px-3 text-sm"
+            className="h-9 w-full rounded-l-lg bg-transparent px-3 text-sm text-white outline-none placeholder:text-white/45"
           />
           <button
             onClick={search}
-            className="h-9 rounded-r-md bg-ink px-4 text-sm font-semibold text-white"
+            className="h-9 rounded-r-lg bg-deal-strong px-4 text-sm font-semibold text-white"
           >
             Go
           </button>

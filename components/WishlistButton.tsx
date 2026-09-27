@@ -20,8 +20,10 @@ export function WishlistButton({
       }}
       aria-pressed={on}
       aria-label={on ? "Remove from wishlist" : "Save to wishlist"}
-      className={`grid h-7 w-7 place-items-center rounded-full transition ${
-        on ? "bg-deal text-white" : "bg-white/92 text-ink hover:bg-white"
+      className={`grid h-7 w-7 place-items-center rounded-full border backdrop-blur-sm transition ${
+        on
+          ? "border-deal bg-deal-strong text-white shadow-[var(--glow-a)]"
+          : "border-white/20 bg-black/55 text-white hover:border-deal hover:text-deal"
       } ${className}`}
     >
       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden="true">

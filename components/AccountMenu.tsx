@@ -61,7 +61,7 @@ export function AccountMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 min-w-[190px] rounded-lg border border-line bg-card py-1.5 shadow-lg">
+        <div className="absolute right-0 top-full z-50 min-w-[190px] rounded-lg border border-line bg-card-solid py-1.5 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.7)]">
           <p className="spec truncate border-b border-line px-4 pb-2 text-muted">
             {user.email}
           </p>

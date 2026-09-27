@@ -4,9 +4,10 @@ import { BRAND } from "@/lib/brand";
 import { money } from "@/lib/format";
 import { attributesFor, attrParam } from "@/lib/attributes";
 import { AU_STATES } from "@/lib/au-states";
+import { CONDITIONS, tierClass } from "@/lib/condition-tier";
+import { PriceRange } from "./PriceRange";
 import s from "./FilterRail.module.css";
 
-const CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const PRICE_BANDS: [string, number | undefined, number | undefined][] = [
   ["Under $300", undefined, 300],
   ["$300–$800", 300, 800],
@@ -26,7 +27,7 @@ type SP = Record<string, string | undefined>;
  * Filters are still plain links/GET forms, never client state, so every
  * filtered view has its own shareable, back-button-correct URL.
  */
-export function FilterRail({ sp, counts }: { sp: SP; counts: Record<string, number> }) {
+export function FilterRail({ sp, counts, id }: { sp: SP; counts: Record<string, number>; id?: string }) {
   const href = (patch: SP) => {
     const next = new URLSearchParams();
     for (const [k, v] of Object.entries({ ...sp, ...patch })) if (v) next.set(k, v);
@@ -80,7 +81,7 @@ export function FilterRail({ sp, counts }: { sp: SP; counts: Record<string, numb
       .map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />);
 
   return (
-    <aside className={s.rail} aria-label="Filters" data-sticky-rail>
+    <aside id={id} className={s.rail} aria-label="Filters" data-sticky-rail>
       {inCategory && (
         <>
           <Link
@@ -150,6 +151,11 @@ export function FilterRail({ sp, counts }: { sp: SP; counts: Record<string, numb
       <Section title="Price" open>
         <form action="/shop" method="get" className={s.price}>
           {carry(["min", "max"])}
+          <PriceRange
+            max={BRAND.maxFilterPrice}
+            initialMin={sp.min ? Number(sp.min) : undefined}
+            initialMax={sp.max ? Number(sp.max) : undefined}
+          />
           <label className={s.money}>
             <span>$</span>
             <input name="min" type="number" inputMode="numeric" min={0} defaultValue={sp.min ?? ""} placeholder="Min price" aria-label="Minimum price" />
@@ -188,10 +194,20 @@ export function FilterRail({ sp, counts }: { sp: SP; counts: Record<string, numb
         );
       })}
 
-      <Section title="Condition" open={activeConds.length > 0}>
-        {CONDITIONS.map((c) => (
-          <Check key={c} href={toggleCond(c)} on={activeConds.includes(c)}>{c}</Check>
-        ))}
+      {/* Condition as colour-coded tiers (lib/condition-tier.ts), open by
+          default: it's the filter people reach for most. */}
+      <Section title="Condition" open>
+        <div className={s.tiers}>
+          {CONDITIONS.map((c) => {
+            const on = activeConds.includes(c);
+            return (
+              <Link key={c} href={toggleCond(c)} aria-pressed={on} className={`${s.tier} ${tierClass(c)} ${on ? s.tierOn : ""}`}>
+                <span className={s.tierDot} aria-hidden="true" />
+                {c}
+              </Link>
+            );
+          })}
+        </div>
       </Section>
 
       <Section title="Ships from" open={Boolean(sp.state)}>
@@ -204,10 +220,10 @@ export function FilterRail({ sp, counts }: { sp: SP; counts: Record<string, numb
         </div>
       </Section>
 
-      <Section title="Seller & shipping" open={Boolean(sp.verified || sp.free || sp.deals)}>
-        <Check href={href({ verified: sp.verified ? undefined : "1" })} on={sp.verified === "1"}>Verified sellers only</Check>
-        <Check href={href({ free: sp.free ? undefined : "1" })} on={sp.free === "1"}>Free shipping</Check>
-        <Check href={href({ deals: sp.deals ? undefined : "1" })} on={sp.deals === "1"}>Reduced price</Check>
+      <Section title="Seller & delivery" open>
+        <Toggle href={href({ verified: sp.verified ? undefined : "1" })} on={sp.verified === "1"} hint="ID-checked by Stripe">Verified sellers only</Toggle>
+        <Toggle href={href({ free: sp.free ? undefined : "1" })} on={sp.free === "1"} hint="Held in escrow either way">Free shipping</Toggle>
+        <Toggle href={href({ deals: sp.deals ? undefined : "1" })} on={sp.deals === "1"}>Reduced price</Toggle>
       </Section>
 
       <p className={s.foot}>
@@ -227,6 +243,21 @@ function Section({ title, open, children }: { title: string; open?: boolean; chi
       </summary>
       <div className={s.body}>{children}</div>
     </details>
+  );
+}
+
+/** Switch-style filter link: on/off, with an optional one-line hint. */
+function Toggle({ href, on, hint, children }: { href: string; on: boolean; hint?: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className={`${s.toggle} ${on ? s.toggleOn : ""}`} aria-pressed={on}>
+      <span className={s.toggleText}>
+        <span>{children}</span>
+        {hint && <span className={s.toggleHint}>{hint}</span>}
+      </span>
+      <span className={s.switch} aria-hidden="true">
+        <span className={s.knob} />
+      </span>
+    </Link>
   );
 }
 

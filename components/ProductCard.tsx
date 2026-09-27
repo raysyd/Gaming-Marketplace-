@@ -6,6 +6,7 @@ import { money } from "@/lib/format";
 import { ProductImage } from "./ProductImage";
 import { WishlistButton } from "./WishlistButton";
 import { SpecIcon } from "./SpecIcon";
+import { tierClass } from "@/lib/condition-tier";
 
 export function ProductCard({ listing }: { listing: Listing }) {
   const save = listing.compareAt ? listing.compareAt - listing.price : 0;
@@ -38,9 +39,9 @@ export function ProductCard({ listing }: { listing: Listing }) {
       onMouseEnter={() => setWarm(true)}
       onFocus={() => setWarm(true)}
       onTouchStart={() => setWarm(true)}
-      className="group flex flex-col overflow-hidden rounded-card border border-line bg-card transition duration-200 hover:-translate-y-0.5 hover:border-ink/25 hover:shadow-lg"
+      className={`listing-card ${tierClass(listing.condition)} group flex flex-col overflow-hidden rounded-card`}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-ink">
+      <div className="relative aspect-[4/3] overflow-hidden bg-chrome">
         {/* All photos sit side by side in one strip that slides, so moving to
             the next photo is a smooth slide with the image already loaded,
             rather than a fresh image popping in. */}
@@ -53,7 +54,7 @@ export function ProductCard({ listing }: { listing: Listing }) {
                 alt={i === 0 ? listing.title : ""}
                 category={listing.category}
                 seed={i ? `${listing.id}-${i}` : listing.id}
-                className="h-full w-full transition duration-500 group-hover:scale-[1.04]"
+                className="h-full w-full transition duration-500 group-hover:scale-[1.06]"
                 showStockBadge={false}
                 onFallback={i === 0 ? setIsStockPhoto : undefined}
               />}
@@ -75,22 +76,25 @@ export function ProductCard({ listing }: { listing: Listing }) {
             </div>
           </>
         )}
-        {pct > 0 && (
-          <span className="spec absolute left-2 top-2 rounded-lg bg-deal px-1.5 py-1 font-semibold text-white">
-            {pct}% off
-          </span>
-        )}
+        {/* Condition as a colour-coded tier, with any price drop under it. */}
+        <div className="absolute left-2 top-2 z-[5] flex flex-col items-start gap-1">
+          <span className="tier-badge">{listing.condition}</span>
+          {pct > 0 && (
+            <span className="spec rounded-full bg-deal-strong px-2 py-0.5 font-semibold text-white">
+              ▼ {pct}% off
+            </span>
+          )}
+        </div>
         <WishlistButton id={listing.id} className="absolute right-2 top-2" />
-        {/* Background is a fixed white regardless of theme, so the text
-            has to be fixed dark too — text-ink flips light in dark mode
-            and would land as near-invisible light-on-white. */}
+        {/* Fixed dark glass over the photo in both themes, so the text is
+            fixed white rather than text-ink (which flips per theme). */}
         {isStockPhoto && (
-          <span className="spec absolute bottom-2 left-2 rounded-lg bg-white/92 px-1.5 py-1 font-medium text-[#111111]">
+          <span className="spec absolute bottom-2 left-2 rounded-lg bg-black/60 px-1.5 py-1 font-medium text-white/85 backdrop-blur-sm">
             Stock photo
           </span>
         )}
         {listing.watchers > 120 && !isStockPhoto && (
-          <span className="spec absolute bottom-2 right-2 rounded-lg bg-ink/85 px-1.5 py-1 font-medium text-white">
+          <span className="spec absolute bottom-2 right-2 rounded-lg bg-black/70 px-1.5 py-1 font-medium text-white backdrop-blur-sm">
             {listing.watchers} watching
           </span>
         )}
@@ -101,25 +105,25 @@ export function ProductCard({ listing }: { listing: Listing }) {
           a card in a grid of 24 they were noise. */}
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug">{listing.title}</h3>
-        <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="display text-xl">{money(listing.price)}</span>
+        {/* Price and delivery wrap rather than truncate, however long. */}
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="display whitespace-nowrap text-xl tabular-nums">{money(listing.price)}</span>
           {listing.compareAt && (
-            <span className="text-xs text-muted">
-              <span className="line-through">{money(listing.compareAt)}</span>{" "}
-              <span className="font-semibold text-deal">{pct}% off</span>
+            <span className="whitespace-nowrap text-xs text-muted line-through tabular-nums">
+              {money(listing.compareAt)}
             </span>
           )}
         </div>
-        <p className="truncate text-xs text-muted">
-          {[listing.condition, listing.location].filter(Boolean).join(" · ")}
-          {listing.shipsFree && <span className="font-medium text-good"> · Free shipping</span>}
+        <p className="text-xs leading-relaxed text-muted">
+          {listing.location}
+          {listing.shipsFree && <span className="font-medium text-good">{listing.location ? " · " : ""}Free shipping</span>}
         </p>
         <KeySpecs listing={listing} />
-        <div className="mt-auto flex items-center gap-1.5 border-t border-line pt-2.5 text-xs text-muted">
+        <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-line pt-2.5 text-xs text-muted">
           <span className="truncate">{listing.sellerName}</span>
           {listing.sellerVerified && <VerifiedTick />}
           {listing.sellerReviewCount > 0 && (
-            <span className="ml-auto shrink-0 text-good">
+            <span className="ml-auto shrink-0 text-trust tabular-nums">
               ★ {listing.sellerRating.toFixed(1)} ({listing.sellerReviewCount})
             </span>
           )}

@@ -15,15 +15,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   // No maximum-scale: pinch-zoom must stay available.
   viewportFit: "cover",
-  // Matches app/globals.css's --color-paper light/dark values — the
-  // browser reads this independently of the html.dark class ThemeToggle
-  // sets, so it follows system preference rather than a manual override;
-  // a minor, purely cosmetic imprecision for anyone who's toggled
-  // against their system setting, not a functional one.
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f6f6" },
-    { media: "(prefers-color-scheme: dark)", color: "#050505" },
-  ],
+  // The site is dark by default (app/globals.css @theme); light is an
+  // opt-in from ThemeToggle, so the browser chrome matches the dark page.
+  themeColor: "#0b0e14",
 };
 
 export const metadata: Metadata = {
@@ -31,18 +25,23 @@ export const metadata: Metadata = {
   description: BRAND.blurb,
 };
 
+const THEME_SCRIPT = `try{if(localStorage.getItem("sidegrade.theme")==="light"){var c=document.documentElement.classList;c.remove("dark");c.add("light")}}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {/* Runs before first paint so someone who picked light mode never
+            sees a flash of dark (ThemeToggle writes this key). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400..700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500..700&family=Inter:wght@400..700&display=swap"
           rel="stylesheet"
         />
         <script

@@ -4,14 +4,15 @@ const LINKS = [
   ["About", "/about"],
   ["Trust & Safety", "/trust"],
   ["Contact", "/contact"],
+  ["Terms", "/terms"],
   ["Privacy Policy", "/privacy"],
 ] as const;
 
 /**
- * Shared local nav across the four company/legal pages, so they read as
- * one consistent "Company" section instead of four pages that happen to
+ * Shared local nav across the company/legal pages, so they read as
+ * one consistent "Company" section instead of pages that happen to
  * link to each other from the footer. Styled as underline tabs rather
- * than a row of pill buttons — reads as one section with four views,
+ * than a row of pill buttons — reads as one section with several views,
  * which is the point.
  */
 export function CompanyNav({ active }: { active: string }) {

@@ -11,8 +11,11 @@ export async function POST(req: Request) {
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } }
     );
 
-  const { listingId, amount } = await req.json();
-  if (!listingId || !amount || amount <= 0)
+  const { listingId, amount: rawAmount } = await req.json();
+  // Whole cents, at least a dollar: an offer becomes the checkout price,
+  // and a string or a sub-cent value would break the Stripe charge later.
+  const amount = Math.round(Number(rawAmount) * 100) / 100;
+  if (!listingId || !Number.isFinite(amount) || amount < 1)
     return NextResponse.json({ error: "Offer amount is invalid." }, { status: 400 });
 
   const supabase = await createClient();
@@ -144,9 +147,9 @@ export async function PATCH(req: Request) {
   if (action_ === "counter") {
     if (!isSeller || offer.status !== "pending")
       return NextResponse.json({ error: "This offer can't be countered right now." }, { status: 400 });
-    const amount = Number(counterAmount);
-    if (!Number.isFinite(amount) || amount <= 0)
-      return NextResponse.json({ error: "Enter a counter amount above zero." }, { status: 400 });
+    const amount = Math.round(Number(counterAmount) * 100) / 100;
+    if (!Number.isFinite(amount) || amount < 1)
+      return NextResponse.json({ error: "Enter a counter amount of at least $1." }, { status: 400 });
     update = { status: "countered", counter_amount: amount, responded_at: new Date().toISOString() };
     messageBody = `Countered at $${amount}`;
   } else if (action_ === "accept") {

@@ -43,7 +43,7 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
   };
 
   return (
-    <main className="mx-auto max-w-[560px] px-4 py-16">
+    <div className="mx-auto max-w-[560px] px-4 py-16">
       <p className="eyebrow">Welcome to {BRAND.name}</p>
       <h1 className="display mt-2 text-3xl">Set up your profile</h1>
       <p className="mt-2 text-sm text-muted">
@@ -125,6 +125,6 @@ export function OnboardingForm({ next, email }: { next: string; email: string })
           {busy ? "Saving…" : "Continue"}
         </button>
       </div>
-    </main>
+    </div>
   );
 }

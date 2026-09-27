@@ -32,7 +32,7 @@ function CompleteAuthContent() {
   }, [next]);
 
   return (
-    <main className="mx-auto flex min-h-[55vh] w-full max-w-[520px] items-center px-4 py-16">
+    <div className="mx-auto flex min-h-[55vh] w-full max-w-[520px] items-center px-4 py-16">
       <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
         {error ? (
           <>
@@ -58,14 +58,14 @@ function CompleteAuthContent() {
           </>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 
 export default function CompleteAuthPage() {
   return (
     <Suspense
-      fallback={<main className="min-h-[55vh]" aria-busy="true" />}
+      fallback={<div className="min-h-[55vh]" aria-busy="true" />}
     >
       <CompleteAuthContent />
     </Suspense>

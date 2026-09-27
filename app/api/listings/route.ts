@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { slugify, findSub, resolveCategory } from "@/lib/taxonomy";
 import { getConnectAccountStatus } from "@/lib/stripe";
@@ -8,6 +9,32 @@ import { nameFromEmail } from "@/lib/profile-name";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { isValidQuantity, MAX_LISTING_QUANTITY } from "@/lib/validation";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+/**
+ * Makes a listing live. Only the service role can: the database keeps a
+ * signed-in seller's own writes to drafts and take-downs (see
+ * listing_guard_status in supabase/27-listing-status-guard.sql), so the
+ * publish gate above (photos, payout account, listing limit) can't be
+ * skipped by writing status straight through the REST API. Callers have
+ * already checked ownership and run assertPublishable.
+ */
+/** Whole cents between $1 and $100,000 (well inside Stripe's per-charge
+ * limit); anything else is treated as "no price yet". */
+function validPrice(v: unknown): number | null {
+  const n = Math.round(Number(v) * 100) / 100;
+  return Number.isFinite(n) && n >= 1 && n <= 100_000 ? n : null;
+}
+
+async function goLive(id: string, sellerId: string): Promise<string | null> {
+  const admin = createAdminClient();
+  if (!admin) return "Publishing isn't configured on this server.";
+  const { error } = await admin
+    .from("listings")
+    .update({ status: "active" })
+    .eq("id", id)
+    .eq("seller_id", sellerId);
+  return error ? error.message : null;
+}
 
 const MIN_PHOTOS = 5;
 
@@ -30,7 +57,7 @@ function rowFromPayload(payload: Record<string, unknown>) {
     state: (payload.stateCode as string) || null,
     // A draft's price is optional (supabase/14-draft-listings.sql makes
     // the column nullable) — 0/empty/NaN all mean "not set yet", not $0.
-    price: Number(payload.price) > 0 ? Number(payload.price) : null,
+    price: validPrice(payload.price),
     location: (payload.location as string) || null,
     description: (payload.description as string) || null,
     specs: payload.specs ?? [],
@@ -63,7 +90,7 @@ async function assertPublishable(
   alreadyLive = false
 ): Promise<{ error: string; status: number } | null> {
   if (!row.title || !row.price)
-    return { error: "A title and a price are required.", status: 400 };
+    return { error: "A title and a price between $1 and $100,000 are required.", status: 400 };
   if (photoCount < MIN_PHOTOS)
     return { error: `Listings need at least ${MIN_PHOTOS} photos.`, status: 400 };
 
@@ -140,7 +167,7 @@ export async function POST(req: Request) {
   if (asDraft && !row.title)
     return NextResponse.json({ error: "Add a title to save a draft." }, { status: 400 });
   if (!asDraft && (!row.title || !row.price))
-    return NextResponse.json({ error: "A title and a price are required." }, { status: 400 });
+    return NextResponse.json({ error: "A title and a price between $1 and $100,000 are required." }, { status: 400 });
 
   const quantity = Math.trunc(Number(payload.quantity));
   if (!asDraft && !isValidQuantity(quantity))
@@ -209,7 +236,8 @@ export async function POST(req: Request) {
       seller_id: user.id,
       seller_name: sellerName,
       slug: row.title ? slugify(row.title) : null,
-      status: asDraft ? "draft" : "active",
+      // Always a draft on insert; a publish goes live via goLive() below.
+      status: "draft",
     })
     .select("id")
     .single();
@@ -217,6 +245,8 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   if (!asDraft) {
+    const liveError = await goLive(data.id, user.id);
+    if (liveError) return NextResponse.json({ error: liveError }, { status: 500 });
     // The homepage rails are ISR-cached (revalidate = 60), and /shop's
     // listing queries are cached at the data layer (see lib/data.ts) —
     // without both, a brand-new listing wouldn't show up on either for up
@@ -276,6 +306,10 @@ export async function PATCH(req: Request) {
   // re-publishing an inactive listing. Runs the exact same gate a brand
   // new listing does; a draft never had to pass any of it to be *saved*.
   if (payload.status === "active") {
+    // Taken down by support (account suspension, /admin) — not the
+    // seller's to bring back.
+    if (existing.status === "removed")
+      return NextResponse.json({ error: "This listing was removed by Sidegrade support." }, { status: 403 });
     const row = rowFromPayload(payload);
     const photoCount = (row.image ? 1 : 0) + ((row.images as string[])?.length ?? 0);
     const alreadyLive = existing.status === "active";
@@ -284,12 +318,16 @@ export async function PATCH(req: Request) {
 
     const { data, error } = await supabase
       .from("listings")
-      .update({ ...row, slug: row.title ? slugify(row.title) : null, status: "active" })
+      .update({ ...row, slug: row.title ? slugify(row.title) : null })
       .eq("id", id)
       .eq("seller_id", user.id)
       .select("id, slug")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!alreadyLive) {
+      const liveError = await goLive(data.id, user.id);
+      if (liveError) return NextResponse.json({ error: liveError }, { status: 500 });
+    }
     revalidatePath("/");
     revalidateTag("listings", { expire: 0 });
     if (data.slug) revalidatePath(`/product/${data.id}/${data.slug}`);

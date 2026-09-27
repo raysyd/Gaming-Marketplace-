@@ -45,23 +45,23 @@ export default function DeleteAccountPage() {
     }
   };
 
-  if (loading) return <main className="min-h-[55vh]" aria-busy="true" />;
+  if (loading) return <div className="min-h-[55vh]" aria-busy="true" />;
 
   if (!user) {
     return (
-      <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
+      <div className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
         <div className="w-full rounded-card border border-line bg-card p-6 text-center sm:p-8">
           <p className="text-sm text-muted">Sign in to manage account deletion.</p>
           <a href="/login?next=/account/delete" className="btn btn-primary mt-4">
             Sign in
           </a>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
+    <div className="mx-auto flex min-h-[55vh] w-full max-w-[480px] items-center px-4 py-16">
       <div className="w-full rounded-card border border-line bg-card p-6 sm:p-8">
         <p className="eyebrow text-deal">Danger zone</p>
         <h1 className="display mt-2 text-3xl">Delete your account</h1>
@@ -100,6 +100,6 @@ export default function DeleteAccountPage() {
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }

@@ -13,7 +13,7 @@ export default async function SavedSearchesPage() {
   const searches = await listSavedSearches();
 
   return (
-    <main className="mx-auto max-w-[640px] px-4 py-12">
+    <div className="mx-auto max-w-[640px] px-4 py-12">
       <p className="eyebrow">Account</p>
       <h1 className="display mt-2 text-3xl">Saved searches</h1>
       <p className="mt-2 text-sm text-muted">
@@ -34,6 +34,6 @@ export default async function SavedSearchesPage() {
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

@@ -47,7 +47,7 @@ export default async function AccountPage() {
   if (!profile?.username) redirect("/account/onboarding?next=/account");
 
   return (
-    <main className="mx-auto max-w-[1100px] px-4 py-12 lg:px-6">
+    <div className="mx-auto max-w-[1100px] px-4 py-12 lg:px-6">
       <div className="flex items-center gap-4">
         <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-trust text-xl font-bold text-white">
           {(profile.display_name || profile.username || "?")[0].toUpperCase()}
@@ -137,6 +137,6 @@ export default async function AccountPage() {
         </Link>
       </nav>
       </div>
-    </main>
+    </div>
   );
 }

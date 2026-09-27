@@ -4,13 +4,13 @@
  * `track()` is a stub that always reports "unknown". Nothing here fakes a
  * real API call or claims verification that isn't happening.
  *
- * Until AUSPOST_API_KEY (or equivalent) is set, delivery is confirmed
- * manually instead — the seller marks an order delivered from
- * /selling, or the buyer confirms it directly from /buying — see
- * POST /api/orders/[id]/deliver and POST /api/orders/[id]/release. Swap
- * `stubAusPost` for a real implementation of `AusPostClient` here and both
- * routes pick it up automatically; neither calls the Stripe or Supabase
- * SDKs directly, so nothing outside this file has to change.
+ * Until a real client exists, delivery is confirmed by the buyer from
+ * /buying (POST /api/orders/[id]/release), or a shipped order auto-releases
+ * BRAND.shippedAutoReleaseDays after posting unless the buyer reports a
+ * problem. A seller can no longer mark their own order delivered. Swap
+ * `stubAusPost` for a real implementation of `AusPostClient` here and
+ * lib/orders/tracking.ts (used by the seller's "Check delivery" button and
+ * the daily cron) picks it up automatically.
  */
 
 export type TrackingStatus = "in_transit" | "delivered" | "unknown";

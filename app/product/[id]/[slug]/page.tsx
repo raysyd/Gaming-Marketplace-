@@ -19,6 +19,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
 import { BuyBox } from "@/components/BuyBox";
 import { WishlistButton } from "@/components/WishlistButton";
+import { ReportButton } from "@/components/ReportButton";
 import { RecentlySold } from "@/components/RecentlySold";
 import { connection } from "next/server";
 
@@ -238,6 +239,9 @@ export default async function ProductPage({
                 </p>
               </div>
             </Link>
+            <div className="mt-4 border-t border-line pt-3">
+              <ReportButton listingId={listing.id} label="Report this listing" />
+            </div>
           </div>
 
           {perf && (

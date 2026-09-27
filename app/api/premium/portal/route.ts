@@ -11,7 +11,7 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
  * conditions) for a first implementation.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`premium-portal:${clientKey(req)}`, { limit: 5 });
+  const limited = await rateLimit(`premium-portal:${clientKey(req)}`, { limit: 5 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

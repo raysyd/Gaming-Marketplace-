@@ -17,7 +17,7 @@ import { siteUrlFrom } from "@/lib/site-url";
  * invoice actually succeeds.
  */
 export async function POST(req: Request) {
-  const limited = rateLimit(`premium:${clientKey(req)}`, { limit: 5 });
+  const limited = await rateLimit(`premium:${clientKey(req)}`, { limit: 5 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },

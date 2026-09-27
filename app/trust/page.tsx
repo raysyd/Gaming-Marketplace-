@@ -15,8 +15,8 @@ const HERO = [
 
 const SECTIONS: [string, string, ReactNode][] = [
   [
-    `${BRAND.orderWindowHours} hours to check the item`,
-    `Once it arrives you have ${BRAND.orderWindowHours} hours to report a problem — or confirm sooner and release payment right away. If the item isn't what was listed, the payment is refunded rather than released. If you don't respond, it auto-releases after ${BRAND.orderWindowHours} hours so a seller who shipped a good item isn't held hostage.`,
+    "You decide when the seller is paid",
+    `Confirm the item arrived and payment releases right away, or report a problem and it stays held while we sort it out. If the item isn't what was listed, the payment is refunded rather than released. Sellers can't mark their own parcel delivered: if Australia Post confirms delivery you have ${BRAND.orderWindowHours} hours to respond, and a parcel with no confirmed delivery only releases ${BRAND.shippedAutoReleaseDays} days after posting. Pickup orders are only ever paid when you confirm collection. If the seller doesn't post within ${BRAND.orderWindowHours} hours, you're refunded automatically.`,
     <ClockIcon key="clock" />,
   ],
   [

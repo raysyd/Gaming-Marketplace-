@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
+import { notifyOrder } from "@/lib/orders/notify";
 import { isValidAusPostTrackingNumber, normalizeTrackingNumber } from "@/lib/shipping/auspost";
 
 /** Seller enters an Australia Post tracking number — paid -> shipped. */
@@ -9,7 +10,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const limited = rateLimit(`order-ship:${clientKey(req)}`, { limit: 20 });
+  const limited = await rateLimit(`order-ship:${clientKey(req)}`, { limit: 20 });
   if (!limited.ok)
     return NextResponse.json(
       { error: "Too many requests. Slow down a moment." },
@@ -66,5 +67,6 @@ export async function POST(
     .eq("id", id);
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
+  await notifyOrder(admin, id, "shipped");
   return NextResponse.json({ ok: true });
 }

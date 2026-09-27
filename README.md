@@ -41,7 +41,8 @@ backend exists. Adding keys progressively switches on the real thing.
    `STRIPE_WEBHOOK_SECRET`, and point a webhook at
    `https://yourdomain.com/api/webhooks/stripe` listening for
    `checkout.session.completed`, `checkout.session.expired`,
-   `charge.refunded`, `customer.subscription.created`,
+   `charge.refunded`, `charge.dispute.created`, `charge.dispute.updated`,
+   `charge.dispute.closed`, `customer.subscription.created`,
    `customer.subscription.updated`, `customer.subscription.deleted`, and
    `identity.verification_session.verified` (see the full handler in
    `app/api/webhooks/stripe/route.ts`). No new SQL — the
@@ -104,6 +105,22 @@ profiles, listings, conversations, messages, offers and wishlist rows all
 cascade-delete via their existing foreign keys; accounts with order history
 are blocked from self-service deletion (financial/escrow record) and told
 to contact support instead.
+
+### Support and the payment hold
+
+- **Admin console** at `/admin`: set `ADMIN_EMAILS` (comma-separated) in
+  Vercel. Those accounts can refund or release disputed orders, see
+  chargebacks, review reports and suspend accounts. Everyone else gets a 404.
+- **How escrow settles:** the buyer confirms, or AusPost tracking confirms
+  delivery and the buyer has `orderWindowHours` to object, or a shipped
+  parcel auto-releases `shippedAutoReleaseDays` after posting. Sellers can't
+  mark their own order delivered. Pickup orders only release when the buyer
+  confirms collection. Unposted orders refund automatically (all in
+  `lib/brand.ts`, run by the daily cron).
+- **Rate limiting** needs `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
+  in production; without them it only counts per serverless instance.
+- Run `supabase/25-launch-hardening.sql` (chargebacks, reports, suspension)
+  before deploying this version.
 
 ## Built to scale
 

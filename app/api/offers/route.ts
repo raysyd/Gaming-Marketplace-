@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { emailNewActivity } from "@/lib/email/nudge";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 
@@ -82,6 +83,14 @@ export async function POST(req: Request) {
       .update({ last_message: `Offered $${amount}`, updated_at: new Date().toISOString() })
       .eq("id", conv.id);
   }
+
+  if (conv?.id)
+    await emailNewActivity({
+      recipientId: listing.seller_id,
+      conversationId: conv.id,
+      kind: "offer",
+      preview: `New offer of $${amount} on your listing.`,
+    });
 
   return NextResponse.json({ ok: true, persisted: true, offerId: offer.id, conversationId: conv?.id });
 }
@@ -189,6 +198,14 @@ export async function PATCH(req: Request) {
       .update({ last_message: messageBody, updated_at: new Date().toISOString() })
       .eq("id", conv.id);
   }
+
+  if (conv)
+    await emailNewActivity({
+      recipientId: isSeller ? offer.buyer_id : offer.seller_id,
+      conversationId: conv.id,
+      kind: "offer",
+      preview: messageBody,
+    });
 
   return NextResponse.json({ ok: true, status: update.status });
 }

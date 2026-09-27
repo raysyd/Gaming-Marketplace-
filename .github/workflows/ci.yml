@@ -1,0 +1,23 @@
+name: CI
+
+# Type-check, unit tests and a production build on every PR and every push
+# to main. Integration tests need a real Supabase project, so they stay a
+# manual `npm run test:integration` against staging.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build

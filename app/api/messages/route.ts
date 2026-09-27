@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { emailNewActivity } from "@/lib/email/nudge";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { nameFromEmail } from "@/lib/profile-name";
@@ -110,6 +111,19 @@ export async function POST(req: Request) {
     .from("conversations")
     .update({ last_message: isImage ? "Photo" : text, updated_at: new Date().toISOString() })
     .eq("id", realConversationId);
+
+  const { data: thread } = await supabase
+    .from("conversations")
+    .select("buyer_id, seller_id")
+    .eq("id", realConversationId)
+    .maybeSingle();
+  if (thread && realConversationId)
+    await emailNewActivity({
+      recipientId: thread.buyer_id === user.id ? thread.seller_id : thread.buyer_id,
+      conversationId: realConversationId,
+      kind: "message",
+      preview: isImage ? "Sent you a photo." : text,
+    });
 
   return NextResponse.json({ ok: true, persisted: true, conversationId: realConversationId });
 }

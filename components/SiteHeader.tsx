@@ -10,6 +10,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { CartDrawer } from "./CartDrawer";
 import { MarketTicker } from "./MarketTicker";
+import { LogoChip } from "./LogoChip";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -76,9 +77,9 @@ export function SiteHeader() {
     >
       <div className="site-nav text-white">
         <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
-          <Link href="/" className="shrink-0">
+          <Link href="/" className="brand-mark shrink-0" aria-label={`${BRAND.name} home`}>
+            <LogoChip id="nav-chip" />
             <span className="display text-xl tracking-tight text-white">{BRAND.name}</span>
-            <span className="rgb-text display text-xl">.</span>
           </Link>
 
           <div className="nav-search ml-2 hidden flex-1 md:flex">
@@ -144,11 +145,8 @@ export function SiteHeader() {
                 >
                   <Link
                     href={`/shop?category=${top.slug}`}
-                    className={`block shrink-0 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-xs transition ${
-                      activeCategory === top.slug
-                        ? "border-deal text-white"
-                        : "rgb-underline border-transparent text-white/80 hover:text-white"
-                    }`}
+                    aria-current={activeCategory === top.slug ? "page" : undefined}
+                    className={`nav-tab ${activeCategory === top.slug ? "is-active" : ""}`}
                   >
                     {top.name}
                   </Link>
@@ -167,16 +165,10 @@ export function SiteHeader() {
                   )}
                 </div>
               ))}
-              <Link
-                href="/shop?deals=1"
-                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-xs text-white/80 transition hover:text-white"
-              >
+              <Link href="/shop?deals=1" className="nav-tab nav-tab-hot">
                 Price drops
               </Link>
-              <Link
-                href="/shop?sort=watched"
-                className="rgb-underline shrink-0 whitespace-nowrap border-b-2 border-transparent px-2.5 py-2.5 text-xs text-white/80 transition hover:text-white"
-              >
+              <Link href="/shop?sort=watched" className="nav-tab">
                 Most watched
               </Link>
             </div>

@@ -7,6 +7,7 @@ import { ProductImage } from "./ProductImage";
 import { WishlistButton } from "./WishlistButton";
 import { SpecIcon } from "./SpecIcon";
 import { tierClass } from "@/lib/condition-tier";
+import { findSub } from "@/lib/taxonomy";
 
 export function ProductCard({ listing }: { listing: Listing }) {
   const save = listing.compareAt ? listing.compareAt - listing.price : 0;
@@ -33,15 +34,25 @@ export function ProductCard({ listing }: { listing: Listing }) {
     setShot((v) => (v + dir + photos.length) % photos.length);
   };
 
+  // Pointer light across the card's glass. Written straight to CSS custom
+  // properties so moving the mouse never re-renders the card.
+  const spotlight = (e: React.PointerEvent<HTMLAnchorElement>) => {
+    if (e.pointerType !== "mouse") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
+
   return (
     <Link
       href={`/product/${listing.id}/${listing.slug}`}
       onMouseEnter={() => setWarm(true)}
+      onPointerMove={spotlight}
       onFocus={() => setWarm(true)}
       onTouchStart={() => setWarm(true)}
-      className={`listing-card ${tierClass(listing.condition)} group flex flex-col overflow-hidden rounded-card`}
+      className={`listing-card ${tierClass(listing.condition)} group flex flex-col overflow-hidden`}
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-chrome">
+      <div className="card-media relative aspect-[4/3] overflow-hidden bg-chrome">
         {/* All photos sit side by side in one strip that slides, so moving to
             the next photo is a smooth slide with the image already loaded,
             rather than a fresh image popping in. */}
@@ -76,11 +87,12 @@ export function ProductCard({ listing }: { listing: Listing }) {
             </div>
           </>
         )}
+        <span className="card-media-fade" aria-hidden="true" />
         {/* Condition as a colour-coded tier, with any price drop under it. */}
         <div className="absolute left-2 top-2 z-[5] flex flex-col items-start gap-1">
           <span className="tier-badge">{listing.condition}</span>
           {pct > 0 && (
-            <span className="spec rounded-full bg-deal-strong px-2 py-0.5 font-semibold text-white">
+            <span className="hud rounded-[2px] bg-deal-strong px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wider text-white">
               ▼ {pct}% off
             </span>
           )}
@@ -89,27 +101,32 @@ export function ProductCard({ listing }: { listing: Listing }) {
         {/* Fixed dark glass over the photo in both themes, so the text is
             fixed white rather than text-ink (which flips per theme). */}
         {isStockPhoto && (
-          <span className="spec absolute bottom-2 left-2 rounded-lg bg-black/60 px-1.5 py-1 font-medium text-white/85 backdrop-blur-sm">
+          <span className="hud absolute bottom-2 left-2 z-[5] rounded-[2px] bg-black/60 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-white/80 backdrop-blur-sm">
             Stock photo
           </span>
         )}
         {listing.watchers > 120 && !isStockPhoto && (
-          <span className="spec absolute bottom-2 right-2 rounded-lg bg-black/70 px-1.5 py-1 font-medium text-white backdrop-blur-sm">
-            {listing.watchers} watching
+          <span className="hud absolute bottom-2 right-2 z-[5] rounded-[2px] bg-black/70 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-white backdrop-blur-sm">
+            ◉ {listing.watchers} watching
           </span>
         )}
       </div>
 
-      {/* Title, price, the facts a buyer scans for, then who's selling.
-          Parts grids and performance bars live on the listing page — on
-          a card in a grid of 24 they were noise. */}
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
+      {/* A part datasheet: what it is, the specs that matter, the price,
+          delivery, then who's selling and how well they're rated. Full
+          parts grids and performance bars live on the listing page. */}
+      <div className="flex flex-1 flex-col gap-2 p-3.5 sm:p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="card-id truncate">{findSub(listing.subcategorySlug)?.name ?? listing.category}</span>
+          <span className="card-id shrink-0 opacity-70">#{shortId(listing.id)}</span>
+        </div>
         <h3 className="line-clamp-2 text-sm font-semibold leading-snug">{listing.title}</h3>
+        <KeySpecs listing={listing} />
         {/* Price and delivery wrap rather than truncate, however long. */}
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="display whitespace-nowrap text-xl tabular-nums">{money(listing.price)}</span>
+        <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-1">
+          <span className="price-hud text-xl">{money(listing.price)}</span>
           {listing.compareAt && (
-            <span className="whitespace-nowrap text-xs text-muted line-through tabular-nums">
+            <span className="hud whitespace-nowrap text-xs text-muted line-through">
               {money(listing.compareAt)}
             </span>
           )}
@@ -118,18 +135,36 @@ export function ProductCard({ listing }: { listing: Listing }) {
           {listing.location}
           {listing.shipsFree && <span className="font-medium text-good">{listing.location ? " · " : ""}Free shipping</span>}
         </p>
-        <KeySpecs listing={listing} />
-        <div className="mt-auto flex flex-wrap items-center gap-1.5 border-t border-line pt-2.5 text-xs text-muted">
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-line pt-2.5 text-xs text-muted">
           <span className="truncate">{listing.sellerName}</span>
           {listing.sellerVerified && <VerifiedTick />}
-          {listing.sellerReviewCount > 0 && (
-            <span className="ml-auto shrink-0 text-trust tabular-nums">
-              ★ {listing.sellerRating.toFixed(1)} ({listing.sellerReviewCount})
+          <span className="ml-auto flex shrink-0 items-center gap-1.5">
+            <SignalBars rating={listing.sellerRating} count={listing.sellerReviewCount} />
+            <span className="hud text-[11px]">
+              {listing.sellerReviewCount > 0 ? listing.sellerRating.toFixed(1) : "new"}
             </span>
-          )}
+          </span>
         </div>
       </div>
     </Link>
+  );
+}
+
+/** Listing id as a short datasheet code: uuid or "l-003" → "3F9A2C" / "L003". */
+function shortId(id: string) {
+  return id.replace(/-/g, "").slice(0, 6).toUpperCase();
+}
+
+/** Seller rating as five signal bars (0 lit when there are no reviews yet). */
+function SignalBars({ rating, count }: { rating: number; count: number }) {
+  const lit = count > 0 ? Math.round(rating) : 0;
+  const label = count > 0 ? `Seller rated ${rating.toFixed(1)} out of 5 from ${count} reviews` : "Seller has no reviews yet";
+  return (
+    <span className="signal" role="img" aria-label={label} title={label}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <i key={n} className={n <= lit ? "on" : ""} />
+      ))}
+    </span>
   );
 }
 
@@ -164,7 +199,7 @@ export function SpecGrid({ listing }: { listing: Listing }) {
   );
 }
 
-/** The two parts that matter most, on one line (e.g. "RTX 4090 24GB · Core i5-12400F"). */
+/** The two parts that matter most, as datasheet rows (e.g. GPU · RTX 4090 24GB). */
 function KeySpecs({ listing }: { listing: Listing }) {
   const wanted = ["gpu", "cpu", "ram", "ssd", "storage"];
   const picks = wanted
@@ -172,5 +207,14 @@ function KeySpecs({ listing }: { listing: Listing }) {
     .filter((s): s is Listing["specs"][number] => Boolean(s))
     .slice(0, 2);
   if (!picks.length) return null;
-  return <p className="truncate text-xs text-ink/80">{picks.map((p) => p.value).join(" · ")}</p>;
+  return (
+    <dl className="datasheet">
+      {picks.map((p) => (
+        <div key={p.label} className="contents">
+          <dt>{p.label}</dt>
+          <dd title={p.value}>{p.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }

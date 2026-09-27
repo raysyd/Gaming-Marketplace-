@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { LogoChip } from "./LogoChip";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 bg-chrome text-white/70">
-      <div className="mx-auto grid max-w-[1560px] gap-8 px-4 py-12 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
+    <footer className="site-footer mt-20 text-white/70">
+      <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
-          <span className="display text-xl text-white">{BRAND.name}</span>
-          <span className="rgb-text display text-xl">.</span>
-          <p className="mt-2 max-w-xs text-sm">{BRAND.blurb}</p>
+          <Link href="/" className="brand-mark" aria-label={`${BRAND.name} home`}>
+            <LogoChip id="footer-chip" />
+            <span className="display text-xl text-white">{BRAND.name}</span>
+          </Link>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed">{BRAND.blurb}</p>
         </div>
         <FooterCol
           title="Buy"
@@ -50,8 +53,9 @@ export function SiteFooter() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/10">
-        <p className="spec mx-auto max-w-[1560px] px-4 lg:px-6 py-4">
+      <p className="footer-wordmark" aria-hidden="true">{BRAND.name}</p>
+      <div className="relative border-t border-white/10">
+        <p className="hud mx-auto max-w-[1560px] px-4 py-4 text-xs lg:px-6">
           © {new Date().getFullYear()} {BRAND.name} ·{" "}
           <a href={`mailto:${BRAND.supportEmail}`} className="hover:text-deal">
             {BRAND.supportEmail}

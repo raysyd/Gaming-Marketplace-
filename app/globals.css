@@ -35,13 +35,17 @@
   /* Labels, specs and small print use the same face as the nav (Inter),
      not a code font. Kept as --font-mono so every existing usage follows. */
   --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* The HUD data layer: prices, IDs, counts, labels, readouts. */
+  --font-hud: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   /* Two radii site-wide: rounded-lg (8px) for controls, rounded-card for
      cards and panels. */
-  --radius-card: 14px;
+  --radius-card: 10px;
 }
 
 :root {
+  /* Faint circuit-board traces and vias tiled behind every page. */
+  --circuit: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' fill='none'%3E%3Cg stroke='%23a855f7' stroke-opacity='.07'%3E%3Cpath d='M0 44h46l22 22h48l22-22h42'/%3E%3Cpath d='M92 0v34l12 12'/%3E%3Cpath d='M0 134h34l22 22v24'/%3E%3Cpath d='M180 112h-58l-22 22v46'/%3E%3Cpath d='M140 0v18l-10 10h-24'/%3E%3C/g%3E%3Cg fill='%2306b6d4' fill-opacity='.14'%3E%3Ccircle cx='46' cy='44' r='2.2'/%3E%3Ccircle cx='138' cy='44' r='2.2'/%3E%3Ccircle cx='104' cy='46' r='1.6'/%3E%3Ccircle cx='34' cy='134' r='2.2'/%3E%3Ccircle cx='122' cy='112' r='2.2'/%3E%3Ccircle cx='106' cy='28' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
   /* Soft neon glows for hover/focus. Radial, low alpha: a halo, not a flare. */
   --glow-a: 0 0 0 1px rgba(168, 85, 247, 0.45), 0 10px 34px -12px rgba(168, 85, 247, 0.55);
   --glow-b: 0 0 0 1px rgba(6, 182, 212, 0.45), 0 10px 34px -12px rgba(6, 182, 212, 0.5);
@@ -103,13 +107,33 @@ html {
     opacity: 0.5;
     cursor: not-allowed;
   }
+  /* Chamfered corners and a light sweep on hover: the one shape on the
+     site that says "press me". clip-path would cut a box-shadow glow, so
+     this glows with brightness and the sweep instead. */
   .btn-primary {
-    background: var(--color-deal-strong);
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    background: linear-gradient(100deg, var(--color-deal-strong), color-mix(in srgb, var(--color-deal-strong) 72%, var(--color-trust)));
     color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+    transform: translateX(-120%);
+    pointer-events: none;
   }
   .btn-primary:not(:disabled):hover {
-    filter: brightness(1.1);
-    box-shadow: var(--glow-a);
+    filter: brightness(1.12) saturate(1.1);
+  }
+  .btn-primary:not(:disabled):hover::after,
+  .btn-primary:focus-visible::after {
+    transform: translateX(120%);
+    transition: transform 650ms ease;
   }
   .btn-primary:not(:disabled):active,
   .btn-secondary:not(:disabled):active {
@@ -145,6 +169,12 @@ html {
     outline: 2px solid var(--color-trust);
     outline-offset: 2px;
   }
+  /* The chamfer clips anything drawn outside the button, outline included,
+     so the primary button's focus ring is drawn inside it. */
+  .btn-primary:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 4px var(--color-trust);
+  }
 }
 
 *,
@@ -157,8 +187,9 @@ html {
 body {
   /* The void, lit faintly from two corners in the accent colours. */
   background:
-    radial-gradient(1100px 600px at 8% -12%, rgba(168, 85, 247, 0.09), transparent 60%),
-    radial-gradient(900px 520px at 100% -4%, rgba(6, 182, 212, 0.07), transparent 60%),
+    radial-gradient(1100px 600px at 8% -12%, rgba(168, 85, 247, 0.1), transparent 60%),
+    radial-gradient(900px 520px at 100% -4%, rgba(6, 182, 212, 0.08), transparent 60%),
+    var(--circuit),
     var(--color-paper);
   background-attachment: fixed;
   color: var(--color-ink);
@@ -182,12 +213,25 @@ body {
 }
 
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-hud);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-muted);
+}
+/* A small lit pip before every section label: the HUD's "channel" marker. */
+.eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  background: var(--color-deal);
+  box-shadow: 0 0 8px var(--color-deal);
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 60% 100%, 0 100%);
 }
 
 .spec {
@@ -497,8 +541,10 @@ html.dark .perf-bar:has(.perf-value) { background: rgba(244, 63, 94, 0.15); }
    plain-English note, separated by hairlines only. */
 .spec-list {
   border: 1px solid var(--color-line);
-  border-radius: 14px;
+  border-left: 2px solid color-mix(in srgb, var(--color-trust) 70%, transparent);
+  border-radius: 6px;
   background: var(--color-card);
+  backdrop-filter: var(--glass-blur);
   padding: 4px 22px;
   margin-bottom: 0;
 }
@@ -509,7 +555,7 @@ html.dark .perf-bar:has(.perf-value) { background: rgba(244, 63, 94, 0.15); }
   gap: 14px;
   padding: 14px 0;
 }
-.spec-item + .spec-item { border-top: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent); }
+.spec-item + .spec-item { border-top: 1px dashed var(--color-line); }
 /* Rainbow tile that slowly cycles through the site's RGB gradient. Every
    tile runs the same animation in step, so they're always the same colour. */
 .spec-item-icon {
@@ -517,22 +563,24 @@ html.dark .perf-bar:has(.perf-value) { background: rgba(244, 63, 94, 0.15); }
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: 11px;
-  color: #fff;
-  background: var(--rgb-gradient);
-  background-size: 400% 400%;
-  animation: spec-rainbow 6s ease-in-out infinite alternate;
-  box-shadow: 0 6px 16px -8px rgba(168, 85, 247, 0.6);
+  border-radius: 4px;
+  color: var(--color-trust);
+  background: color-mix(in srgb, var(--color-trust) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-trust) 45%, transparent);
+  box-shadow: inset 0 0 12px -4px color-mix(in srgb, var(--color-trust) 60%, transparent);
 }
-.spec-item-icon svg { color: #fff; stroke: #fff; }
+.spec-item-icon svg { color: var(--color-trust); stroke: currentColor; }
 @keyframes spec-rainbow {
   0% { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
 }
 .spec-item-label {
-  padding-top: 11px;
-  font-size: 14px;
-  font-weight: 500;
+  padding-top: 12px;
+  font-family: var(--font-hud);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--color-muted);
 }
 .spec-item-body { margin: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
@@ -551,7 +599,7 @@ html.dark .perf-bar:has(.perf-value) { background: rgba(244, 63, 94, 0.15); }
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 4px;
   border: 1px solid var(--color-line);
   background: var(--color-card);
   font-size: 12.5px;
@@ -761,68 +809,314 @@ html.light .tier-parts { --tier: #b45309; }
 .tier-badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
+  gap: 6px;
+  padding: 3px 8px 3px 6px;
   border: 1px solid color-mix(in srgb, var(--tier) 55%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, #0b0e14 72%, var(--tier));
+  border-left: 3px solid var(--tier);
+  border-radius: 2px;
+  background: rgba(7, 9, 14, 0.78);
   color: #fff;
-  font-size: 11px;
+  font-family: var(--font-hud);
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   line-height: 1.3;
   white-space: nowrap;
   backdrop-filter: blur(6px);
-}
-.tier-badge::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 99px;
-  background: var(--tier);
-  box-shadow: 0 0 8px var(--tier);
+  box-shadow: -2px 0 10px -2px var(--tier);
 }
 
-/* Listing card (components/ProductCard.tsx): glass, and on hover a soft
-   border glow in the listing's tier colour that breathes while hovered. */
+/* ---------------------------------------------------------------------
+   Listing card (components/ProductCard.tsx): a part datasheet. Machined
+   corner brackets that light up in the listing's tier colour, a scan line
+   that sweeps the photo, and a breathing tier glow while hovered.
+--------------------------------------------------------------------- */
 .listing-card {
-  background: var(--color-card);
+  --br: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  --mx: 50%;
+  --my: -300px;
+  position: relative;
+  border-radius: 6px;
+  background:
+    radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--tier) 16%, transparent), transparent 65%),
+    var(--color-card);
   border: 1px solid var(--color-line);
   backdrop-filter: var(--glass-blur);
   transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
+.listing-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 6;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--br), var(--br)) top left / 14px 2px,
+    linear-gradient(var(--br), var(--br)) top left / 2px 14px,
+    linear-gradient(var(--br), var(--br)) top right / 14px 2px,
+    linear-gradient(var(--br), var(--br)) top right / 2px 14px,
+    linear-gradient(var(--br), var(--br)) bottom left / 14px 2px,
+    linear-gradient(var(--br), var(--br)) bottom left / 2px 14px,
+    linear-gradient(var(--br), var(--br)) bottom right / 14px 2px,
+    linear-gradient(var(--br), var(--br)) bottom right / 2px 14px;
+  background-repeat: no-repeat;
+  transition: filter 220ms ease;
+}
 .listing-card:hover,
 .listing-card:focus-visible {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--tier) 70%, transparent);
+  --br: var(--tier);
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--tier) 55%, transparent);
   animation: tier-breathe 2.4s ease-in-out infinite;
+}
+.listing-card:hover::before,
+.listing-card:focus-visible::before {
+  filter: drop-shadow(0 0 4px var(--tier));
 }
 .listing-card:focus-visible {
   outline: 2px solid var(--tier);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+.listing-card:active {
+  transform: translateY(-1px);
 }
 @keyframes tier-breathe {
   0%, 100% {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--tier) 45%, transparent),
-      0 12px 32px -16px color-mix(in srgb, var(--tier) 70%, transparent);
+      0 0 0 1px color-mix(in srgb, var(--tier) 40%, transparent),
+      0 14px 34px -18px color-mix(in srgb, var(--tier) 75%, transparent);
   }
   50% {
     box-shadow:
       0 0 0 1px color-mix(in srgb, var(--tier) 65%, transparent),
-      0 14px 40px -12px color-mix(in srgb, var(--tier) 80%, transparent);
+      0 16px 42px -14px color-mix(in srgb, var(--tier) 85%, transparent);
   }
 }
-.listing-card:active {
-  transform: translateY(-1px);
+/* Photo: CRT-style scanlines fade in and a bright line sweeps down once. */
+.card-media::before,
+.card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.card-media::before {
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px);
+}
+.card-media::after {
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--tier) 38%, transparent) 48%, rgba(255, 255, 255, 0.4) 50%, transparent 52%);
+  background-size: 100% 220%;
+  background-position: 0 100%;
+}
+.listing-card:hover .card-media::before,
+.listing-card:focus-visible .card-media::before { opacity: 1; }
+.listing-card:hover .card-media::after,
+.listing-card:focus-visible .card-media::after {
+  opacity: 1;
+  animation: scan-sweep 1.1s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes scan-sweep {
+  from { background-position: 0 100%; }
+  to { background-position: 0 -120%; opacity: 0; }
+}
+/* Fades the photo into the card body, so badges read on any photo. */
+.card-media-fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(7, 9, 14, 0.55));
 }
 @media (prefers-reduced-motion: reduce) {
   .listing-card:hover,
   .listing-card:focus-visible {
     animation: none;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tier) 60%, transparent), 0 12px 32px -16px color-mix(in srgb, var(--tier) 70%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tier) 60%, transparent), 0 14px 34px -18px color-mix(in srgb, var(--tier) 75%, transparent);
   }
+  .listing-card:hover .card-media::after,
+  .listing-card:focus-visible .card-media::after { animation: none; opacity: 0; }
 }
+
+/* Mono data readouts. */
+.hud { font-family: var(--font-hud); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.price-hud {
+  font-family: var(--font-hud);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.card-id {
+  font-family: var(--font-hud);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Datasheet rows: label | value, dashed hairlines (cards and panels). */
+.datasheet { display: grid; grid-template-columns: auto minmax(0, 1fr); margin: 0; border-top: 1px dashed var(--color-line); }
+.datasheet dt,
+.datasheet dd {
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--color-line);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.datasheet dt {
+  padding-right: 10px;
+  font-family: var(--font-hud);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.datasheet dd { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: color-mix(in srgb, var(--color-ink) 88%, transparent); }
+
+/* Signal-strength bars: seller rating as five rising bars. */
+.signal { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.signal > i { display: block; width: 3px; border-radius: 1px; background: var(--color-line); }
+.signal > i:nth-child(1) { height: 4px; }
+.signal > i:nth-child(2) { height: 6px; }
+.signal > i:nth-child(3) { height: 8px; }
+.signal > i:nth-child(4) { height: 10px; }
+.signal > i:nth-child(5) { height: 12px; }
+.signal > i.on { background: var(--color-trust); box-shadow: 0 0 6px color-mix(in srgb, var(--color-trust) 70%, transparent); }
+
+/* Framed panel: glass with corner brackets (buy box, reputation, specs). */
+.hud-frame {
+  --br: color-mix(in srgb, var(--color-deal) 70%, transparent);
+  position: relative;
+  border-radius: 6px;
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  backdrop-filter: var(--glass-blur);
+}
+.hud-frame::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--br), var(--br)) top left / 18px 2px,
+    linear-gradient(var(--br), var(--br)) top left / 2px 18px,
+    linear-gradient(var(--br), var(--br)) bottom right / 18px 2px,
+    linear-gradient(var(--br), var(--br)) bottom right / 2px 18px;
+  background-repeat: no-repeat;
+}
+
+/* Section header rule: a thin gradient line with tick marks. */
+.hud-rule {
+  height: 8px;
+  margin-top: 14px;
+  background:
+    linear-gradient(90deg, var(--color-deal), var(--color-trust) 30%, transparent 70%) 0 0 / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--color-ink) 25%, transparent) 0 1px, transparent 1px 24px) 0 1px / 100% 5px no-repeat;
+  opacity: 0.8;
+}
+.hud-count {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 3px;
+  font-family: var(--font-hud);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--color-trust);
+  vertical-align: middle;
+}
+
+/* Footer (components/SiteFooter.tsx): dark in both themes, a lit circuit
+   edge along the top and the wordmark engraved faintly underneath. */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+  background: var(--circuit), #07090e;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-deal) 25%, var(--color-trust) 60%, transparent);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.6);
+}
+.site-footer .eyebrow { color: rgba(255, 255, 255, 0.5); }
+.footer-wordmark {
+  margin: -10px 0 -0.22em;
+  padding: 0 16px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(64px, 16vw, 240px);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  text-align: center;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.12), transparent 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Pagination (components/Pagination.tsx). */
+.page-btn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  background: var(--color-card);
+  font-family: var(--font-hud);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  transition: color 150ms ease, border-color 150ms ease, box-shadow 200ms ease;
+}
+.page-btn:hover,
+.page-btn:focus-visible { color: var(--color-ink); border-color: var(--color-trust); box-shadow: var(--glow-b); }
+.page-btn.is-current {
+  color: #fff;
+  border-color: var(--color-deal);
+  background: color-mix(in srgb, var(--color-deal-strong) 55%, transparent);
+  box-shadow: var(--glow-a);
+  font-weight: 700;
+}
+
+/* Skeleton shimmer (loading states). */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-deal) 16%, transparent) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-sweep { to { transform: translateX(100%); } }
+
+::selection { background: color-mix(in srgb, var(--color-deal) 45%, transparent); color: #fff; }
+html { scrollbar-color: color-mix(in srgb, var(--color-deal) 45%, transparent) transparent; }
 
 /* ---------------------------------------------------------------------
    Header (components/SiteHeader.tsx): dark glass in both themes.
@@ -851,6 +1145,47 @@ html.light .tier-parts { --tier: #b45309; }
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
 }
+.brand-mark { display: inline-flex; align-items: center; gap: 9px; }
+.brand-chip { flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.55)); transition: transform 300ms ease, filter 300ms ease; }
+.brand-mark:hover .brand-chip,
+.brand-mark:focus-visible .brand-chip { transform: rotate(90deg); filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8)); }
+
+/* Category tabs: mono caps, a lit bar and bracket ticks on the active one. */
+.nav-tab {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  padding: 11px 11px 10px;
+  white-space: nowrap;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.66);
+  transition: color 150ms ease;
+}
+.nav-tab::after {
+  content: "";
+  position: absolute;
+  left: 11px;
+  right: 11px;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-deal), var(--color-trust));
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+}
+.nav-tab:hover,
+.nav-tab:focus-visible { color: #fff; }
+.nav-tab:hover::after,
+.nav-tab:focus-visible::after { transform: scaleX(0.5); }
+.nav-tab.is-active { color: #fff; }
+.nav-tab.is-active::after { transform: scaleX(1); }
+.nav-tab-hot { color: #d8b4fe; }
+
 .nav-menu {
   background: var(--color-card-solid);
   border: 1px solid var(--color-line);
@@ -882,7 +1217,8 @@ html.light .tier-parts { --tier: #b45309; }
   align-items: center;
   gap: 7px;
   white-space: nowrap;
-  font-size: 12px;
+  font-family: var(--font-hud);
+  font-size: 11.5px;
   color: var(--color-muted);
   transition: color 150ms ease;
 }

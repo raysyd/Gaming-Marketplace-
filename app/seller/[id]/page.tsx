@@ -130,7 +130,7 @@ export default async function SellerProfilePage({
           </div>
         </div>
       </div>
-      <aside className="glass rounded-card p-5" aria-label="Reputation">
+      <aside className="hud-frame p-5" aria-label="Reputation">
         <p className="eyebrow mb-3">Reputation</p>
         <ReputationMeter avgRating={stats.avgRating} reviewCount={stats.reviewCount} positiveShare={positiveShare} />
       </aside>

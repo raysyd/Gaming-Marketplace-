@@ -34,6 +34,8 @@ export type ModelStats = {
   change: number | null;
   /** Weekly medians, oldest first, for the sparkline (only weeks with data). */
   spark: number[];
+  /** Up to 80 comparable prices for the market strip; sold ones flagged. */
+  points: { price: number; sold: boolean }[];
 };
 
 type Sample = { title: string; subcategorySlug: string; price: number; status: string; createdAt: string };
@@ -116,6 +118,7 @@ async function buildIndex(): Promise<ModelStats[]> {
       comps: g.rows.length,
       change,
       spark,
+      points: g.rows.slice(0, 80).map((r) => ({ price: r.price, sold: r.status === "sold" })),
     });
   }
   return out.sort((a, b) => b.comps - a.comps);

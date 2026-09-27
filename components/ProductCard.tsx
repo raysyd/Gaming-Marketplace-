@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import Link from "next/link";
 import type { Listing } from "@/lib/types";
 import { money } from "@/lib/format";
@@ -8,7 +8,8 @@ import { WishlistButton } from "./WishlistButton";
 import { SpecIcon } from "./SpecIcon";
 import { tierClass } from "@/lib/condition-tier";
 import { findSub } from "@/lib/taxonomy";
-import { MarketChip } from "./MarketChip";
+import { PriceRail, TierMark } from "./market/Tier";
+import { tierFor } from "@/lib/deal-tier";
 
 export function ProductCard({ listing }: { listing: Listing }) {
   const save = listing.compareAt ? listing.compareAt - listing.price : 0;
@@ -45,6 +46,7 @@ export function ProductCard({ listing }: { listing: Listing }) {
       onTouchStart={() => setWarm(true)}
       className={`lcard ${tierClass(listing.condition)} group`}
     >
+      <ViewTransition name={`photo-${listing.id}`} share="morph" default="none">
       <div className="lcard-media">
         {/* All photos sit side by side in one strip that slides, so moving to
             the next photo is a smooth slide with the image already loaded,
@@ -82,12 +84,19 @@ export function ProductCard({ listing }: { listing: Listing }) {
         )}
         <span className="tier-badge absolute left-2.5 top-2.5 z-[5]">{listing.condition}</span>
         <WishlistButton id={listing.id} className="absolute right-2 top-2" />
+        {listing.market && (
+          <span className="lcard-tier">
+            <TierMark tier={tierFor(listing.market.delta)} />
+          </span>
+        )}
         {isStockPhoto && (
           <span className="absolute bottom-2 left-2.5 z-[5] rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-medium text-white/85">
             Stock photo
           </span>
         )}
       </div>
+
+      </ViewTransition>
 
       <div className="lcard-body">
         <h3 className="lcard-title line-clamp-2">{listing.title}</h3>
@@ -100,8 +109,13 @@ export function ProductCard({ listing }: { listing: Listing }) {
           {pct > 0 && !listing.market && <span className="mkt mkt-under">▼ {pct}% drop</span>}
         </div>
         {listing.market && (
-          <div className="flex flex-wrap items-center gap-2">
-            <MarketChip tag={listing.market} long />
+          <div className="mt-0.5">
+            <PriceRail delta={listing.market.delta} />
+            <p className="mono mt-1.5 text-[11px] text-muted">
+              {Math.abs(listing.market.delta) < 0.03
+                ? `At the going rate for a ${listing.market.model}`
+                : `${Math.round(Math.abs(listing.market.delta) * 100)}% ${listing.market.delta < 0 ? "under" : "over"} going rate`}
+            </p>
           </div>
         )}
         <div className="lcard-foot">

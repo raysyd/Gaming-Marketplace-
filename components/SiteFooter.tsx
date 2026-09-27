@@ -7,7 +7,7 @@ export function SiteFooter() {
       <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <Link href="/" className="brand-mark" aria-label={`${BRAND.name} home`}>
-            <span className="brand-word">{BRAND.name.toLowerCase()}<i aria-hidden="true" /></span>
+            <span className="brand-word"><i aria-hidden="true">S</i>{BRAND.name.toLowerCase()}</span>
           </Link>
           <p className="mt-3 max-w-xs text-sm leading-relaxed">{BRAND.blurb}</p>
         </div>

@@ -24,7 +24,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { RecentlySold } from "@/components/RecentlySold";
 import { connection } from "next/server";
 import { getMarketIndex } from "@/lib/market-index";
-import { MarketPanel } from "@/components/market/MarketPanel";
+import { InspectPanel } from "@/components/market/InspectPanel";
 
 
 export async function generateMetadata({
@@ -221,7 +221,7 @@ export default async function ProductPage({
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
             {listing.market && modelStats && (
               <div className="mt-3">
-                <MarketPanel price={listing.price} tag={listing.market} stats={modelStats} />
+                <InspectPanel listing={listing} tag={listing.market} stats={modelStats} />
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import type { Listing } from "@/lib/types";
 import { ProductImage } from "./ProductImage";
 
@@ -11,15 +11,19 @@ export function ProductGallery({ listing }: { listing: Listing }) {
 
   return (
     <div>
-      <div className="overflow-hidden rounded-card border border-line bg-ink">
-        <ProductImage
-          src={photos[active]}
-          alt={listing.title}
-          category={listing.category}
-          seed={`${listing.id}-${active}`}
-          className="aspect-[4/3] w-full"
-        />
-      </div>
+      {/* Same name as the card photo (ProductCard), so the card's image
+          morphs into this one on navigation. */}
+      <ViewTransition name={`photo-${listing.id}`} share="morph" default="none">
+        <div className="overflow-hidden rounded-card border border-line bg-ink">
+          <ProductImage
+            src={photos[active]}
+            alt={listing.title}
+            category={listing.category}
+            seed={`${listing.id}-${active}`}
+            className="aspect-[4/3] w-full"
+          />
+        </div>
+      </ViewTransition>
 
       {photos.length > 1 && (
         <div className="mt-3 grid grid-cols-4 gap-2">

@@ -77,7 +77,7 @@ export function SiteHeader() {
       <div className="site-nav text-white">
         <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
           <Link href="/" className="brand-mark shrink-0" aria-label={`${BRAND.name} home`}>
-            <span className="brand-word">{BRAND.name.toLowerCase()}<i aria-hidden="true" /></span>
+            <span className="brand-word"><i aria-hidden="true">S</i>{BRAND.name.toLowerCase()}</span>
           </Link>
 
           <div className="nav-search ml-2 hidden flex-1 md:flex">

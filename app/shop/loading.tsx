@@ -1,6 +1,9 @@
+import { LoadingTip } from "@/components/market/LoadingTip";
+
 export default function Loading() {
   return (
     <div className="mx-auto max-w-[1560px] px-4 py-8 lg:px-6" aria-busy="true" aria-label="Loading listings">
+      <div className="mb-5"><LoadingTip /></div>
       <div className="skeleton mb-3 h-3 w-32 rounded-[3px]" />
       <div className="skeleton mb-6 h-10 w-64 rounded-[4px]" />
       <div className="hud-rule -mt-3 mb-6" aria-hidden="true" />

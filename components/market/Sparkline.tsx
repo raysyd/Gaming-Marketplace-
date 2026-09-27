@@ -15,9 +15,9 @@ export function Sparkline({ points, width = 110, height = 28 }: { points: number
   const colour = falling ? "var(--color-down)" : "var(--color-up)";
   const [lx, ly] = xy[xy.length - 1];
   return (
-    <svg className="spark" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+    <svg className="spark draw" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <path d={`${d} L${width} ${height} L0 ${height} Z`} fill={colour} opacity="0.08" />
-      <path d={d} fill="none" stroke={colour} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+      <path className="line" pathLength={1} d={d} fill="none" stroke={colour} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
       <circle cx={lx} cy={ly} r="2.6" fill={colour} />
     </svg>
   );

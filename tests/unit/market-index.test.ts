@@ -19,7 +19,7 @@ describe("modelOf", () => {
 
 describe("marketTagFor", () => {
   const index: ModelStats[] = [
-    { key: "rtx-3080", name: "RTX 3080", kind: "gpu", rate: 600, low: 500, high: 700, lowestAsk: 540, forSale: 4, sold: 2, comps: 6, change: null, spark: [] },
+    { key: "rtx-3080", name: "RTX 3080", kind: "gpu", rate: 600, low: 500, high: 700, lowestAsk: 540, forSale: 4, sold: 2, comps: 6, change: null, spark: [], points: [] },
   ];
   it("expresses price against the going rate", () => {
     const tag = marketTagFor({ ...gpu("RTX 3080 FE"), price: 540 }, index);

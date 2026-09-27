@@ -11,6 +11,8 @@ import { BRAND } from "@/lib/brand";
 import { ConnectPayoutButton } from "@/components/ConnectPayoutButton";
 import { SellingTabs } from "@/components/SellingTabs";
 
+export const metadata = { title: "Your listings", robots: { index: false } };
+
 export default async function SellingPage() {
   const [listings, profile, orders] = await Promise.all([
     querySellerListings(),

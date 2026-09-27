@@ -85,49 +85,24 @@ export function LoginForm() {
     // button is guaranteed to resolve one way or the other.
     try {
       if (action === "signin") {
-        // Per-account lockout on top of Supabase's own IP-based auth rate
-        // limits (see supabase/setup.sql's Part 4). Fails open — if the
-        // migration hasn't been run yet, the RPC errors and sign-in
-        // proceeds as normal rather than blocking everyone.
-        const { data: blocked } = await withTimeout(
-          supabase
-            .rpc("signin_attempts_blocked", { p_email: normalizedEmail })
-            .then((res) => res, () => ({ data: false }))
+        // Signed in on the server (app/api/auth/signin), which also runs
+        // the per-account lockout with the service role so it can't be
+        // cleared or abused from the browser. It writes the session
+        // cookie; a hard navigation then guarantees the next page's server
+        // render sees it (a soft client transition could race the cookie).
+        const res = await withTimeout(
+          fetch("/api/auth/signin", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ email: normalizedEmail, password }),
+          })
         );
-        if (blocked) {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
           setStatus("error");
-          setMessage("Too many failed attempts for this account. Try again in 15 minutes, or reset your password.");
+          setMessage(data.error ?? "Couldn't sign in. Try again.");
           return;
         }
-
-        const { error } = await withTimeout(
-          supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-        );
-        if (error) {
-          supabase.rpc("record_failed_signin", { p_email: normalizedEmail }).then(
-            () => {},
-            () => {}
-          );
-          setStatus("error");
-          setMessage(
-            /invalid login credentials/i.test(error.message)
-              ? "Wrong email or password."
-              : error.message
-          );
-          return;
-        }
-        supabase.rpc("clear_signin_attempts", { p_email: normalizedEmail }).then(
-          () => {},
-          () => {}
-        );
-        // A hard navigation, not router.replace(). The session cookie was
-        // just written client-side by signInWithPassword() — a soft
-        // client-side transition can fetch /dashboard's server render
-        // before the browser has that cookie fully committed, so the
-        // server-side auth check misses it and the page looks stuck
-        // (this is exactly why a manual refresh "fixed" it: a full
-        // reload always sends the committed cookie). A hard navigation
-        // guarantees a fresh request with the cookie already in place.
         window.location.href = next;
         return;
       }
@@ -426,6 +401,7 @@ export function LoginForm() {
               autoComplete="email"
               enterKeyHint={mode === "password" ? "next" : "send"}
               placeholder="you@example.com"
+              aria-label="Email address"
               className="input"
             />
 
@@ -440,6 +416,7 @@ export function LoginForm() {
                     autoComplete={action === "signup" ? "new-password" : "current-password"}
                     enterKeyHint={action === "signup" ? "next" : "send"}
                     placeholder="Password"
+                    aria-label="Password"
                     className="input pr-16"
                   />
                   <button

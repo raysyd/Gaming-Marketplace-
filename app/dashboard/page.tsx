@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 
+export const metadata = { title: "Dashboard", robots: { index: false } };
+
 // Superseded by /selling — buying and selling used to share one dashboard,
 // which is exactly the "conflates both roles" problem the split fixes.
 // Kept as a redirect rather than deleted so old links/bookmarks still land

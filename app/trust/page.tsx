@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { BRAND } from "@/lib/brand";
 import { CompanyNav } from "@/components/CompanyNav";
 
-export const metadata = { title: `Trust & Safety — ${BRAND.name}` };
+export const metadata = { title: "Trust & Safety" };
 
 // The escrow hold is the core claim the rest of the page backs up, so it
 // gets pulled out of the grid below into its own hero callout instead of

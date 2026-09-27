@@ -15,6 +15,13 @@ import { SellerBadges, ReputationMeter } from "@/components/SellerBadges";
 import { connection } from "next/server";
 
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const profile = await getProfile(id);
+  const name = profile?.displayName || profile?.username;
+  return { title: name ? `${name} — seller profile` : "Seller profile" };
+}
+
 export default async function SellerProfilePage({
   params,
 }: {

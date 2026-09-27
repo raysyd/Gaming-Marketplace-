@@ -4,7 +4,7 @@ import { ProductImage } from "@/components/ProductImage";
 import { BRAND } from "@/lib/brand";
 import { queryListings } from "@/lib/data";
 
-export const metadata = { title: `Sign in — ${BRAND.name}` };
+export const metadata = { title: "Sign in" };
 
 /**
  * Sign-in sits in a card over a slowly drifting, blurred wall of real

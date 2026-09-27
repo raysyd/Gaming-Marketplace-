@@ -59,9 +59,10 @@ export async function POST(req: Request) {
 
       if (!buyerId || !sellerId || !listingIds.length || !paymentIntent) break;
 
-      // Order is created and held here — this fires once the buyer's card
-      // is authorised, before capture. Money moves to the seller later,
-      // when /api/orders/[id]/release captures the PaymentIntent.
+      // Order is created and held here. The charge is already captured
+      // into the platform's balance (no manual capture, so no 7-day
+      // authorisation expiry); the seller is paid later by a separate
+      // transfer when the order is released (lib/orders/release.ts).
       const feeBps = PLATFORM_FEE_BPS;
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         limit: 100,

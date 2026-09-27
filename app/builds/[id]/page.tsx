@@ -7,6 +7,12 @@ import { BuildActions } from "@/components/BuildActions";
 import { connection } from "next/server";
 
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const build = await getBuild(id);
+  return { title: build ? build.title : "Build not found" };
+}
+
 export default async function BuildPage({ params }: { params: Promise<{ id: string }> }) {
   // Rendered per request, from data that's cached and invalidated by tag
   // (see lib/data.ts). Timed ISR here meant the first visitor after any

@@ -5,6 +5,8 @@ import { DEMO_CONVERSATIONS, DEMO_MESSAGES } from "@/lib/demo";
 import { hasSupabase } from "@/lib/supabase/config";
 import { Messenger } from "@/components/Messenger";
 
+export const metadata = { title: "Messages", robots: { index: false } };
+
 export default async function MessagesPage({
   searchParams,
 }: {

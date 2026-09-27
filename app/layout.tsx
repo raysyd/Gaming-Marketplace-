@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: `${BRAND.name} — ${BRAND.tagline}`,
+  title: { default: `${BRAND.name} — ${BRAND.tagline}`, template: `%s — ${BRAND.name}` },
   description: BRAND.blurb,
 };
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { CompanyNav } from "@/components/CompanyNav";
 
-export const metadata = { title: `Privacy Policy — ${BRAND.name}` };
+export const metadata = { title: "Privacy Policy" };
 
 export default function PrivacyPage() {
   return (

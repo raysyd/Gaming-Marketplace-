@@ -1,5 +1,7 @@
 import { BuildForm } from "@/components/BuildForm";
 
+export const metadata = { title: "Share a build", robots: { index: false } };
+
 export default function NewBuildPage() {
   return (
     <div className="mx-auto max-w-[720px] px-4 py-10">

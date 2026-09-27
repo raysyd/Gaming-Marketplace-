@@ -23,6 +23,16 @@ const SORTS: [string, string][] = [
   ["watched", "Most watched"],
 ];
 
+export async function generateMetadata({ searchParams }: { searchParams: Promise<SP> }) {
+  const sp = await searchParams;
+  const title = sp.q
+    ? `Results for “${sp.q}”`
+    : findSub(sp.sub ?? "")?.name ??
+      findTop(sp.category ?? "")?.name ??
+      (sp.deals === "1" ? "Price drops" : sp.status === "sold" ? "Recently sold" : "Shop all listings");
+  return { title };
+}
+
 export default async function ShopPage({
   searchParams,
 }: {

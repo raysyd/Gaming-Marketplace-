@@ -5,6 +5,8 @@ import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { AccountSettingsForm } from "@/components/AccountSettingsForm";
 import { PremiumCard } from "@/components/PremiumCard";
 
+export const metadata = { title: "Account", robots: { index: false } };
+
 export default async function AccountPage() {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) redirect("/login?next=/account");

@@ -1,3 +1,4 @@
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
@@ -192,7 +193,14 @@ export async function POST(req: Request) {
   // worked". This is the first line of defense; the `stock >= 0` check
   // constraint is what holds even if this logic ever has a bug.
   const qtys = ids.map((id) => qtyById.get(id) ?? 0);
-  const { data: reserved, error: reserveError } = await supabase.rpc(
+  // Stock is reserved and released with the service role only: the two
+  // functions are not executable by anon/authenticated (supabase/
+  // 26-lock-down-rpc.sql), otherwise any signed-in user could call them
+  // straight from the REST API and drain or inflate every listing's stock.
+  const admin = createAdminClient();
+  if (!admin)
+    return NextResponse.json({ error: "Checkout isn't configured." }, { status: 500 });
+  const { data: reserved, error: reserveError } = await admin.rpc(
     "reserve_listing_stock_qty",
     { ids, qtys }
   );
@@ -204,7 +212,7 @@ export async function POST(req: Request) {
     // took, not the whole cart.
     if (reserved?.length) {
       const reservedIds = reserved.map((r: { id: string }) => r.id);
-      await supabase.rpc("release_listing_stock_qty", {
+      await admin.rpc("release_listing_stock_qty", {
         ids: reservedIds,
         qtys: reservedIds.map((id: string) => qtyById.get(id) ?? 0),
       });
@@ -283,7 +291,7 @@ export async function POST(req: Request) {
   } catch (e) {
     // The reservation already happened — a Stripe-side failure here must
     // not leave stock stuck decremented with no checkout ever created.
-    await supabase.rpc("release_listing_stock_qty", { ids, qtys });
+    await admin.rpc("release_listing_stock_qty", { ids, qtys });
     const message = e instanceof Error ? e.message : "Checkout failed.";
     return NextResponse.json({ url: null, message }, { status: 500 });
   }

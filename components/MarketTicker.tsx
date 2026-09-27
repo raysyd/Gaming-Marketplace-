@@ -45,7 +45,7 @@ export function MarketTicker() {
       href: "/shop",
       icon: "●",
       tone: "text-good",
-      body: <><b className="tabular-nums">{pulse.live.toLocaleString()}</b> parts live now</>,
+      body: <><b className="tabular-nums">{pulse.live.toLocaleString()}</b> {pulse.live === 1 ? "part" : "parts"} live now</>,
     });
   }
   for (const s of pulse?.topSubs ?? []) {

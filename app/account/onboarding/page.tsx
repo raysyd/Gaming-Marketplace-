@@ -3,6 +3,8 @@ import { getAuthedUser } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
 import { OnboardingForm } from "@/components/OnboardingForm";
 
+export const metadata = { title: "Set up your account", robots: { index: false } };
+
 export default async function OnboardingPage({
   searchParams,
 }: {

@@ -5,6 +5,8 @@ import { BuyingTabs } from "@/components/BuyingTabs";
 import { BRAND } from "@/lib/brand";
 import Link from "next/link";
 
+export const metadata = { title: "Your purchases", robots: { index: false } };
+
 export default async function BuyingPage() {
   const [orders, reviewableIds] = await Promise.all([queryBuyerOrders(), getReviewableOrderIds()]);
 

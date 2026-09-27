@@ -1,5 +1,7 @@
 import { BRAND } from "@/lib/brand";
 
+export const metadata = { title: "Offline", robots: { index: false } };
+
 // Served by public/sw.js when a page navigation fails with no network
 // and nothing cached to fall back to. Static, no data fetching — it has
 // to render with zero network access.

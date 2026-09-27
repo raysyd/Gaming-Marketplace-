@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { CompanyNav } from "@/components/CompanyNav";
 
-export const metadata = { title: `About — ${BRAND.name}` };
+export const metadata = { title: "About" };
 
 export default function AboutPage() {
   return (

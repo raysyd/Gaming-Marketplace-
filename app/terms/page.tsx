@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { CompanyNav } from "@/components/CompanyNav";
 
-export const metadata = { title: `Terms of Service — ${BRAND.name}` };
+export const metadata = { title: "Terms of Service" };
 
 /**
  * Written to match what the code actually does (lib/brand.ts supplies

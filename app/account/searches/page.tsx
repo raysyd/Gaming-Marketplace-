@@ -4,6 +4,8 @@ import { getAuthedUser } from "@/lib/supabase/server";
 import { listSavedSearches, savedSearchHref } from "@/lib/saved-searches-data";
 import { SavedSearchRow } from "@/components/SavedSearchRow";
 
+export const metadata = { title: "Saved searches", robots: { index: false } };
+
 export default async function SavedSearchesPage() {
   const { supabase, user } = await getAuthedUser();
   if (!supabase || !user) redirect("/login?next=/account/searches");

@@ -4,6 +4,8 @@ import { timeAgo } from "@/lib/format";
 import { ProductImage } from "@/components/ProductImage";
 import { connection } from "next/server";
 
+export const metadata = { title: "Community builds" };
+
 
 export default async function BuildsPage() {
   // Rendered per request, from data that's cached and invalidated by tag

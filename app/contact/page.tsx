@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import { CompanyNav } from "@/components/CompanyNav";
 
-export const metadata = { title: `Contact — ${BRAND.name}` };
+export const metadata = { title: "Contact" };
 
 const SELF_SERVE = [
   ["A problem with an order", "Report it from the order itself — the seller and our team both see it right away.", "/buying"],

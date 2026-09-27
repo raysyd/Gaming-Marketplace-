@@ -28,6 +28,11 @@ const nextConfig: NextConfig = {
       ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/**" }]
       : [],
   },
+  // Browsers still ask for /favicon.ico on their own (tabs for the XML
+  // sitemap, bookmarks, some crawlers); app/icon.tsx serves it at /icon.
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/icon" }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

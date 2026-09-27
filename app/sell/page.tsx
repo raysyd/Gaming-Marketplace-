@@ -3,6 +3,8 @@ import { getConnectAccountStatus } from "@/lib/stripe";
 import { getPremiumPlan, isPremiumActive } from "@/lib/premium";
 import { SellForm } from "@/components/SellForm";
 
+export const metadata = { title: "Sell an item", robots: { index: false } };
+
 /**
  * Payout-readiness is checked here, server-side, rather than gating in the
  * client form — a seller who isn't signed in or hasn't finished Stripe

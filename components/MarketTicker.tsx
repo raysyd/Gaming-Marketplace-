@@ -39,6 +39,21 @@ export function MarketTicker() {
   }, []);
 
   const items: Item[] = [];
+  // Going rates first: the ticker reads like a price board.
+  for (const m of pulse?.models ?? []) {
+    items.push({
+      key: `model-${m.key}`,
+      href: `/shop?q=${encodeURIComponent(m.name)}&sort=low`,
+      icon: m.change == null ? "●" : m.change < 0 ? "▼" : "▲",
+      tone: m.change == null ? "text-muted" : m.change < 0 ? "chg-down" : "chg-up",
+      body: (
+        <>
+          {m.name} <b className="tabular-nums">{money(m.rate)}</b>
+          {m.change != null && <span className={m.change < 0 ? "chg-down" : "chg-up"}> {Math.abs(m.change * 100).toFixed(1)}%</span>}
+        </>
+      ),
+    });
+  }
   if (pulse?.live) {
     items.push({
       key: "live",

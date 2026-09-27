@@ -1,278 +1,236 @@
 import Link from "next/link";
-import Image from "next/image";
-import { queryListings } from "@/lib/data";
+import { connection } from "next/server";
+import { queryListings, countBySub } from "@/lib/data";
+import { getMarketIndex } from "@/lib/market-index";
 import { money } from "@/lib/format";
 import { BRAND } from "@/lib/brand";
 import { TAXONOMY } from "@/lib/taxonomy";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductImage } from "@/components/ProductImage";
-import { CATEGORY_PHOTOS } from "@/lib/category-photos";
 import { DemoBanner } from "@/components/DemoBanner";
-import { SoldTicker } from "@/components/SoldTicker";
-import { getRecentlySold } from "@/lib/market-data";
-import type { Category } from "@/lib/types";
-import { Reveal } from "@/components/motion/Reveal";
-import { HeroSearch } from "@/components/motion/HeroSearch";
-import { DealCarousel } from "@/components/motion/DealCarousel";
-import { EscrowFlow } from "@/components/motion/EscrowFlow";
-import { connection } from "next/server";
+import { PriceBoard } from "@/components/market/PriceBoard";
+import type { Listing } from "@/lib/types";
 
-// artKindFor(top.children[0].slug) would pick whichever subcategory
-// happens to be first in taxonomy.ts (e.g. "Monitors" for Peripherals,
-// since that's its first child) — fine for generic per-listing fallback
-// art, but the wrong photo for this specific tile. Pick deliberately here.
-const TILE_CATEGORY: Record<string, Category> = {
-  "full-systems": "Prebuilt PCs",
-  "pc-parts-and-components": "Graphics Cards",
-  peripherals: "Peripherals",
-  consoles: "Consoles",
-  // No dedicated photo for this group; the close-up chip shot reads as
-  // "parts and hardware" without implying a specific item.
-  "collectibles-and-parts": "Processors",
-};
-
-
+/**
+ * The homepage is a market board: what used GPUs and CPUs are going for
+ * right now, the listings priced under that, then everything else. All
+ * numbers come from listings and sales on Sidegrade (lib/market-index.ts).
+ */
 export default async function Home() {
-  // Rendered per request, from data that's cached and invalidated by tag
-  // (see lib/data.ts). Timed ISR here meant the first visitor after any
-  // change got the previous copy — the "only a hard refresh shows it" bug.
+  // Rendered per request from cached, tag-invalidated data (lib/data.ts).
   await connection();
-  const [deals, watched, fresh, prebuilts, sold, justSold] = await Promise.all([
-    queryListings({ dealsOnly: true, sort: "save", perPage: 8 }),
-    queryListings({ sort: "watched", perPage: 8 }),
+  const [index, all, fresh, gpus, cpus, counts] = await Promise.all([
+    getMarketIndex(),
+    queryListings({ perPage: 1 }),
     queryListings({ sort: "new", perPage: 8 }),
-    queryListings({ sub: "gaming-pcs", sort: "new", perPage: 1 }),
-    queryListings({ status: "sold", sort: "new", perPage: 8 }),
-    getRecentlySold({ limit: 8 }),
+    queryListings({ sub: "graphics-cards", perPage: 96 }),
+    queryListings({ sub: "processors", perPage: 96 }),
+    countBySub(),
   ]);
 
-  const heroDeals = (deals.items.length ? deals.items : fresh.items).slice(0, 4);
+  const tagged = [...gpus.items, ...cpus.items].filter((l) => l.market);
+  const under = tagged
+    .filter((l) => l.market!.delta <= -0.03)
+    .sort((a, b) => a.market!.delta - b.market!.delta)
+    .slice(0, 8);
+  const underShare = tagged.length
+    ? Math.round((tagged.filter((l) => l.market!.delta <= -0.03).length / tagged.length) * 100)
+    : null;
+  const falling = index.filter((m) => m.change != null && m.change < 0).sort((a, b) => a.change! - b.change!)[0];
+  const board = index.slice(0, 10);
+  const quick = index.slice(0, 6);
 
   return (
     <>
       {fresh.isDemo && (
-        <div className="mx-auto max-w-[1560px] px-4 lg:px-6 pt-4">
+        <div className="mx-auto max-w-[1400px] px-4 pt-4 lg:px-8">
           <DemoBanner />
         </div>
       )}
-      <SoldTicker initial={justSold} />
-      <section className="hero-bg relative overflow-hidden border-b border-line bg-card">
-        <span className="hero-blob hero-blob-a" aria-hidden="true" />
-        <span className="hero-blob hero-blob-b" aria-hidden="true" />
-        <span className="hero-grid" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1560px] items-center gap-10 px-4 lg:px-6 py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,600px)] lg:gap-16 lg:py-16">
+
+      {/* Hero: the pitch, a search, and today's market in numbers */}
+      <section className="border-b border-line bg-card">
+        <div className="mx-auto grid max-w-[1400px] gap-10 px-4 py-12 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center lg:px-8 lg:py-16">
           <div>
-            <h1 className="display text-[clamp(38px,5.4vw,78px)]">
-              <span className="word-rise" style={{ animationDelay: "0.05s" }}>Somebody</span>{" "}
-              <span className="word-rise" style={{ animationDelay: "0.12s" }}>already</span>
+            <p className="eyebrow">Used PC parts · {BRAND.regionLabel}</p>
+            <h1 className="display mt-4 text-[clamp(40px,5.6vw,80px)]">
+              Know the <span className="lime-mark">going rate</span>
               <br />
-              <span className="word-rise" style={{ animationDelay: "0.19s" }}>built</span>{" "}
-              <span className="word-rise" style={{ animationDelay: "0.26s" }}>your</span>{" "}
-              <span className="word-rise" style={{ animationDelay: "0.33s" }}><span className="rgb-text">next PC.</span></span>
+              before you buy.
             </h1>
-            <p className="rise mt-4 max-w-md text-base leading-relaxed text-muted" style={{ animationDelay: "0.35s" }}>
-              {BRAND.name} is where Australian gamers sell the rig, card or board
-              they just upgraded out of. You pay through us, we hold the money
-              until the box lands on your doorstep.
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-muted">
+              Every graphics card and processor on {BRAND.name} is priced against what the same model is going for.
+              Buy under it, sell at it, and the money waits with us until the part arrives.
             </p>
-            <div className="rise mt-6 max-w-xl" style={{ animationDelay: "0.45s" }}>
-              <HeroSearch />
-            </div>
-            <ul className="rise mt-7 grid max-w-md grid-cols-3 gap-3 border-t border-line pt-5" style={{ animationDelay: "0.55s" }}>
-              {[
-                ["Escrow", "Held till delivered"],
-                ["Fee", `${BRAND.feePercent}% on sale`],
-                ["Listing", "Free, always"],
-              ].map(([k, v]) => (
-                <li key={k}>
-                  <div className="eyebrow">{k}</div>
-                  <div className="mt-1 text-sm font-semibold">{v}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rise" style={{ animationDelay: "0.25s" }}>
-            <DealCarousel deals={heroDeals} />
-          </div>
-        </div>
-      </section>
-
-      {/* Category tiles, two levels deep */}
-      <section className="mx-auto max-w-[1560px] px-4 lg:px-6 py-10">
-        <Reveal stagger className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-          {TAXONOMY.map((top) => (
-            <div key={top.slug} className="cat-tile group">
-              <Link href={`/shop?category=${top.slug}`} className="block">
-                <div className="rgb-frame relative aspect-square w-full overflow-hidden rounded-card bg-ink lg:aspect-[4/5]">
-                  <Image
-                    src={CATEGORY_PHOTOS[TILE_CATEGORY[top.slug] ?? "Graphics Cards"]}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 240px, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition duration-700 group-hover:scale-[1.08]"
-                  />
-                  <span className="cat-shade" aria-hidden="true" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <h3 className="display text-base text-white sm:text-xl">{top.name}</h3>
-                    <span className="cat-cta spec">Shop now →</span>
-                  </div>
-                </div>
-              </Link>
-              <ul className="cat-subs">
-                {top.children.slice(0, 4).map((sub) => (
-                  <li key={sub.slug}>
-                    <Link href={`/shop?category=${top.slug}&sub=${sub.slug}`}>{sub.name}</Link>
-                  </li>
+            <form action="/shop" className="mt-7 flex max-w-xl gap-2">
+              <label htmlFor="home-q" className="sr-only">
+                Search
+              </label>
+              <input
+                id="home-q"
+                name="q"
+                placeholder="Search a model: RTX 3080, 7800X3D, PS5…"
+                className="input h-12 flex-1 rounded-[10px] text-[15px]"
+              />
+              <button className="btn btn-primary h-12 px-6">Search</button>
+            </form>
+            {quick.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {quick.map((m) => (
+                  <Link key={m.key} href={`/shop?q=${encodeURIComponent(m.name)}&sort=low`} className="pill">
+                    {m.name}
+                    <span className="mono text-muted">{money(m.rate)}</span>
+                  </Link>
                 ))}
-              </ul>
+              </div>
+            )}
+          </div>
+
+          <aside className="rounded-[var(--radius-card)] border border-line bg-paper p-6" aria-label={`Today on ${BRAND.name}`}>
+            <p className="eyebrow">Today on {BRAND.name}</p>
+            <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-6">
+              <Stat label="Listings live" value={all.total.toLocaleString("en-AU")} />
+              <Stat label="Models priced" value={String(index.length)} />
+              <Stat label="GPUs & CPUs under going rate" value={underShare == null ? "—" : `${underShare}%`} />
+              <Stat
+                label={falling ? `${falling.name}, 30 days` : "Biggest 30-day drop"}
+                value={falling ? `▼ ${Math.abs(falling.change! * 100).toFixed(1)}%` : "—"}
+                tone={falling ? "down" : undefined}
+              />
+            </dl>
+            <ul className="mt-6 grid gap-2 border-t border-line pt-5 text-sm">
+              <Check text="Your payment is held until you confirm the part arrived" />
+              <Check text="Refunded automatically if it isn't posted within 48 hours" />
+              <Check text={`Sellers pay ${BRAND.feePercent}% only when it sells. Listing is free`} />
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      {/* The board */}
+      <section className="mx-auto max-w-[1400px] px-4 pt-14 lg:px-8">
+          <div className="sec-head">
+            <div>
+              <h2 className="sec-title">Going rates</h2>
+              <p className="mt-2 text-sm text-muted">
+                Median price of each model across listings and sales on {BRAND.name}. Select a row to shop it.
+              </p>
             </div>
-          ))}
-        </Reveal>
+            <Link href="/shop?category=pc-parts-and-components" className="sec-link">
+              All parts
+            </Link>
+          </div>
+          {board.length > 0 ? (
+            <PriceBoard models={board} />
+          ) : (
+            <div className="board px-6 py-10 text-center">
+              <p className="font-semibold">The board fills in as parts are listed and sold.</p>
+              <p className="mt-1 text-sm text-muted">
+                A model gets a going rate once three or more have been listed or sold on {BRAND.name}.
+              </p>
+            </div>
+          )}
+        </section>
+
+      <Grid title="Under the going rate" href="/shop?category=pc-parts-and-components&sort=low" items={under} />
+
+      {/* Categories as a plain index with live counts */}
+      <section className="mx-auto max-w-[1400px] px-4 pt-14 lg:px-8">
+        <div className="sec-head">
+          <h2 className="sec-title">Browse the market</h2>
+          <Link href="/shop" className="sec-link">
+            Everything
+          </Link>
+        </div>
+        <div className="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+          {TAXONOMY.map((top) => {
+            const n = top.children.reduce((sum, c) => sum + (counts[c.slug] ?? 0), 0);
+            return (
+              <div key={top.slug} className="bg-card p-5">
+                <Link href={`/shop?category=${top.slug}`} className="group flex items-baseline justify-between gap-2">
+                  <h3 className="text-[15px] font-semibold group-hover:underline">{top.name}</h3>
+                  <span className="mono text-xs text-muted">{n}</span>
+                </Link>
+                <ul className="mt-3 grid gap-1.5">
+                  {top.children.map((c) => (
+                    <li key={c.slug}>
+                      <Link
+                        href={`/shop?category=${top.slug}&sub=${c.slug}`}
+                        className="flex items-baseline justify-between gap-2 text-sm text-muted hover:text-ink"
+                      >
+                        <span>{c.name}</span>
+                        <span className="mono text-[11px]">{counts[c.slug] ?? 0}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
-      <Rail title="Most watched" href="/shop?sort=watched" items={watched.items} />
-      <Rail title="Price drops" href="/shop?deals=1" items={deals.items} />
+      <Grid title="Just listed" href="/shop" items={fresh.items} />
 
-      <ThemeRail />
-
-      {/* PC Finder */}
-      <section className="mx-auto mt-12 max-w-[1560px] px-4 lg:px-6">
-        <div className="flex flex-col items-start gap-5 rounded-card bg-chrome px-6 py-10 text-white sm:flex-row sm:items-center sm:justify-between sm:px-10">
+      {/* Selling */}
+      <section className="mx-auto max-w-[1400px] px-4 pt-16 lg:px-8">
+        <div className="grid gap-8 rounded-[var(--radius-card)] bg-chrome px-6 py-10 text-white sm:px-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div>
-            <p className="eyebrow text-white/50">PC Finder</p>
-            <h2 className="display mt-2 max-w-lg text-[clamp(22px,3vw,30px)] text-white">
-              Don&apos;t know what you need? Three questions.
-            </h2>
-            <p className="mt-2 max-w-md text-sm text-white/65">
-              Budget, resolution, what else it has to do. We point you at the
-              listings that actually match.
+            <h2 className="display text-[clamp(28px,3.4vw,44px)] text-white">Upgrading? See what your old card is worth.</h2>
+            <p className="mt-3 max-w-2xl text-white/65">
+              Look up your model on the board, list it at the going rate, and get paid when the buyer confirms it
+              arrived. Listing is free; {BRAND.name} takes {BRAND.feePercent}% only when it sells.
             </p>
           </div>
-          <Link
-            href="/pc-finder"
-            className="btn btn-primary rgb-ring shrink-0"
-          >
-            Take the quiz
-          </Link>
-        </div>
-      </section>
-
-      {/* Escrow explainer */}
-      <section className="mx-auto mt-6 max-w-[1560px] px-4 lg:px-6">
-        <div className="rounded-card border border-line bg-card px-6 py-10 sm:px-10">
-          <p className="eyebrow">Where your money sits</p>
-          <h2 className="display mt-2 max-w-lg text-[clamp(24px,3.5vw,34px)]">
-            Nobody sends a stranger $2,000 and hopes.
-          </h2>
-          <EscrowFlow />
-          <Link
-            href="/trust"
-            className="mt-6 inline-block text-sm font-semibold text-trust"
-          >
-            Read Trust &amp; Safety →
-          </Link>
-        </div>
-      </section>
-
-      <Rail title="Just listed" href="/shop" items={fresh.items} />
-      <Rail title="Recently sold" href="/shop?status=sold" items={sold.items} />
-
-      <section className="mx-auto mt-12 max-w-[1560px] px-4 lg:px-6">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link
-            href="/trust"
-            className="card-hover group rounded-card bg-trust p-6 text-white transition hover:brightness-105"
-          >
-            <span className="text-2xl" aria-hidden="true">★</span>
-            <h2 className="display mt-3 text-3xl text-white">Reviews from the community</h2>
-            <p className="mt-2 text-sm text-white/75">See how Sidegrade keeps buying and selling clear.</p>
-            <span className="mt-5 inline-block text-sm font-semibold text-white">Trust &amp; safety →</span>
-          </Link>
-          <Link
-            href="/selling"
-            className="card-hover group rounded-card bg-chrome p-6 text-white transition hover:bg-chrome-2"
-          >
-            <span className="text-2xl" aria-hidden="true">↗</span>
-            <h2 className="display mt-3 text-3xl text-white">Seller sales</h2>
-            <p className="mt-2 text-sm text-white/70">Manage listings, track orders and see what your gear is worth.</p>
-            <span className="mt-5 inline-block text-sm font-semibold text-white">Open seller account →</span>
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto mt-14 max-w-[1560px] px-4 lg:px-6">
-        <div className="flex flex-col items-start gap-4 rounded-card border border-line bg-card p-8 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="display text-3xl">Sitting on an old card?</h2>
-            <p className="mt-1 text-sm text-muted">
-              Listing costs nothing. You only pay when it sells.
-            </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/sell" className="btn h-12 bg-[var(--color-lime)] px-6 text-[#101114] hover:brightness-95">
+              List a part
+            </Link>
+            <Link href="/trust" className="btn h-12 border-white/25 px-6 text-white hover:border-white">
+              How payment works
+            </Link>
           </div>
-          <Link
-            href="/sell"
-            className="btn btn-primary rgb-ring"
-          >
-            List an item
-          </Link>
         </div>
       </section>
     </>
   );
 }
 
-function ThemeRail() {
-  const themes = [
-    ["Budget builds", "Under $1,000", "/shop?max=1000", "↘"],
-    ["4K gaming", "High-refresh hardware", "/shop?sub=gaming-pcs&min=1800", "◈"],
-    ["Desk upgrades", "Monitors and peripherals", "/shop?category=peripherals", "▦"],
-    ["PC parts", "Build it your way", "/shop?category=pc-parts-and-components", "⚙"],
-  ];
+function Stat({ label, value, tone }: { label: string; value: string; tone?: "down" }) {
   return (
-    <section className="mx-auto max-w-[1560px] px-4 lg:px-6 pt-10">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="display text-3xl">Shop by theme</h2>
-        <Link href="/shop" className="text-sm font-semibold text-trust">Browse all →</Link>
-      </div>
-      <Reveal stagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {themes.map(([title, body, href, icon]) => (
-          <Link key={title} href={href} className="card-hover group rounded-card border border-line bg-card p-5 transition hover:border-trust">
-            <span className="text-2xl text-trust" aria-hidden="true">{icon}</span>
-            <h3 className="display mt-4 text-xl">{title}</h3>
-            <p className="mt-1 text-sm text-muted">{body}</p>
-          </Link>
-        ))}
-      </Reveal>
-    </section>
+    <div>
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className={`price mt-1 text-[28px] leading-none ${tone === "down" ? "chg-down" : ""}`}>{value}</dd>
+    </div>
   );
 }
 
-function Rail({
-  title,
-  href,
-  items,
-}: {
-  title: string;
-  href: string;
-  items: Awaited<ReturnType<typeof queryListings>>["items"];
-}) {
-  if (items.length === 0) return null;
+function Check({ text }: { text: string }) {
   return (
-    <section className="mx-auto max-w-[1560px] px-4 lg:px-6 pt-8">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h2 className="display text-3xl">{title}</h2>
-        <Link href={href} className="text-sm font-semibold text-trust">
-          See all →
+    <li className="flex gap-2.5">
+      <svg width="16" height="16" viewBox="0 0 24 24" className="mt-0.5 shrink-0" aria-hidden="true">
+        <circle cx="12" cy="12" r="11" fill="var(--color-lime)" />
+        <path d="M7 12.4l3.2 3.2L17 8.8" fill="none" stroke="#101114" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <span>{text}</span>
+    </li>
+  );
+}
+
+function Grid({ title, href, items }: { title: string; href: string; items: Listing[] }) {
+  if (!items.length) return null;
+  return (
+    <section className="mx-auto max-w-[1400px] px-4 pt-14 lg:px-8">
+      <div className="sec-head">
+        <h2 className="sec-title">{title}</h2>
+        <Link href={href} className="sec-link">
+          View all
         </Link>
       </div>
-      <Reveal
-        stagger
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-      >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {items.slice(0, 8).map((l) => (
           <ProductCard key={l.id} listing={l} />
         ))}
-      </Reveal>
+      </div>
     </section>
   );
 }

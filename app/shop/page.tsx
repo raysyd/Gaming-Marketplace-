@@ -131,11 +131,7 @@ export default async function ShopPage({
               key={v}
               href={hrefWith({ sort: v, page: undefined })}
               aria-current={(sp.sort ?? "new") === v ? "true" : undefined}
-              className={`hud shrink-0 whitespace-nowrap rounded-[4px] border px-3 py-1.5 text-[11px] uppercase tracking-wider transition ${
-                (sp.sort ?? "new") === v
-                  ? "border-deal bg-deal-soft font-semibold text-ink shadow-[var(--glow-a)]"
-                  : "glass border-line text-muted hover:border-trust hover:text-ink"
-              }`}
+              className={`pill shrink-0 ${(sp.sort ?? "new") === v ? "is-on" : ""}`}
             >
               {label}
             </Link>

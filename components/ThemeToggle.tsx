@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 const KEY = "sidegrade.theme";
 
 /**
- * Dark is the default (html.dark is server-rendered in app/layout.tsx);
- * light is an opt-in remembered in localStorage. The inline script in the
+ * Light is the default (html.light is server-rendered in app/layout.tsx);
+ * dark is an opt-in remembered in localStorage. The inline script in the
  * layout applies a saved choice before first paint, so this only mirrors
  * the current class into state and flips both classes on click.
  */
 export function ThemeToggle() {
-  const [dark, setDark] = useState(true);
+  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));

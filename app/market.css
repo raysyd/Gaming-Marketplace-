@@ -1,0 +1,280 @@
+/* =====================================================================
+   Sidegrade "Market board" design layer. Loaded last (see globals.css),
+   so it sets the tokens every page reads and restyles the shared classes.
+
+   The idea: a used-parts market you can read at a glance. Clean white
+   paper, black ink, one cobalt accent for actions and links, a lime mark
+   for highlights, and prices set in a mono face like a price board —
+   green when a listing is under the going rate for its model, red when
+   it's over (lib/market-index.ts).
+   ===================================================================== */
+
+:root,
+html.light {
+  --color-ink: #101114;
+  --color-chrome: #101114;
+  --color-chrome-2: #26282e;
+  --color-paper: #f4f4f0;
+  --color-card: #ffffff;
+  --color-card-solid: #ffffff;
+  --color-line: #e2e2dc;
+  --color-muted: #686b72;
+  --color-deal: #2448ff;
+  --color-deal-strong: #1b3ae6;
+  --color-deal-soft: #e9edff;
+  --color-trust: #1b3ae6;
+  --color-trust-soft: #e9edff;
+  --color-icon: #2448ff;
+  --color-good: #0a7a43;
+  --color-warn: #c2410c;
+  --color-lime: #d9f24c;
+  --color-up: #c0362c;
+  --color-down: #0a7a43;
+
+  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-hud: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius-card: 12px;
+
+  --glow-a: 0 0 0 1px rgba(36, 72, 255, 0.35), 0 12px 28px -16px rgba(36, 72, 255, 0.5);
+  --glow-b: 0 0 0 1px rgba(16, 17, 20, 0.14), 0 12px 28px -18px rgba(16, 17, 20, 0.35);
+  --glass-blur: none;
+  --rgb-gradient: linear-gradient(90deg, #2448ff, #2448ff);
+  --shadow-card: 0 1px 0 rgba(16, 17, 20, 0.04), 0 12px 30px -22px rgba(16, 17, 20, 0.35);
+}
+
+html.dark {
+  --color-ink: #ededea;
+  --color-chrome: #0b0c0e;
+  --color-chrome-2: #1d1f24;
+  --color-paper: #0e0f11;
+  --color-card: #17181b;
+  --color-card-solid: #17181b;
+  --color-line: #2b2d32;
+  --color-muted: #9b9ea5;
+  --color-deal: #5b7bff;
+  --color-deal-strong: #4766ff;
+  --color-deal-soft: #1a2146;
+  --color-trust: #7b94ff;
+  --color-trust-soft: #1a2146;
+  --color-icon: #7b94ff;
+  --color-good: #37c47a;
+  --color-warn: #fb8b4e;
+  --color-up: #ff7a6b;
+  --color-down: #37c47a;
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.3), 0 16px 34px -24px rgba(0, 0, 0, 0.8);
+}
+
+/* Base ---------------------------------------------------------------- */
+body {
+  background: var(--color-paper);
+  background-attachment: scroll;
+}
+::selection { background: var(--color-lime); color: #101114; }
+html { scrollbar-color: color-mix(in srgb, var(--color-ink) 30%, transparent) transparent; }
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+.eyebrow {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+}
+.eyebrow::before { display: none; }
+.glass {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  backdrop-filter: none;
+}
+
+/* One quiet, confident button system. */
+.btn { border-radius: 10px; font-weight: 600; }
+.btn-primary {
+  clip-path: none;
+  border-radius: 10px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  letter-spacing: 0;
+}
+.btn-primary::after { display: none; }
+.btn-primary:not(:disabled):hover { filter: none; background: var(--color-deal); color: #fff; }
+.btn-primary:focus-visible { outline: 2px solid var(--color-deal); outline-offset: 2px; box-shadow: none; }
+.btn-secondary { background: var(--color-card); backdrop-filter: none; }
+.btn-secondary:not(:disabled):hover { border-color: var(--color-ink); box-shadow: none; }
+.btn-accent { background: var(--color-deal); color: #fff; }
+.btn-accent:not(:disabled):hover { background: var(--color-deal-strong); }
+
+/* The old gradient accents become plain ink/cobalt. */
+.rgb-text { background: none; -webkit-background-clip: initial; background-clip: initial; color: var(--color-deal); animation: none; }
+.rgb-ring::before, .rgb-frame::after, .card-hover::after, .tilt-card::after, .deal-card::after { display: none !important; }
+.card-hover:hover { box-shadow: var(--shadow-card); }
+
+/* Panels that used HUD brackets become plain white cards. */
+.hud-frame { border-radius: var(--radius-card); background: var(--color-card); backdrop-filter: none; box-shadow: var(--shadow-card); }
+.hud-frame::before { display: none; }
+.hud-rule { height: 1px; margin-top: 12px; background: var(--color-line); opacity: 1; }
+.hud-count { border-radius: 999px; border-color: var(--color-line); color: var(--color-muted); font-size: 12px; }
+.signal > i.on { background: var(--color-ink); box-shadow: none; }
+.datasheet, .datasheet dt, .datasheet dd { border-style: solid; }
+.tier-badge {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #101114;
+  padding: 3px 9px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.tier-badge::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: var(--tier); }
+.page-btn { border-radius: 10px; }
+.page-btn:hover, .page-btn:focus-visible { box-shadow: none; border-color: var(--color-ink); }
+.page-btn.is-current { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); box-shadow: none; }
+.skeleton::after { background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--color-ink) 8%, transparent) 50%, transparent 80%); }
+
+/* Header -------------------------------------------------------------- */
+.site-nav {
+  background: #101114;
+  backdrop-filter: none;
+  border-bottom: 1px solid #202227;
+}
+.nav-search {
+  border-radius: 10px;
+  background: #1d1f24;
+  border: 1px solid #2c2f35;
+  box-shadow: none;
+}
+.nav-search:focus-within { border-color: #fff; box-shadow: none; }
+.brand-word { font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -0.04em; color: #fff; }
+.brand-word i { font-style: normal; display: inline-block; width: 8px; height: 8px; margin-left: 2px; border-radius: 2px; background: var(--color-lime); }
+.nav-tab {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.72);
+}
+.nav-tab::after { background: var(--color-lime) !important; box-shadow: none !important; }
+.nav-tab:hover, .nav-tab.is-active { color: #fff; }
+.nav-tab-hot { color: var(--color-lime); }
+.nav-menu { background: var(--color-card-solid); border: 1px solid var(--color-line); box-shadow: var(--shadow-card); backdrop-filter: none; }
+
+/* Live price strip under the header */
+.market-ticker { background: var(--color-card); border-bottom: 1px solid var(--color-line); color: var(--color-ink); }
+.market-tick { color: var(--color-ink); font-family: var(--font-hud); }
+
+/* Footer -------------------------------------------------------------- */
+.site-footer { background: #101114; border-top: 0; }
+.site-footer::before { display: none; }
+.footer-wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  -webkit-text-stroke: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.05);
+}
+
+/* Market primitives -------------------------------------------------- */
+.mono { font-family: var(--font-hud); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.price { font-family: var(--font-hud); font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* "8% under" / "At going rate" / "5% over" */
+.mkt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mkt-under { background: color-mix(in srgb, var(--color-down) 12%, transparent); color: var(--color-down); }
+.mkt-at { background: color-mix(in srgb, var(--color-ink) 7%, transparent); color: var(--color-muted); }
+.mkt-over { background: color-mix(in srgb, var(--color-up) 11%, transparent); color: var(--color-up); }
+.chg-down { color: var(--color-down); }
+.chg-up { color: var(--color-up); }
+.lime-mark { background: linear-gradient(transparent 58%, var(--color-lime) 58%, var(--color-lime) 92%, transparent 92%); padding: 0 2px; }
+html.dark .lime-mark { color: #101114; background: var(--color-lime); border-radius: 4px; padding: 0 6px; }
+
+/* Listing card (components/ProductCard.tsx) */
+.lcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  transition: border-color 150ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.lcard:hover { border-color: color-mix(in srgb, var(--color-ink) 35%, transparent); box-shadow: var(--shadow-card); transform: translateY(-2px); }
+.lcard:focus-within { border-color: var(--color-ink); }
+.lcard-media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #ececE7; }
+html.dark .lcard-media { background: #202226; }
+.lcard-body { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px 14px; flex: 1; }
+.lcard-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.lcard-meta { font-size: 12px; color: var(--color-muted); }
+.lcard-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--color-line); font-size: 12px; color: var(--color-muted); }
+
+/* Price board (homepage + product page) */
+.board { border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-card); overflow: hidden; }
+.board-head, .board-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.8fr) 110px minmax(0, 0.9fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+}
+.board-head { height: 38px; border-bottom: 1px solid var(--color-line); font-family: var(--font-hud); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.board-row { min-height: 58px; border-bottom: 1px solid var(--color-line); transition: background-color 120ms ease; }
+.board-row:last-child { border-bottom: 0; }
+.board-row:hover { background: color-mix(in srgb, var(--color-lime) 22%, transparent); }
+html.dark .board-row:hover { background: #1f2126; }
+.board-model { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+.board-kind { font-family: var(--font-hud); font-size: 10px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-line); color: var(--color-muted); }
+.board-num { font-family: var(--font-hud); font-size: 14px; font-variant-numeric: tabular-nums; }
+.board-right { text-align: right; }
+@media (max-width: 760px) {
+  .board-head, .board-row { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) 80px; }
+  .board-hide-sm { display: none; }
+}
+.spark { display: block; width: 100%; max-width: 110px; height: 28px; overflow: visible; }
+
+/* Section heads */
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.sec-title { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.035em; font-size: clamp(24px, 2.6vw, 34px); line-height: 1; }
+.sec-link { font-size: 13px; font-weight: 600; color: var(--color-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--color-line); }
+.sec-link:hover { text-decoration-color: var(--color-ink); }
+
+/* Chips */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.pill:hover { border-color: var(--color-ink); }
+.pill.is-on { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }

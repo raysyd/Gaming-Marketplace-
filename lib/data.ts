@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient } from "./supabase/public";
 import { artKindFor, categoryOrFilter, findSub, slugify } from "./taxonomy";
 import { getSellerStats, type SellerStats } from "./reviews-data";
+import { withMarket } from "./market-index";
 
 export const PER_PAGE = 24;
 
@@ -113,13 +114,23 @@ async function getListingUncached(id: string): Promise<Listing | null> {
  * so the homepage's four rails and the header don't each re-run the same
  * query.
  */
+/** Every listing page carries its GPU/CPU going-rate tags (lib/market-index.ts). */
+async function queryListingsWithMarket(q: ListingQuery = {}): Promise<ListingPage> {
+  const page = await queryListingsUncached(q);
+  return { ...page, items: await withMarket(page.items) };
+}
+async function getListingWithMarket(id: string): Promise<Listing | null> {
+  const l = await getListingUncached(id);
+  return l ? (await withMarket([l]))[0] : null;
+}
+
 const queryListingsCachedByArgs = unstable_cache(
-  queryListingsUncached,
+  queryListingsWithMarket,
   ["listings-query"],
   { revalidate: 45, tags: ["listings"] }
 );
 const getListingCachedByArgs = unstable_cache(
-  getListingUncached,
+  getListingWithMarket,
   ["listing-by-id"],
   { revalidate: 45, tags: ["listings"] }
 );
@@ -175,7 +186,8 @@ function filterDemo(q: ListingQuery, page: number, perPage: number): ListingPage
     if (q.freeShipping && !l.shipsFree) return false;
     if (q.verifiedOnly && !l.sellerVerified) return false;
     if (q.dealsOnly && !l.compareAt) return false;
-    if (q.status && (l.status ?? "active") !== q.status) return false;
+    // Same default as the database query: only active listings unless asked.
+    if ((l.status ?? "active") !== (q.status ?? "active")) return false;
     for (const [label, value] of Object.entries(q.attrs ?? {}))
       if (!l.specs.some((s) => s.label === label && s.value === value)) return false;
     if (!needle) return true;

@@ -10,7 +10,6 @@ import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
 import { CartDrawer } from "./CartDrawer";
 import { MarketTicker } from "./MarketTicker";
-import { LogoChip } from "./LogoChip";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -78,8 +77,7 @@ export function SiteHeader() {
       <div className="site-nav text-white">
         <div className="mx-auto flex max-w-[1560px] items-center gap-2 px-4 py-3 lg:px-6 sm:gap-3">
           <Link href="/" className="brand-mark shrink-0" aria-label={`${BRAND.name} home`}>
-            <LogoChip id="nav-chip" />
-            <span className="display text-xl tracking-tight text-white">{BRAND.name}</span>
+            <span className="brand-word">{BRAND.name.toLowerCase()}<i aria-hidden="true" /></span>
           </Link>
 
           <div className="nav-search ml-2 hidden flex-1 md:flex">

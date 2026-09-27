@@ -144,11 +144,35 @@ function buildPCs(): Listing[] {
   });
 }
 
+/**
+ * Several of each GPU/CPU model, at prices spread around a typical figure
+ * and listed over the last ~10 weeks, a few already sold — so the preview
+ * has enough comparables for the going-rate board (lib/market-index.ts)
+ * to show what it looks like with a real market behind it.
+ */
+const COPIES = 4;
+function spread<T extends { price: number }>(items: T[]): (T & { age: number; sold: boolean })[] {
+  return items.flatMap((item) =>
+    Array.from({ length: COPIES }, (_, i) => ({
+      ...item,
+      // later copies are older and, on a falling market, a little dearer
+      price: Math.round((item.price * (0.86 + rand() * 0.24) * (1 + i * 0.015)) / 5) * 5,
+      age: Math.floor(i * 18 + rand() * 16),
+      sold: i === COPIES - 1 || (i === COPIES - 2 && rand() > 0.5),
+    }))
+  );
+}
+const aged = (l: Listing, age: number, sold: boolean): Listing => ({
+  ...l,
+  createdAt: iso(age),
+  status: sold ? "sold" : "active",
+});
+
 function buildGPUs(): Listing[] {
-  return GPUS.map((gpu) => {
+  return spread(GPUS).map((gpu) => {
     const price = Math.round(gpu.price / 10) * 10;
     const discounted = rand() > 0.5;
-    return make({
+    return aged(make({
       title: `${gpu.brand} ${gpu.name}`,
       categorySlug: "pc-parts-and-components",
       subcategorySlug: "graphics-cards",
@@ -167,13 +191,13 @@ function buildGPUs(): Listing[] {
         "Pulled from a working system. No mining, supported with an anti-sag bracket, thermals verified before listing.",
       shipsFree: rand() > 0.3,
       acceptsOffers: rand() > 0.15,
-    });
+    }), gpu.age, gpu.sold);
   });
 }
 
 function buildCPUs(): Listing[] {
-  return CPUS.map((cpu) =>
-    make({
+  return spread(CPUS).map((cpu) =>
+    aged(make({
       title: `${cpu.brand} ${cpu.name}`,
       categorySlug: "pc-parts-and-components",
       subcategorySlug: "processors",
@@ -188,7 +212,7 @@ function buildCPUs(): Listing[] {
       description: "Boxed, pins perfect, never delidded. Ran in a single system.",
       shipsFree: true,
       acceptsOffers: rand() > 0.25,
-    })
+    }), cpu.age, cpu.sold)
   );
 }
 

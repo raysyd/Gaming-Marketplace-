@@ -23,6 +23,8 @@ import { WishlistButton } from "@/components/WishlistButton";
 import { ReportButton } from "@/components/ReportButton";
 import { RecentlySold } from "@/components/RecentlySold";
 import { connection } from "next/server";
+import { getMarketIndex } from "@/lib/market-index";
+import { MarketPanel } from "@/components/market/MarketPanel";
 
 
 export async function generateMetadata({
@@ -52,12 +54,14 @@ export default async function ProductPage({
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  const [related, priceStats, recentlySold, priceHistory] = await Promise.all([
+  const [related, priceStats, recentlySold, priceHistory, marketIndex] = await Promise.all([
     getRelated(listing, listing.categorySlug === "full-systems" ? 6 : 8),
     getSubcategoryPriceStats(listing.subcategorySlug),
     getRecentlySold({ subcategorySlug: listing.subcategorySlug, limit: 5 }),
     getPriceHistory(listing.id),
+    getMarketIndex(),
   ]);
+  const modelStats = listing.market ? marketIndex.find((m) => m.key === listing.market!.modelKey) : undefined;
   const sub = findSub(listing.subcategorySlug);
   const top = findTop(listing.categorySlug);
 
@@ -215,6 +219,11 @@ export default async function ProductPage({
 
           <div className="order-4">
             <BuyBox listing={listing} priceStats={priceStats} priceHistory={priceHistory} />
+            {listing.market && modelStats && (
+              <div className="mt-3">
+                <MarketPanel price={listing.price} tag={listing.market} stats={modelStats} />
+              </div>
+            )}
           </div>
 
           <div className="hud-frame order-5 p-5">

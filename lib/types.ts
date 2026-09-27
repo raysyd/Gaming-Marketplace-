@@ -48,6 +48,8 @@ export type Listing = {
   stock: number;
   createdAt: string;
   status?: string;
+  /** Price against the going rate for this model (lib/market-index.ts). Only GPU and CPU listings with enough comparables have one. */
+  market?: MarketTag;
 };
 
 export type ListingQuery = {
@@ -162,4 +164,15 @@ export type Order = {
   /** "pickup" reuses every existing status transition unchanged — only what the seller needs to reach "shipped" (a tracking number, or not) and the buyer's confirm-action label differ. */
   fulfillmentMethod: "shipping" | "pickup";
   createdAt: string;
+};
+
+/** Where a listing's price sits against the going rate for its model. */
+export type MarketTag = {
+  model: string;
+  modelKey: string;
+  /** Going rate in AUD. */
+  rate: number;
+  /** price / rate - 1: -0.08 is 8% under the going rate. */
+  delta: number;
+  comps: number;
 };

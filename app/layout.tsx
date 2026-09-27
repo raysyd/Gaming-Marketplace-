@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "./globals.css";
+// Loaded after globals.css so its tokens and overrides win.
+import "./market.css";
 import { BRAND } from "@/lib/brand";
 import { AuthProvider } from "@/components/AuthProvider";
 import { CartProvider } from "@/components/CartProvider";
@@ -15,9 +17,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   // No maximum-scale: pinch-zoom must stay available.
   viewportFit: "cover",
-  // The site is dark by default (app/globals.css @theme); light is an
-  // opt-in from ThemeToggle, so the browser chrome matches the dark page.
-  themeColor: "#0b0e14",
+  // Light by default (app/market.css); dark is an opt-in from ThemeToggle.
+  // The browser chrome matches the black header either way.
+  themeColor: "#101114",
 };
 
 export const metadata: Metadata = {
@@ -25,7 +27,7 @@ export const metadata: Metadata = {
   description: BRAND.blurb,
 };
 
-const THEME_SCRIPT = `try{if(localStorage.getItem("sidegrade.theme")==="light"){var c=document.documentElement.classList;c.remove("dark");c.add("light")}}catch(e){}`;
+const THEME_SCRIPT = `try{if(localStorage.getItem("sidegrade.theme")==="dark"){var c=document.documentElement.classList;c.remove("light");c.add("dark")}}catch(e){}`;
 
 export default function RootLayout({
   children,
@@ -33,15 +35,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
-        {/* Runs before first paint so someone who picked light mode never
-            sees a flash of dark (ThemeToggle writes this key). */}
+        {/* Runs before first paint so someone who picked dark mode never
+            sees a flash of the wrong theme (ThemeToggle writes this key). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500..700&family=Inter:wght@400..700&family=JetBrains+Mono:wght@400..700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600..900&family=Inter:wght@400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
         <script
@@ -61,7 +63,7 @@ export default function RootLayout({
         <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-          <Suspense fallback={<div className="h-[128px] bg-chrome" />}>
+          <Suspense fallback={<div className="h-[112px] bg-chrome" />}>
             <SiteHeader />
           </Suspense>
           <main className="min-h-[70vh]">{children}</main>

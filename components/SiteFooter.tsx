@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
-import { LogoChip } from "./LogoChip";
 
 export function SiteFooter() {
   return (
@@ -8,8 +7,7 @@ export function SiteFooter() {
       <div className="relative mx-auto grid max-w-[1560px] gap-8 px-4 py-14 lg:px-6 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
           <Link href="/" className="brand-mark" aria-label={`${BRAND.name} home`}>
-            <LogoChip id="footer-chip" />
-            <span className="display text-xl text-white">{BRAND.name}</span>
+            <span className="brand-word">{BRAND.name.toLowerCase()}<i aria-hidden="true" /></span>
           </Link>
           <p className="mt-3 max-w-xs text-sm leading-relaxed">{BRAND.blurb}</p>
         </div>

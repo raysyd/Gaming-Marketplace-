@@ -118,7 +118,9 @@ to contact support instead.
   confirms collection. Unposted orders refund automatically (all in
   `lib/brand.ts`, run by the daily cron).
 - **Rate limiting** needs `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`
-  in production; without them it only counts per serverless instance.
+  in production (or the `KV_REST_API_URL` / `KV_REST_API_TOKEN` pair the
+  Vercel Marketplace Upstash integration sets); without them it only counts
+  per serverless instance.
 - Run `supabase/25-launch-hardening.sql` (chargebacks, reports, suspension)
   before deploying this version.
 

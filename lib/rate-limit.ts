@@ -1,10 +1,11 @@
 /**
- * Rate limiter. With UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN set,
- * the counter lives in Upstash Redis, shared by every serverless instance
- * (a fixed window: INCR + EXPIRE in one pipeline). Without them — or if
- * Redis doesn't answer within a second — it falls back to the in-memory
- * sliding window below, which only limits within one warm instance: fine
- * for local dev, not a real limit on Vercel.
+ * Rate limiter. With UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN set
+ * (or KV_REST_API_URL + KV_REST_API_TOKEN, the names the Vercel Marketplace
+ * Upstash integration injects), the counter lives in Upstash Redis, shared
+ * by every serverless instance (a fixed window: INCR + EXPIRE in one
+ * pipeline). Without them — or if Redis doesn't answer within a second — it
+ * falls back to the in-memory sliding window below, which only limits
+ * within one warm instance: fine for local dev, not a real limit on Vercel.
  */
 const hits = new Map<string, number[]>();
 // Which keys already got one "rate limited" log line for their current
@@ -15,8 +16,8 @@ const warned = new Set<string>();
 
 type Limited = { ok: boolean; remaining: number; retryAfter: number };
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL?.replace(/\/$/, "");
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const REDIS_URL = (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL)?.replace(/\/$/, "");
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 
 async function redisLimit(key: string, limit: number, windowMs: number): Promise<Limited | null> {
   if (!REDIS_URL || !REDIS_TOKEN) return null;
